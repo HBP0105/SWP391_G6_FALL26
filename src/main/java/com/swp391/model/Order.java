@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.swp391.model;
 
 import java.math.BigDecimal;
@@ -10,7 +7,7 @@ import java.time.LocalDateTime;
 public class Order {
 
     public int orderID;
-    public int userID;
+    public int customerID;
     public BigDecimal totalAmount;
     public String shippingName;
     public String shippingPhone;
@@ -22,11 +19,11 @@ public class Order {
     public Order() {
     }
 
-    public Order(int orderID, int userID, BigDecimal totalAmount,
+    public Order(int orderID, int customerID, BigDecimal totalAmount,
             String shippingName, String shippingPhone, String shippingAddress,
             String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
         this.orderID = orderID;
-        this.userID = userID;
+        this.customerID = customerID;
         this.totalAmount = totalAmount;
         this.shippingName = shippingName;
         this.shippingPhone = shippingPhone;
@@ -44,12 +41,20 @@ public class Order {
         this.orderID = orderID;
     }
 
+    public int getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
+    }
+
     public int getUserID() {
-        return userID;
+        return customerID;
     }
 
     public void setUserID(int userID) {
-        this.userID = userID;
+        this.customerID = userID;
     }
 
     public BigDecimal getTotalAmount() {
@@ -107,6 +112,18 @@ public class Order {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
+    public String getFormattedTotalAmount() {
+        if (totalAmount == null) return "0";
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+        formatter.setDecimalFormatSymbols(symbols);
+        return formatter.format(totalAmount);
+    }
+
+    public String getFormattedOrderDate() {
+        if (orderDate == null) return "";
+        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
+    }
 }

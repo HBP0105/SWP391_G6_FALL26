@@ -1,18 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author HP
- */
 public class AuditLog {
     public long auditLogID;
-    public Integer userID;
+    public Integer customerID;
     public String action;
     public String entityName;
     public String entityID;
@@ -23,13 +16,13 @@ public class AuditLog {
     public AuditLog() {
     }
 
-    public AuditLog(long auditLogID, Integer userID, String action,
+    public AuditLog(long auditLogID, Integer customerID, String action,
             String entityName, String entityID,
             String oldData, String newData,
             LocalDateTime createdAt) {
 
         this.auditLogID = auditLogID;
-        this.userID = userID;
+        this.customerID = customerID;
         this.action = action;
         this.entityName = entityName;
         this.entityID = entityID;
@@ -46,12 +39,12 @@ public class AuditLog {
         this.auditLogID = auditLogID;
     }
 
-    public Integer getUserID() {
-        return userID;
+    public Integer getcustomerID() {
+        return customerID;
     }
 
-    public void setUserID(Integer userID) {
-        this.userID = userID;
+    public void setcustomerID(Integer customerID) {
+        this.customerID = customerID;
     }
 
     public String getAction() {

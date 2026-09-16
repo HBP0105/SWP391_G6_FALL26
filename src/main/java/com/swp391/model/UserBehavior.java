@@ -1,18 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author HP
- */
 public class UserBehavior {
     public long behaviorID;
-    public Integer userID;
+    public Integer customerID;
     public Integer productID;
     public String behaviorType;
     public String searchKeyword;
@@ -22,12 +15,12 @@ public class UserBehavior {
     public UserBehavior() {
     }
 
-    public UserBehavior(long behaviorID, Integer userID, Integer productID,
+    public UserBehavior(long behaviorID, Integer customerID, Integer productID,
             String behaviorType, String searchKeyword,
             String sessionID, LocalDateTime createdAt) {
 
         this.behaviorID = behaviorID;
-        this.userID = userID;
+        this.customerID = customerID;
         this.productID = productID;
         this.behaviorType = behaviorType;
         this.searchKeyword = searchKeyword;
@@ -43,12 +36,12 @@ public class UserBehavior {
         this.behaviorID = behaviorID;
     }
 
-    public Integer getUserID() {
-        return userID;
+    public Integer getcustomerID() {
+        return customerID;
     }
 
-    public void setUserID(Integer userID) {
-        this.userID = userID;
+    public void setcustomerID(Integer customerID) {
+        this.customerID = customerID;
     }
 
     public Integer getProductID() {

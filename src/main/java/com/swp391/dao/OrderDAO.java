@@ -23,7 +23,7 @@ public class OrderDAO {
         Order order = new Order();
 
         order.setOrderID(rs.getInt("OrderID"));
-        order.setUserID(rs.getInt("UserID"));
+        order.setCustomerID(rs.getInt("CustomerID"));
         order.setTotalAmount(rs.getBigDecimal("TotalAmount"));
         order.setShippingName(rs.getString("ShippingName"));
         order.setShippingPhone(rs.getString("ShippingPhone"));
@@ -57,7 +57,7 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
-                SELECT OrderID, UserID, TotalAmount,
+                SELECT OrderID, CustomerID, TotalAmount,
                        ShippingName, ShippingPhone, ShippingAddress,
                        OrderStatus, OrderDate, UpdatedAt
                 FROM Orders
@@ -87,7 +87,7 @@ public class OrderDAO {
     public Order getOrderById(int orderID) {
 
         String sql = """
-                SELECT OrderID, UserID, TotalAmount,
+                SELECT OrderID, CustomerID, TotalAmount,
                        ShippingName, ShippingPhone, ShippingAddress,
                        OrderStatus, OrderDate, UpdatedAt
                 FROM Orders
@@ -201,7 +201,7 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
-                SELECT OrderID, UserID, TotalAmount,
+                SELECT OrderID, CustomerID, TotalAmount,
                        ShippingName, ShippingPhone, ShippingAddress,
                        OrderStatus, OrderDate, UpdatedAt
                 FROM Orders

@@ -1,19 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author HP
- */
 public class AIRecommendation {
     public long recommendationID;
-    public Integer userID;
+    public Integer customerID;
     public String sessionID;
     public int productID;
     public String recommendationType;
@@ -28,7 +21,7 @@ public class AIRecommendation {
     public AIRecommendation() {
     }
 
-    public AIRecommendation(long recommendationID, Integer userID, String sessionID,
+    public AIRecommendation(long recommendationID, Integer customerID, String sessionID,
             int productID, String recommendationType,
             BigDecimal similarityScore, BigDecimal behaviorScore,
             BigDecimal finalScore, String reason,
@@ -36,7 +29,7 @@ public class AIRecommendation {
             LocalDateTime createdAt) {
 
         this.recommendationID = recommendationID;
-        this.userID = userID;
+        this.customerID = customerID;
         this.sessionID = sessionID;
         this.productID = productID;
         this.recommendationType = recommendationType;
@@ -57,12 +50,12 @@ public class AIRecommendation {
         this.recommendationID = recommendationID;
     }
 
-    public Integer getUserID() {
-        return userID;
+    public Integer getCutomerID() {
+        return customerID;
     }
 
-    public void setUserID(Integer userID) {
-        this.userID = userID;
+    public void setCutomerID(Integer customerID) {
+        this.customerID = customerID;
     }
 
     public String getSessionID() {

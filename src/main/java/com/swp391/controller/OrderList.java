@@ -64,12 +64,23 @@ public class OrderList extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         
+        List<Order> allOrders = orderDAO.getAllOrders();
+        long pendingCount = allOrders.stream().filter(o -> "PENDING".equalsIgnoreCase(o.getOrderStatus())).count();
+        long confirmedCount = allOrders.stream().filter(o -> "CONFIRMED".equalsIgnoreCase(o.getOrderStatus())).count();
+        long shippingCount = allOrders.stream().filter(o -> "SHIPPING".equalsIgnoreCase(o.getOrderStatus())).count();
+        long deliveredCount = allOrders.stream().filter(o -> "DELIVERED".equalsIgnoreCase(o.getOrderStatus())).count();
+
+        request.setAttribute("pendingCount", pendingCount);
+        request.setAttribute("confirmedCount", confirmedCount);
+        request.setAttribute("shippingCount", shippingCount);
+        request.setAttribute("deliveredCount", deliveredCount);
+
         String statusFilter = request.getParameter("status");
         List<Order> orderList;
         if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("ALL")) {
             orderList = orderDAO.getOrdersByStatus(statusFilter);
         } else {
-            orderList = orderDAO.getAllOrders();
+            orderList = allOrders;
         }
         
         request.setAttribute("orders", orderList);
@@ -77,17 +88,27 @@ public class OrderList extends HttpServlet {
         request.getRequestDispatcher("/views/staff/order-list.jsp").forward(request, response);
     } 
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+        if ("updateStatus".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
+                String newStatus = request.getParameter("newStatus");
+                boolean success = orderDAO.updateOrderStatus(orderId, newStatus);
+                if (success) {
+                    request.getSession().setAttribute("msgSuccess", "true");
+                    request.getSession().setAttribute("msgSuccessOrderId", orderId);
+                    request.getSession().setAttribute("msgSuccessStatus", newStatus);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        response.sendRedirect(request.getContextPath() + "/staff/orders");
     }
 
     /** 
