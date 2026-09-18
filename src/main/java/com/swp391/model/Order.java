@@ -7,26 +7,32 @@ package com.swp391.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Order {
 
-    public int orderID;
-    public int userID;
-    public BigDecimal totalAmount;
-    public String shippingName;
-    public String shippingPhone;
-    public String shippingAddress;
-    public String orderStatus;
-    public LocalDateTime orderDate;
-    public LocalDateTime updatedAt;
+    private int orderId;
+    private int customerId;
+
+    private BigDecimal totalAmount;
+
+    private String shippingName;
+    private String shippingPhone;
+    private String shippingAddress;
+
+    private String orderStatus;
+
+    private LocalDateTime orderDate;
+    private LocalDateTime updatedAt;
 
     public Order() {
     }
 
-    public Order(int orderID, int userID, BigDecimal totalAmount,
-            String shippingName, String shippingPhone, String shippingAddress,
-            String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
-        this.orderID = orderID;
-        this.userID = userID;
+    public Order(int orderId, int customerId, BigDecimal totalAmount, String shippingName, String shippingPhone, String shippingAddress, String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
+        this.orderId = orderId;
+        this.customerId = customerId;
         this.totalAmount = totalAmount;
         this.shippingName = shippingName;
         this.shippingPhone = shippingPhone;
@@ -36,20 +42,20 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
-    public int getOrderID() {
-        return orderID;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setOrderID(int orderID) {
-        this.orderID = orderID;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
-    public int getUserID() {
-        return userID;
+    public int getCustomerId() {
+        return customerId;
     }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
     }
 
     public BigDecimal getTotalAmount() {
@@ -107,6 +113,5 @@ public class Order {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
 }
