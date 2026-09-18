@@ -6,48 +6,55 @@ package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-
+/**
+ *
+ * @author ADMIN
+ */
 public class CartItem {
-    
-    public int cartItemID;
-    public int cartID;
-    public int productID;
-    public int quantity;
-    public LocalDateTime addedAt;
 
-    public CartItem() {}
+    private int cartItemId;
+    private int cartId;
+    private int productId;
 
-    public CartItem(int cartItemID, int cartID, int productID,
-                    int quantity, LocalDateTime addedAt) {
-        this.cartItemID = cartItemID;
-        this.cartID = cartID;
-        this.productID = productID;
+    private int quantity;
+    private LocalDateTime addedAt;
+
+    private Product product;
+
+    public CartItem() {
+    }
+
+    public CartItem(int cartItemId, int cartId, int productId, int quantity, LocalDateTime addedAt, Product product) {
+        this.cartItemId = cartItemId;
+        this.cartId = cartId;
+        this.productId = productId;
         this.quantity = quantity;
         this.addedAt = addedAt;
+        this.product = product;
     }
 
-    public int getCartItemID() {
-        return cartItemID;
+    public int getCartItemId() {
+        return cartItemId;
     }
 
-    public void setCartItemID(int cartItemID) {
-        this.cartItemID = cartItemID;
+    public void setCartItemId(int cartItemId) {
+        this.cartItemId = cartItemId;
     }
 
-    public int getCartID() {
-        return cartID;
+    public int getCartId() {
+        return cartId;
     }
 
-    public void setCartID(int cartID) {
-        this.cartID = cartID;
+    public void setCartId(int cartId) {
+        this.cartId = cartId;
     }
 
-    public int getProductID() {
-        return productID;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setProductID(int productID) {
-        this.productID = productID;
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public int getQuantity() {
@@ -65,6 +72,13 @@ public class CartItem {
     public void setAddedAt(LocalDateTime addedAt) {
         this.addedAt = addedAt;
     }
-    
-    
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
 }

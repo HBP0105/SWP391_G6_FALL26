@@ -1,30 +1,34 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Other/File.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.swp391.model;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Role {
 
-    public int roleID;
-    public String roleName;
-    public String description;
+    private int roleId;
+    private String roleName;
+    private String description;
 
     public Role() {
     }
 
-    public Role(int roleID, String roleName, String description) {
-        this.roleID = roleID;
+    public Role(int roleId, String roleName, String description) {
+        this.roleId = roleId;
         this.roleName = roleName;
         this.description = description;
     }
 
-    public int getRoleID() {
-        return roleID;
+    public int getRoleId() {
+        return roleId;
     }
 
-    public void setRoleID(int roleID) {
-        this.roleID = roleID;
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
     }
 
     public String getRoleName() {

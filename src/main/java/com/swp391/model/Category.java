@@ -6,21 +6,24 @@ package com.swp391.model;
 
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Category {
 
-    public int categoryID;
-    public String categoryName;
-    public String description;
-    public String status;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
+    private int categoryId;
+    private String categoryName;
+    private String description;
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Category() {
     }
 
-    public Category(int categoryID, String categoryName, String description,
-            String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.categoryID = categoryID;
+    public Category(int categoryId, String categoryName, String description, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
         this.status = status;
@@ -28,12 +31,12 @@ public class Category {
         this.updatedAt = updatedAt;
     }
 
-    public int getCategoryID() {
-        return categoryID;
+    public int getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategoryID(int categoryID) {
-        this.categoryID = categoryID;
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getCategoryName() {
@@ -75,6 +78,5 @@ public class Category {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
 }
