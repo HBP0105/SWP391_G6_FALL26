@@ -1,4 +1,3 @@
-
 package com.swp391.model;
 
 import java.math.BigDecimal;
@@ -47,14 +46,6 @@ public class Order {
 
     public void setCustomerID(int customerID) {
         this.customerID = customerID;
-    }
-
-    public int getUserID() {
-        return customerID;
-    }
-
-    public void setUserID(int userID) {
-        this.customerID = userID;
     }
 
     public BigDecimal getTotalAmount() {
@@ -124,6 +115,6 @@ public class Order {
 
     public String getFormattedOrderDate() {
         if (orderDate == null) return "";
-        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
+        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 }
