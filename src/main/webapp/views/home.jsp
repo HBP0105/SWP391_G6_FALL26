@@ -40,7 +40,36 @@
 				</ul>
 				<ul class="header-links pull-right">
 					<li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-					<li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+					<%@ page import="com.swp391.model.Customer" %>
+					<%@ page import="com.swp391.model.Staff" %>
+					<%
+						Object currentCustomer = session.getAttribute("customer");
+						if (currentCustomer == null) {
+					%>
+					<!-- Chua dang nhap -->
+					<li>
+						<a href="${pageContext.request.contextPath}/login">
+							<i class="fa fa-user-o"></i> My Account
+						</a>
+					</li>
+					<%
+						} else {
+							String displayName = "";
+							if (currentCustomer instanceof Customer) {
+								displayName = ((Customer) currentCustomer).getFullName();
+							} else if (currentCustomer instanceof Staff) {
+								displayName = ((Staff) currentCustomer).getFullName();
+							}
+					%>
+					<!-- Da dang nhap -->
+					<li>
+						<a href="${pageContext.request.contextPath}/profile">
+							<i class="fa fa-user"></i> <%= displayName %>
+						</a>
+					</li>
+					<%
+						}
+					%>
 				</ul>
 			</div>
 		</div>
