@@ -4,7 +4,11 @@
 <%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%
+    // Check cả 2 session key: "customer" (Customer) và "user" (Staff)
     Object sessionUser = session.getAttribute("customer");
+    if (sessionUser == null) {
+        sessionUser = session.getAttribute("user");
+    }
     if (sessionUser == null) {
         response.sendRedirect(request.getContextPath() + "/login");
         return;
@@ -53,21 +57,16 @@
         }
     }
 
-    String activeTab = (String) request.getAttribute("activeTab");
-    if (activeTab == null) {
-        activeTab = request.getParameter("tab");
-    }
-    if (activeTab == null || activeTab.trim().isEmpty()) {
+    // activeTab: xac dinh tab dang hien thi (info hoac changePassword)
+    String activeTab = request.getParameter("tab");
+    if (activeTab == null || activeTab.isEmpty()) {
         activeTab = "info";
     }
 
-    boolean isResetStep = "reset".equals(request.getAttribute("step"));
-    String checkedEmail = (String) request.getAttribute("checkedEmail");
-    if (checkedEmail == null || checkedEmail.isEmpty()) {
-        checkedEmail = (String) request.getAttribute("emailInput");
-    }
-    if (checkedEmail == null || checkedEmail.isEmpty()) {
-        checkedEmail = email;
+    // Flash message tu ChangePasswordServlet sau redirect
+    String flashSuccess = (String) session.getAttribute("flashSuccess");
+    if (flashSuccess != null) {
+        session.removeAttribute("flashSuccess");
     }
 %>
 
@@ -331,19 +330,20 @@
 
                         <!-- ALERTS -->
                         <% if (request.getAttribute("error") != null) { %>
-                            <div class="alert alert-danger" style="border-radius: 4px; margin-bottom: 20px;">
-                                <i class="fa fa-exclamation-triangle"></i> <%= request.getAttribute("error") %>
-                            </div>
+                        <div class="alert alert-danger" style="border-radius: 4px; margin-bottom: 20px;">
+                            <i class="fa fa-exclamation-triangle"></i> <%= request.getAttribute("error") %>
+                        </div>
                         <% } %>
 
-                        <% if (request.getAttribute("successMessage") != null) { %>
-                            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 20px;">
-                                <i class="fa fa-check-circle"></i> <%= request.getAttribute("successMessage") %>
-                            </div>
+                        <% if (request.getAttribute("successMessage") != null || flashSuccess != null) { %>
+                        <div class="alert alert-success" style="background-color: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 20px;">
+                            <i class="fa fa-check-circle"></i>
+                            <%= flashSuccess != null ? flashSuccess : request.getAttribute("successMessage") %>
+                        </div>
                         <% } %>
 
                         <!-- PERSONAL INFORMATION -->
-                        <div id="tab-content-info" style="<%= "MAILPassword".equals(activeTab) ? "display: none;" : "display: block;" %>">
+                        <div id="tab-content-info" style="<%= "changePassword".equals(activeTab) ? "display: none;" : "display: block;" %>">
                             <div class="profile-card">
                                 <div class="section-title">
                                     <h3 class="title"><i class="fa fa-user"></i> Personal Information</h3>
@@ -370,84 +370,6 @@
                             </div>
                         </div>
 
-                        <!-- CHANGE PASSWORD -->
-                        <div id="tab-content-password" style="<%= "changePassword".equals(activeTab) ? "display: block;" : "display: none;" %>">
-                            <div class="profile-card">
-                                <div class="section-title">
-                                    <h3 class="title"><i class="fa fa-key"></i> <%= isResetStep ? "Reset New Password" : "Change Password" %></h3>
-                                </div>
-
-                                <% if (isResetStep) { %>
-                                    <!-- NHAP MAT KHAU MOI VA CONFIRM -->
-                                    <p style="color: #666; margin-bottom: 20px;">
-                                        Please enter your new password for account: <strong><%= checkedEmail %></strong>
-                                        <br><small class="text-danger"><i class="fa fa-info-circle"></i> New password must not be the same as your old password.</small>
-                                    </p>
-
-                                    <form action="${pageContext.request.contextPath}/profile" method="post">
-                                        <input type="hidden" name="action" value="changePassword">
-                                        <input type="hidden" name="email" value="<%= checkedEmail %>">
-
-                                        <div class="form-group">
-                                            <label style="font-weight: 600;">New Password</label>
-                                            <input class="input"
-                                                   type="password"
-                                                   name="newPassword"
-                                                   placeholder="Enter new password (at least 6 characters)"
-                                                   required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label style="font-weight: 600;">Confirm New Password</label>
-                                            <input class="input"
-                                                   type="password"
-                                                   name="confirmPassword"
-                                                   placeholder="Confirm new password"
-                                                   required>
-                                        </div>
-
-                                        <div style="margin-top: 25px;">
-                                            <button type="submit" class="primary-btn btn-block">
-                                                UPDATE PASSWORD
-                                            </button>
-                                        </div>
-
-                                        <div class="text-center" style="margin-top: 15px;">
-                                            <a href="${pageContext.request.contextPath}/profile?tab=changePassword" class="text-muted">
-                                                <i class="fa fa-refresh"></i> Re-verify Email
-                                            </a>
-                                        </div>
-                                    </form>
-
-                                <% } else { %>
-                                    <!-- NHAP CHECK  -->
-                                    <p style="color: #666; margin-bottom: 20px;">
-                                        To change your password, please confirm your registered email address below.
-                                    </p>
-
-                                    <form action="${pageContext.request.contextPath}/profile" method="post">
-                                        <input type="hidden" name="action" value="checkEmail">
-
-                                        <div class="form-group">
-                                            <label style="font-weight: 600;">Account Email Address</label>
-                                            <input class="input"
-                                                   type="email"
-                                                   name="email"
-                                                   value="<%= checkedEmail %>"
-                                                   placeholder="Enter your email"
-                                                   required>
-                                        </div>
-
-                                        <div style="margin-top: 25px;">
-                                            <button type="submit" class="primary-btn btn-block">
-                                                VERIFY EMAIL & CONTINUE
-                                            </button>
-                                        </div>
-                                    </form>
-                                <% } %>
-
-                            </div>
-                        </div>
 
                     </div>
                     <!-- /MAIN TAB CONTENT -->
@@ -537,19 +459,19 @@
         <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
 
         <script>
-            function switchProfileTab(tabName) {
-                if (tabName === 'password') {
-                    $('#tab-content-info').hide();
-                    $('#tab-content-password').show();
-                    $('#tab-btn-info').removeClass('active');
-                    $('#tab-btn-password').addClass('active');
-                } else {
-                    $('#tab-content-password').hide();
-                    $('#tab-content-info').show();
-                    $('#tab-btn-password').removeClass('active');
-                    $('#tab-btn-info').addClass('active');
-                }
-            }
+                                    function switchProfileTab(tabName) {
+                                        if (tabName === 'password') {
+                                            $('#tab-content-info').hide();
+                                            $('#tab-content-password').show();
+                                            $('#tab-btn-info').removeClass('active');
+                                            $('#tab-btn-password').addClass('active');
+                                        } else {
+                                            $('#tab-content-password').hide();
+                                            $('#tab-content-info').show();
+                                            $('#tab-btn-password').removeClass('active');
+                                            $('#tab-btn-info').addClass('active');
+                                        }
+                                    }
         </script>
     </body>
 </html>
