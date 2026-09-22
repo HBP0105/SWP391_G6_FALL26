@@ -329,8 +329,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+                                                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                        <input type="hidden" name="action" value="add">
+                                                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                        <input type="hidden" name="quantity" value="1">
+                                                                                        <button type="submit" class="add-to-cart-btn">
+                                                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                        </button>
+                                                                                    </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -360,8 +366,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+										<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                    <input type="hidden" name="action" value="add">
+                                                                                    <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                    <input type="hidden" name="quantity" value="1">
+                                                                                    <button type="submit" class="add-to-cart-btn">
+                                                                                        <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                    </button>
+                                                                                </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -393,8 +405,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+                                                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                        <input type="hidden" name="action" value="add">
+                                                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                        <input type="hidden" name="quantity" value="1">
+                                                                                        <button type="submit" class="add-to-cart-btn">
+                                                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                        </button>
+                                                                                    </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -426,8 +444,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+										<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                    <input type="hidden" name="action" value="add">
+                                                                                    <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                    <input type="hidden" name="quantity" value="1">
+                                                                                    <button type="submit" class="add-to-cart-btn">
+                                                                                        <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                    </button>
+                                                                                </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -553,8 +577,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+										<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                    <input type="hidden" name="action" value="add">
+                                                                                    <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                    <input type="hidden" name="quantity" value="1">
+                                                                                    <button type="submit" class="add-to-cart-btn">
+                                                                                        <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                    </button>
+                                                                                </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -589,8 +619,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+										<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                    <input type="hidden" name="action" value="add">
+                                                                                    <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                    <input type="hidden" name="quantity" value="1">
+                                                                                    <button type="submit" class="add-to-cart-btn">
+                                                                                        <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                    </button>
+                                                                                </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -619,9 +655,15 @@
 														class="tooltipp">quick view</span></button>
 											</div>
 										</div>
-										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+                                                                                <div class="add-to-cart">
+                                                                                        <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                        <input type="hidden" name="action" value="add">
+                                                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                        <input type="hidden" name="quantity" value="1">
+                                                                                        <button type="submit" class="add-to-cart-btn">
+                                                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                        </button>
+                                                                                    </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -653,8 +695,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+                                                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                        <input type="hidden" name="action" value="add">
+                                                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                        <input type="hidden" name="quantity" value="1">
+                                                                                        <button type="submit" class="add-to-cart-btn">
+                                                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                        </button>
+                                                                                    </form>
 										</div>
 									</div>
 									<!-- /product -->
@@ -686,8 +734,14 @@
 											</div>
 										</div>
 										<div class="add-to-cart">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-												cart</button>
+                                                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                                                        <input type="hidden" name="action" value="add">
+                                                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                                                        <input type="hidden" name="quantity" value="1">
+                                                                                        <button type="submit" class="add-to-cart-btn">
+                                                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                                                        </button>
+                                                                                    </form>
 										</div>
 									</div>
 									<!-- /product -->
