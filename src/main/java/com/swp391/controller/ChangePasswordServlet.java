@@ -149,10 +149,8 @@ public class ChangePasswordServlet extends HttpServlet {
         if (updated) {
             customerInDb.setPasswordHash(newPassword);
             session.setAttribute("customer", customerInDb);
-            request.removeAttribute("step");
-            request.removeAttribute("checkedEmail");
-            request.setAttribute("successMessage", "Password changed successfully!");
-            request.getRequestDispatcher("/authen/changePassword.jsp").forward(request, response);
+            session.setAttribute("flashSuccess", "Password changed successfully!");
+            response.sendRedirect(request.getContextPath() + "/profile");
         } else {
             request.setAttribute("error", "Failed to update password. Please try again!");
             request.getRequestDispatcher("/authen/changePassword.jsp").forward(request, response);
