@@ -35,7 +35,7 @@ public class StaffDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Role role = new Role();
-                    role.setRoleID(rs.getInt("RoleID"));
+                    role.setRoleId(rs.getInt("RoleID"));
                     role.setRoleName(rs.getString("RoleName"));
                     role.setDescription(rs.getString("Description"));
 
