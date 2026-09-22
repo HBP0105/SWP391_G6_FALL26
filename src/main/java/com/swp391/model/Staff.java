@@ -1,37 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Staff {
 
-    private int staffId;
-    private int roleId;
-
+    private int staffID;
+    private Role role;
     private String fullName;
     private String email;
     private String passwordHash;
     private String phone;
     private String status;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    private Role role;
 
     public Staff() {
     }
 
-    public Staff(int staffId, int roleId, String fullName, String email, String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt, Role role) {
-        this.staffId = staffId;
-        this.roleId = roleId;
+    public Staff(int staffID, Role role, String fullName, String email, 
+                 String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.staffID = staffID;
+        this.role = role;
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -39,23 +28,26 @@ public class Staff {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public int getStaffID() {
+        return staffID;
+    }
+
+    public void setStaffID(int staffID) {
+        this.staffID = staffID;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
         this.role = role;
     }
 
-    public int getStaffId() {
-        return staffId;
-    }
-
-    public void setStaffId(int staffId) {
-        this.staffId = staffId;
-    }
-
-    public int getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
+    public String getRoleName() {
+        return (role != null) ? role.getRoleName() : null;
     }
 
     public String getFullName() {
@@ -113,13 +105,4 @@ public class Staff {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
 }
