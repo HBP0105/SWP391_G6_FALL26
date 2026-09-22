@@ -7,41 +7,51 @@ package com.swp391.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
+/**
+ *
+ * @author ADMIN
+ */
 public class Product {
-     public int productID;
-    public int categoryID;
-    public int brandID;
-    public String productName;
-    public String description;
-    public BigDecimal price;
-    public int stockQuantity;
-    public String connectionType;
-    public Double driverSize;
-    public boolean noiseCancelling;
-    public Integer batteryLife;
-    public boolean microphone;
-    public String waterResistance;
-    public Double weight;
-    public String status;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
 
-    public Product() {}
+    private int productId;
+    private int categoryId;
+    private int brandId;
 
-    public Product(int productID, int categoryID, int brandID, String productName,
-                   String description, BigDecimal price, int stockQuantity,
-                   String connectionType, Double driverSize, boolean noiseCancelling,
-                   Integer batteryLife, boolean microphone, String waterResistance,
-                   Double weight, String status,
-                   LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.productID = productID;
-        this.categoryID = categoryID;
-        this.brandID = brandID;
+    private String productName;
+    private String description;
+    private BigDecimal price;
+    private int stockQuantity;
+    private String imageURL;
+    private String connectionType;
+    private Double driverSize;
+    private boolean noiseCancelling;
+    private Integer batteryLife;
+    private boolean microphone;
+    private String waterResistance;
+    private Double weight;
+
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // join object
+    private Category category;
+    private Brand brand;
+    private String categoryName;
+    private String brandName;
+
+    public Product() {
+    }
+
+    public Product(int productId, int categoryId, int brandId, String productName, String description, BigDecimal price, int stockQuantity, String imageURL, String connectionType, Double driverSize, boolean noiseCancelling, Integer batteryLife, boolean microphone, String waterResistance, Double weight, String status, LocalDateTime createdAt, LocalDateTime updatedAt, Category category, Brand brand, String categoryName, String brandName) {
+        this.productId = productId;
+        this.categoryId = categoryId;
+        this.brandId = brandId;
         this.productName = productName;
         this.description = description;
         this.price = price;
         this.stockQuantity = stockQuantity;
+        this.imageURL = imageURL;
         this.connectionType = connectionType;
         this.driverSize = driverSize;
         this.noiseCancelling = noiseCancelling;
@@ -52,30 +62,58 @@ public class Product {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.category = category;
+        this.brand = brand;
+        this.categoryName = categoryName;
+        this.brandName = brandName;
     }
 
-    public int getProductID() {
-        return productID;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setProductID(int productID) {
-        this.productID = productID;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
-    public int getCategoryID() {
-        return categoryID;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategoryID(int categoryID) {
-        this.categoryID = categoryID;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
-    public int getBrandID() {
-        return brandID;
+    public String getBrandName() {
+        return brandName;
     }
 
-    public void setBrandID(int brandID) {
-        this.brandID = brandID;
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public int getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
     }
 
     public String getProductName() {
@@ -189,6 +227,21 @@ public class Product {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Brand getBrand() {
+        return brand;
+    }
+
+    public void setBrand(Brand brand) {
+        this.brand = brand;
+    }
+
 }

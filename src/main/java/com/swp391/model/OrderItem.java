@@ -6,48 +6,54 @@ package com.swp391.model;
 
 import java.math.BigDecimal;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class OrderItem {
 
-    public int orderItemID;
-    public int orderID;
-    public int productID;
-    public int quantity;
-    public BigDecimal unitPrice;
+    private int orderItemId;
+    private int orderId;
+    private int productId;
+
+    private int quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal subtotal;
 
     public OrderItem() {
     }
 
-    public OrderItem(int orderItemID, int orderID, int productID,
-            int quantity, BigDecimal unitPrice) {
-        this.orderItemID = orderItemID;
-        this.orderID = orderID;
-        this.productID = productID;
+    public OrderItem(int orderItemId, int orderId, int productId, int quantity, BigDecimal unitPrice, BigDecimal subtotal) {
+        this.orderItemId = orderItemId;
+        this.orderId = orderId;
+        this.productId = productId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.subtotal = subtotal;
     }
 
-    public int getOrderItemID() {
-        return orderItemID;
+    public int getOrderItemId() {
+        return orderItemId;
     }
 
-    public void setOrderItemID(int orderItemID) {
-        this.orderItemID = orderItemID;
+    public void setOrderItemId(int orderItemId) {
+        this.orderItemId = orderItemId;
     }
 
-    public int getOrderID() {
-        return orderID;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setOrderID(int orderID) {
-        this.orderID = orderID;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
-    public int getProductID() {
-        return productID;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setProductID(int productID) {
-        this.productID = productID;
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public int getQuantity() {
@@ -65,5 +71,13 @@ public class OrderItem {
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
     }
-    
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
 }
