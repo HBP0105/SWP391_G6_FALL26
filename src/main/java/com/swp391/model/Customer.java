@@ -1,18 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Customer {
 
-    private int customerId;
+    private int customerID;
     private String fullName;
     private String email;
     private String passwordHash;
@@ -24,8 +16,9 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(int customerId, String fullName, String email, String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.customerId = customerId;
+    public Customer(int customerID, String fullName, String email, String passwordHash, 
+                    String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.customerID = customerID;
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -35,12 +28,12 @@ public class Customer {
         this.updatedAt = updatedAt;
     }
 
-    public int getCustomerId() {
-        return customerId;
+    public int getCustomerID() {
+        return customerID;
     }
 
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
     }
 
     public String getFullName() {
@@ -98,5 +91,4 @@ public class Customer {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
 }
