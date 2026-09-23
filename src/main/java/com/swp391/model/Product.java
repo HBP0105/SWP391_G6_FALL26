@@ -9,23 +9,28 @@ import java.time.LocalDateTime;
 
 
 public class Product {
-     public int productID;
-    public int categoryID;
-    public int brandID;
-    public String productName;
-    public String description;
-    public BigDecimal price;
-    public int stockQuantity;
-    public String connectionType;
-    public Double driverSize;
-    public boolean noiseCancelling;
-    public Integer batteryLife;
-    public boolean microphone;
-    public String waterResistance;
-    public Double weight;
-    public String status;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
+    private int productID;
+    private int categoryID;
+    private int brandID;
+    private String productName;
+    private String description;
+    private BigDecimal price;
+    private int stockQuantity;
+    private String connectionType;
+    private Double driverSize;
+    private boolean noiseCancelling;
+    private Integer batteryLife;
+    private boolean microphone;
+    private String waterResistance;
+    private Double weight;
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // Extra fields from JOIN queries
+    private String categoryName;
+    private String brandName;
+    private String imageUrl;
 
     public Product() {}
 
@@ -189,6 +194,34 @@ public class Product {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getImageUrl() {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            return imageUrl;
+        }
+        int imgIndex = (productID % 9) + 1;
+        return String.format("assets/img/product%02d.png", imgIndex);
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
 }
+
