@@ -159,8 +159,8 @@
                                             <h5>SUBTOTAL: $2940.00</h5>
                                         </div>
                                         <div class="cart-btns">
-                                            <a href="#">View Cart</a>
-                                            <a href="#">Checkout <i class="fa fa-arrow-circle-right"></i></a>
+                                            <a href="cart.jsp">View Cart</a>
+                                            <a href="checkout.jsp">Checkout <i class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -331,152 +331,176 @@
                                         </div>
                                         <!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="">
-                                                <div class="product-label">
-                                                    <span class="new">NEW</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="">
+																									<div class="product-label">
+																										<span class="new">NEW</span>
+																									</div>
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star-o"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product03.png" alt="">
-                                                <div class="product-label">
-                                                    <span class="sale">-30%</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product03.png" alt="">
+																									<div class="product-label">
+																										<span class="sale">-30%</span>
+																									</div>
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product04.png" alt="">
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product04.png" alt="">
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product05.png" alt="">
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
-                                    </div>
-                                    <div id="slick-nav-1" class="products-slick-nav"></div>
-                                </div>
-                                <!-- /tab -->
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Products tab & slick -->
-                </div>
-                <!-- /row -->
-            </div>
-            <!-- /container -->
-        </div>
-        <!-- /SECTION -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product05.png" alt="">
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
+																						</div>
+																						<div id="slick-nav-1" class="products-slick-nav"></div>
+																					</div>
+																					<!-- /tab -->
+																				</div>
+																			</div>
+																		</div>
+																		<!-- Products tab & slick -->
+																	</div>
+																	<!-- /row -->
+																</div>
+																<!-- /container -->
+															</div>
+															<!-- /SECTION -->
 
         <!-- HOT DEAL SECTION -->
         <div id="hot-deal" class="section">
@@ -547,196 +571,219 @@
                     </div>
                     <!-- /section title -->
 
-                    <!-- Products tab & slick -->
-                    <div class="col-md-12">
-                        <div class="row">
-                            <div class="products-tabs">
-                                <!-- tab -->
-                                <div id="tab2" class="tab-pane fade in active">
-                                    <div class="products-slick" data-nav="#slick-nav-2">
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product06.png" alt="">
-                                                <div class="product-label">
-                                                    <span class="sale">-30%</span>
-                                                    <span class="new">NEW</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product06.png" alt="">
+																									<div class="product-label">
+																										<span class="sale">-30%</span>
+																										<span class="new">NEW</span>
+																									</div>
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product07.png" alt="">
-                                                <div class="product-label">
-                                                    <span class="new">NEW</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product07.png" alt="">
+																									<div class="product-label">
+																										<span class="new">NEW</span>
+																									</div>
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star-o"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product08.png" alt="">
-                                                <div class="product-label">
-                                                    <span class="sale">-30%</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product08.png" alt="">
+																									<div class="product-label">
+																										<span class="sale">-30%</span>
+																									</div>
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product09.png" alt="">
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product09.png" alt="">
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
 
-                                        <!-- product -->
-                                        <div class="product">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="">
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">Category</p>
-                                                <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                <h4 class="product-price">$980.00 <del
-                                                        class="product-old-price">$990.00</del></h4>
-                                                <div class="product-rating">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
-                                                            class="tooltipp">add to wishlist</span></button>
-                                                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                            class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view"><i class="fa fa-eye"></i><span
-                                                            class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to
-                                                    cart</button>
-                                            </div>
-                                        </div>
-                                        <!-- /product -->
-                                    </div>
-                                    <div id="slick-nav-2" class="products-slick-nav"></div>
-                                </div>
-                                <!-- /tab -->
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /Products tab & slick -->
-                </div>
-                <!-- /row -->
-            </div>
-            <!-- /container -->
-        </div>
-        <!-- /SECTION -->
+																							<!-- product -->
+																							<div class="product">
+																								<div class="product-img">
+																									<img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="">
+																								</div>
+																								<div class="product-body">
+																									<p class="product-category">Category</p>
+																									<h3 class="product-name"><a href="#">product name goes here</a></h3>
+																									<h4 class="product-price">$980.00 <del
+																											class="product-old-price">$990.00</del></h4>
+																									<div class="product-rating">
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																										<i class="fa fa-star"></i>
+																									</div>
+																									<div class="product-btns">
+																										<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+																												class="tooltipp">add to wishlist</span></button>
+																										<button class="add-to-compare"><i class="fa fa-exchange"></i><span
+																												class="tooltipp">add to compare</span></button>
+																										<button class="quick-view"><i class="fa fa-eye"></i><span
+																												class="tooltipp">quick view</span></button>
+																									</div>
+																								</div>
+																								<div class="add-to-cart">
+																									<form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+																										<input type="hidden" name="action" value="add">
+																										<input type="hidden" name="productId" value="${product.productId}">
+																										<input type="hidden" name="quantity" value="1">
+																										<button type="submit" class="add-to-cart-btn">
+																											<i class="fa fa-shopping-cart"></i> add to cart
+																										</button>
+																									</form>
+																								</div>
+																							</div>
+																							<!-- /product -->
+																						</div>
+																						<div id="slick-nav-2" class="products-slick-nav"></div>
+																					</div>
+																					<!-- /tab -->
+																				</div>
+																			</div>
+																		</div>
+																		<!-- /Products tab & slick -->
+																	</div>
+																	<!-- /row -->
+																</div>
+																<!-- /container -->
+															</div>
+															<!-- /SECTION -->
 
         <!-- SECTION -->
         <div class="section">

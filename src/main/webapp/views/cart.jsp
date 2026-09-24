@@ -1,14 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%--
-<%
-    Object customer = session.getAttribute("customer");
-    
-    if (customer == null) {
-        response.sendRedirect(request.getContextPath() + "/views/login.jsp");
-        return; 
-    }
-%>
---%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,22 +98,33 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="Product" class="cart-item-img"></td>
-                                    <td class="cart-item-title">Headphone XYZ Model 1</td>
-                                    <td>$150.00</td>
-                                    <td><input type="number" class="qty-input" value="1" min="1"></td>
-                                    <td>$150.00</td>
-                                    <td><button class="remove-btn"><i class="fa fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td><img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="Product" class="cart-item-img"></td>
-                                    <td class="cart-item-title">Wireless Earbuds Pro</td>
-                                    <td>$200.00</td>
-                                    <td><input type="number" class="qty-input" value="2" min="1"></td>
-                                    <td>$400.00</td>
-                                    <td><button class="remove-btn"><i class="fa fa-trash"></i></button></td>
-                                </tr>
+                                <c:set var="totalPrice" value="0" />
+                                <c:forEach items="${requestScope.listCart}" var="item">
+                                    <tr>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${empty item.imageUrl}">
+                                                    <!-- Nếu không có ảnh, nối đường dẫn gốc với ảnh mặc định (default.png) -->
+                                                    <img src="${pageContext.request.contextPath}/assets/img/default.png" alt="${item.productName}" class="cart-item-img">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- Nếu có ảnh từ DB thì in ra bình thường -->
+                                                    <img src="${item.imageUrl}" alt="${item.productName}" class="cart-item-img">
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td class="cart-item-title">${item.productName}</td>
+                                        <td>$${item.price}</td>
+                                        <td>
+                                            <input type="number" class="qty-input" value="${item.quantity}" min="1">
+                                        </td>
+                                        <td>$${item.price * item.quantity}</td>
+                                        <td>
+                                            <button class="remove-btn"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <c:set var="totalPrice" value="${totalPrice + (item.price * item.quantity)}" />
+                                </c:forEach>
                             </tbody>
                         </table>
                     </div>
@@ -134,7 +137,7 @@
                         <h3>Order Summary</h3>
                         <div class="summary-item summary-total" style="border-top: none; padding-top: 0;">
                             <span>Total:</span>
-                            <span>$550.00</span>
+                            <span>$${totalPrice}</span>
                         </div>
                         <a href="checkout.jsp" class="primary-btn checkout-btn text-center">Proceed to Checkout</a>
                     </div>
