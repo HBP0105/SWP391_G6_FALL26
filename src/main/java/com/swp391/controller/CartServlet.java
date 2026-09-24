@@ -27,16 +27,12 @@ public class CartServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Customer customer = (Customer) session.getAttribute("customer");
-        // B?O M?T: Ch?a ??ng nh?p -> ?á v? trang ??ng nh?p
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/views/login.jsp");
             return;
         }
-        // L?Y GI? HÀNG T? DATABASE
-        int cartId = cartDAO.getCartIdByCustomerId(customer.getCustomerId());
+        int cartId = cartDAO.getCartIdByCustomerId(customer.getCustomerID());
         List<CartItemDTO> listCart = cartDAO.getCartItems(cartId);
-        
-        // G?i qua giao di?n
         request.setAttribute("listCart", listCart);
         request.getRequestDispatcher("/views/cart.jsp").forward(request, response);
     }
@@ -46,7 +42,6 @@ public class CartServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Customer customer = (Customer) session.getAttribute("customer");
-        // B?O M?T: Ch?a ??ng nh?p không cho Add to Cart
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/views/login.jsp");
             return;
@@ -58,8 +53,8 @@ public class CartServlet extends HttpServlet {
                 int productId = Integer.parseInt(request.getParameter("productId"));
                 int quantity = Integer.parseInt(request.getParameter("quantity"));
                 
-                int cartId = cartDAO.getCartIdByCustomerId(customer.getCustomerId());
-                cartDAO.addCartItem(cartId, productId, quantity); // L?u vào DB
+                int cartId = cartDAO.getCartIdByCustomerId(customer.getCustomerID());
+                cartDAO.addCartItem(cartId, productId, quantity); 
             } catch (Exception e) {
                 e.printStackTrace();
             }
