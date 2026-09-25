@@ -6,21 +6,24 @@ package com.swp391.model;
 
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Brand {
 
-    public int brandID;
-    public String brandName;
-    public String description;
-    public String status;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
+    private int brandId;
+    private String brandName;
+    private String description;
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Brand() {
     }
 
-    public Brand(int brandID, String brandName, String description,
-            String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.brandID = brandID;
+    public Brand(int brandId, String brandName, String description, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.brandId = brandId;
         this.brandName = brandName;
         this.description = description;
         this.status = status;
@@ -28,12 +31,12 @@ public class Brand {
         this.updatedAt = updatedAt;
     }
 
-    public int getBrandID() {
-        return brandID;
+    public int getBrandId() {
+        return brandId;
     }
 
-    public void setBrandID(int brandID) {
-        this.brandID = brandID;
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
     }
 
     public String getBrandName() {
@@ -75,6 +78,5 @@ public class Brand {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
 }

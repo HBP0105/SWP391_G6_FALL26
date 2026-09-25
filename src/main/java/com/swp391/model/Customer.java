@@ -1,14 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Other/File.java to edit this template
- */
 package com.swp391.model;
 
-import java.time.*;
+import java.time.LocalDateTime;
 
-public class User {
- private int userID;
-    private int roleID;
+public class Customer {
+
+    private int customerID;
     private String fullName;
     private String email;
     private String passwordHash;
@@ -17,12 +13,12 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public User() {}
+    public Customer() {
+    }
 
-    public User(int userID, int roleID, String fullName, String email, String passwordHash,
-                String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.userID = userID;
-        this.roleID = roleID;
+    public Customer(int customerID, String fullName, String email, String passwordHash, 
+                    String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.customerID = customerID;
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -32,20 +28,12 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public int getUserID() {
-        return userID;
+    public int getCustomerID() {
+        return customerID;
     }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-
-    public int getRoleID() {
-        return roleID;
-    }
-
-    public void setRoleID(int roleID) {
-        this.roleID = roleID;
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
     }
 
     public String getFullName() {
@@ -103,6 +91,4 @@ public class User {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-
 }

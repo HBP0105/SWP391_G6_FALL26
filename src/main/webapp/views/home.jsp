@@ -43,7 +43,39 @@
                     </ul>
                     <ul class="header-links pull-right">
                         <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-                        <li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+                            <%@ page import="com.swp391.model.Customer" %>
+                            <%@ page import="com.swp391.model.Staff" %>
+                            <%
+                                    Object currentUser = session.getAttribute("customer");
+                                    if (currentUser == null) {
+                                        currentUser = session.getAttribute("user");
+                                    }
+                                    if (currentUser == null) {
+                            %>
+                        <!-- Chua dang nhap -->
+                        <li>
+                            <a href="${pageContext.request.contextPath}/login">
+                                <i class="fa fa-user-o"></i> My Account
+                            </a>
+                        </li>
+                        <%
+                                } else {
+                                        String displayName = "";
+                                        if (currentUser instanceof Customer) {
+                                                displayName = ((Customer) currentUser).getFullName();
+                                        } else if (currentUser instanceof Staff) {
+                                                displayName = ((Staff) currentUser).getFullName();
+                                        }
+                        %>
+                        <!-- Da dang nhap -->
+                        <li>
+                            <a href="${pageContext.request.contextPath}/profile">
+                                <i class="fa fa-user"></i> <%= displayName %>
+                            </a>
+                        </li>
+                        <%
+                                }
+                        %>
                     </ul>
                 </div>
             </div>
@@ -141,8 +173,8 @@
                                             <h5>SUBTOTAL: $2940.00</h5>
                                         </div>
                                         <div class="cart-btns">
-                                            <a href="#">View Cart</a>
-                                            <a href="#">Checkout <i class="fa fa-arrow-circle-right"></i></a>
+                                            <a href="cart.jsp">View Cart</a>
+                                            <a href="checkout.jsp">Checkout <i class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
                                 </div>
