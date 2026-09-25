@@ -21,9 +21,9 @@ public class ProductDAO {
 
     private Product mapResultSetToProduct(ResultSet rs) throws Exception {
         Product p = new Product();
-        p.setProductID(rs.getInt("ProductID"));
-        p.setCategoryID(rs.getInt("CategoryID"));
-        p.setBrandID(rs.getInt("BrandID"));
+        p.setProductId(rs.getInt("ProductID"));
+        p.setCategoryId(rs.getInt("CategoryID"));
+        p.setBrandId(rs.getInt("BrandID"));
         p.setProductName(rs.getString("ProductName"));
         p.setDescription(rs.getString("Description"));
         p.setPrice(rs.getBigDecimal("Price"));

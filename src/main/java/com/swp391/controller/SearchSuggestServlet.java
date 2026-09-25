@@ -47,7 +47,7 @@ public class SearchSuggestServlet extends HttpServlet {
             Product p = suggestions.get(i);
             if (i > 0) json.append(",");
             json.append("{");
-            json.append("\"productID\":").append(p.getProductID()).append(",");
+            json.append("\"productID\":").append(p.getProductId()).append(",");
             json.append("\"productName\":\"").append(escapeJson(p.getProductName())).append("\",");
             json.append("\"categoryName\":\"").append(escapeJson(p.getCategoryName() != null ? p.getCategoryName() : "")).append("\",");
             json.append("\"price\":").append(p.getPrice() != null ? p.getPrice().toPlainString() : "0").append(",");

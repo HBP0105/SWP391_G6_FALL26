@@ -7,11 +7,15 @@ package com.swp391.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
+/**
+ *
+ * @author ADMIN
+ */
 public class Product {
-    private int productID;
-    private int categoryID;
-    private int brandID;
+
+    private int productId;
+    private int categoryId;
+    private int brandId;
     private String productName;
     private String description;
     private BigDecimal price;
@@ -32,21 +36,22 @@ public class Product {
     private String brandName;
     private String imageUrl;
 
-    public Product() {}
+    // join object
+    private Category category;
+    private Brand brand;
 
-    public Product(int productID, int categoryID, int brandID, String productName,
-                   String description, BigDecimal price, int stockQuantity,
-                   String connectionType, Double driverSize, boolean noiseCancelling,
-                   Integer batteryLife, boolean microphone, String waterResistance,
-                   Double weight, String status,
-                   LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.productID = productID;
-        this.categoryID = categoryID;
-        this.brandID = brandID;
+    public Product() {
+    }
+
+    public Product(int productId, int categoryId, int brandId, String productName, String description, BigDecimal price, int stockQuantity, String imageURL, String connectionType, Double driverSize, boolean noiseCancelling, Integer batteryLife, boolean microphone, String waterResistance, Double weight, String status, LocalDateTime createdAt, LocalDateTime updatedAt, Category category, Brand brand, String categoryName, String brandName) {
+        this.productId = productId;
+        this.categoryId = categoryId;
+        this.brandId = brandId;
         this.productName = productName;
         this.description = description;
         this.price = price;
         this.stockQuantity = stockQuantity;
+        this.imageUrl = imageURL;
         this.connectionType = connectionType;
         this.driverSize = driverSize;
         this.noiseCancelling = noiseCancelling;
@@ -57,30 +62,51 @@ public class Product {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.category = category;
+        this.brand = brand;
+        this.categoryName = categoryName;
+        this.brandName = brandName;
     }
 
-    public int getProductID() {
-        return productID;
+
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setProductID(int productID) {
-        this.productID = productID;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
-    public int getCategoryID() {
-        return categoryID;
+    public String getBrandName() {
+        return brandName;
     }
 
-    public void setCategoryID(int categoryID) {
-        this.categoryID = categoryID;
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 
-    public int getBrandID() {
-        return brandID;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setBrandID(int brandID) {
-        this.brandID = brandID;
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public int getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
     }
 
     public String getProductName() {
@@ -195,27 +221,12 @@ public class Product {
         this.updatedAt = updatedAt;
     }
 
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public String getBrandName() {
-        return brandName;
-    }
-
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
-    }
 
     public String getImageUrl() {
         if (imageUrl != null && !imageUrl.trim().isEmpty()) {
             return imageUrl;
         }
-        int imgIndex = (productID % 9) + 1;
+        int imgIndex = (productId % 9) + 1;
         return String.format("assets/img/product%02d.png", imgIndex);
     }
 
@@ -223,5 +234,20 @@ public class Product {
         this.imageUrl = imageUrl;
     }
 
-}
+    public Category getCategory() {
+        return category;
+    }
 
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Brand getBrand() {
+        return brand;
+    }
+
+    public void setBrand(Brand brand) {
+        this.brand = brand;
+    }
+
+}
