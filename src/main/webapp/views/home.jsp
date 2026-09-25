@@ -304,6 +304,8 @@
                                 <!-- tab -->
                                 <div id="tab1" class="tab-pane active">
                                     <div class="products-slick" data-nav="#slick-nav-1">
+
+                                        
                                         <c:forEach var="product" items="${newProducts}">
                                             <!-- product -->
                                             <div class="product">

@@ -727,5 +727,185 @@ VALUES
 ('MANAGER', 'Store manager');
 GO
 
+INSERT INTO Categories
+(
+    CategoryName,
+    Description,
+    Status
+)
+VALUES
+(
+    N'Headphone',
+    N'Headphones including over-ear and on-ear products.',
+    'ACTIVE'
+),
+(
+    N'Earbud',
+    N'Wireless and true wireless earbuds designed for portable listening.',
+    'ACTIVE'
+);
+GO
+
+INSERT INTO Brands
+(
+    BrandName,
+    Description,
+    Status
+)
+VALUES
+(
+    N'Sony',
+    N'Japanese electronics brand known for headphones, audio equipment, and noise cancelling technology.',
+    'ACTIVE'
+),
+(
+    N'Apple',
+    N'Technology company offering AirPods and other wireless audio products.',
+    'ACTIVE'
+),
+(
+    N'Bose',
+    N'Audio brand specializing in premium headphones and noise cancelling technology.',
+    'ACTIVE'
+),
+(
+    N'JBL',
+    N'Audio brand offering headphones, earbuds, speakers, and other consumer audio products.',
+    'ACTIVE'
+),
+(
+    N'Audio-Technica',
+    N'Japanese audio manufacturer known for professional and consumer headphones.',
+    'ACTIVE'
+),
+(
+    N'Sennheiser',
+    N'German audio company specializing in professional and consumer audio products.',
+    'ACTIVE'
+),
+(
+    N'Razer',
+    N'Gaming brand producing headsets and other gaming peripherals.',
+    'ACTIVE'
+),
+(
+    N'HyperX',
+    N'Gaming brand known for gaming headsets and other gaming accessories.',
+    'ACTIVE'
+),
+(
+    N'Anker Soundcore',
+    N'Audio brand offering wireless headphones, earbuds, and portable audio products.',
+    'ACTIVE'
+),
+(
+    N'Marshall',
+    N'Audio brand known for headphones, speakers, and products with a distinctive design.',
+    'ACTIVE'
+);
+GO
+
+INSERT INTO Products
+(
+    ProductName,
+    CategoryID,
+    BrandID,
+    Description,
+    Price,
+    StockQuantity,
+    Status
+)
+VALUES
+(
+    N'Sony WH-1000XM5',
+    1,
+    1,
+    N'Premium wireless noise cancelling headphones.',
+    8990000,
+    50,
+    'ACTIVE'
+),
+(
+    N'Bose QuietComfort 45',
+    1,
+    3,
+    N'Wireless headphones with active noise cancellation.',
+    7990000,
+    40,
+    'ACTIVE'
+),
+(
+    N'JBL Tune 770NC',
+    1,
+    4,
+    N'Wireless headphones with adaptive noise cancellation.',
+    3290000,
+    60,
+    'ACTIVE'
+),
+(
+    N'Audio-Technica ATH-M50x',
+    1,
+    5,
+    N'Professional studio monitor headphones.',
+    3990000,
+    35,
+    'ACTIVE'
+),
+(
+    N'Sennheiser HD 560S',
+    1,
+    6,
+    N'Open-back headphones designed for detailed audio listening.',
+    4490000,
+    30,
+    'ACTIVE'
+),
+(
+    N'Marshall Major V',
+    1,
+    10,
+    N'Wireless on-ear headphones with long battery life.',
+    4290000,
+    45,
+    'ACTIVE'
+),
+(
+    N'Apple AirPods Pro 2',
+    2,
+    2,
+    N'True wireless earbuds with active noise cancellation.',
+    5490000,
+    80,
+    'ACTIVE'
+),
+(
+    N'JBL Tune Buds',
+    2,
+    4,
+    N'True wireless earbuds with powerful bass and long battery life.',
+    1990000,
+    70,
+    'ACTIVE'
+),
+(
+    N'Anker Soundcore Liberty 4',
+    2,
+    9,
+    N'Wireless earbuds with high quality sound and noise cancellation.',
+    2990000,
+    55,
+    'ACTIVE'
+),
+(
+    N'Sony WF-1000XM5',
+    2,
+    1,
+    N'Premium true wireless earbuds with advanced noise cancellation.',
+    6990000,
+    45,
+    'ACTIVE'
+);
+GO
 
 
