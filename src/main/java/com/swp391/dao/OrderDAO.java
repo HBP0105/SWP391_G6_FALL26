@@ -3,7 +3,6 @@ package com.swp391.dao;
 import com.swp391.model.Order;
 import com.swp391.model.OrderItem;
 import com.swp391.util.DBContext;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,13 +16,42 @@ public class OrderDAO {
 
     public OrderDAO() {
         dbContext = new DBContext();
+        ensureCancelReasonColumnExists();
+    }
+
+    private void ensureCancelReasonColumnExists() {
+        String sql = """
+                IF NOT EXISTS (
+                    SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'CancelReason'
+                )
+                BEGIN
+                    ALTER TABLE Orders ADD CancelReason NVARCHAR(500) NULL;
+                END
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            // Ignore if column exists or restricted
+        }
     }
 
     private Order mapOrder(ResultSet rs) throws SQLException {
         Order order = new Order();
 
         order.setOrderID(rs.getInt("OrderID"));
-        order.setCustomerID(rs.getInt("CustomerID"));
+
+        try {
+            order.setCustomerID(rs.getInt("CustomerID"));
+        } catch (SQLException e) {
+            try {
+                order.setCustomerID(rs.getInt("UserID"));
+            } catch (SQLException ex) {
+                order.setCustomerID(0);
+            }
+        }
+
         order.setTotalAmount(rs.getBigDecimal("TotalAmount"));
         order.setShippingName(rs.getString("ShippingName"));
         order.setShippingPhone(rs.getString("ShippingPhone"));
@@ -42,6 +70,12 @@ public class OrderDAO {
             );
         }
 
+        try {
+            order.setCancelReason(rs.getString("CancelReason"));
+        } catch (Exception e) {
+            order.setCancelReason(null);
+        }
+
         return order;
     }
 
@@ -50,9 +84,7 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
-                SELECT OrderID, CustomerID, TotalAmount,
-                       ShippingName, ShippingPhone, ShippingAddress,
-                       OrderStatus, OrderDate, UpdatedAt
+                SELECT *
                 FROM Orders
                 ORDER BY OrderDate DESC
                 """;
@@ -80,9 +112,7 @@ public class OrderDAO {
     public Order getOrderById(int orderID) {
 
         String sql = """
-                SELECT OrderID, CustomerID, TotalAmount,
-                       ShippingName, ShippingPhone, ShippingAddress,
-                       OrderStatus, OrderDate, UpdatedAt
+                SELECT *
                 FROM Orders
                 WHERE OrderID = ?
                 """;
@@ -107,7 +137,7 @@ public class OrderDAO {
     }
 
     /**
-     * Get all order items of an order.
+     * Get all order items of an order with Product Names.
      *
      * @param orderID order ID
      * @return list of order items
@@ -117,11 +147,12 @@ public class OrderDAO {
         List<OrderItem> items = new ArrayList<>();
 
         String sql = """
-                SELECT OrderItemID, OrderID, ProductID,
-                       Quantity, UnitPrice
-                FROM OrderItems
-                WHERE OrderID = ?
-                ORDER BY OrderItemID
+                SELECT oi.OrderItemID, oi.OrderID, oi.ProductID,
+                       oi.Quantity, oi.UnitPrice, p.ProductName
+                FROM OrderItems oi
+                LEFT JOIN Products p ON oi.ProductID = p.ProductID
+                WHERE oi.OrderID = ?
+                ORDER BY oi.OrderItemID
                 """;
 
         try (Connection connection = dbContext.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -139,6 +170,11 @@ public class OrderDAO {
                     item.setProductID(resultSet.getInt("ProductID"));
                     item.setQuantity(resultSet.getInt("Quantity"));
                     item.setUnitPrice(resultSet.getBigDecimal("UnitPrice"));
+                    try {
+                        item.setProductName(resultSet.getString("ProductName"));
+                    } catch (Exception e) {
+                        item.setProductName("Product #" + resultSet.getInt("ProductID"));
+                    }
 
                     items.add(item);
                 }
@@ -159,25 +195,42 @@ public class OrderDAO {
      * @return true if update is successful
      */
     public boolean updateOrderStatus(int orderID, String newStatus) {
+        return updateOrderStatus(orderID, newStatus, null);
+    }
 
-        String sql = """
+    public boolean updateOrderStatus(int orderID, String newStatus, String cancelReason) {
+        String sqlWithReason = """
                 UPDATE Orders
                 SET OrderStatus = ?,
+                    CancelReason = ?,
                     UpdatedAt = GETDATE()
                 WHERE OrderID = ?
                 """;
 
-        try (Connection connection = dbContext.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dbContext.getConnection(); PreparedStatement ps = connection.prepareStatement(sqlWithReason)) {
 
             ps.setString(1, newStatus);
-            ps.setInt(2, orderID);
+            ps.setString(2, "CANCELLED".equalsIgnoreCase(newStatus) ? cancelReason : null);
+            ps.setInt(3, orderID);
 
             int rowsAffected = ps.executeUpdate();
-
             return rowsAffected > 0;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            String sqlLegacy = """
+                    UPDATE Orders
+                    SET OrderStatus = ?,
+                        UpdatedAt = GETDATE()
+                    WHERE OrderID = ?
+                    """;
+
+            try (Connection connection = dbContext.getConnection(); PreparedStatement ps = connection.prepareStatement(sqlLegacy)) {
+                ps.setString(1, newStatus);
+                ps.setInt(2, orderID);
+                return ps.executeUpdate() > 0;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         return false;
@@ -192,6 +245,10 @@ public class OrderDAO {
      * - DELIVERED or CANCELLED -> Cannot be changed!
      */
     public boolean updateOrderStatusWithValidation(int orderID, String newStatus) {
+        return updateOrderStatusWithValidation(orderID, newStatus, null);
+    }
+
+    public boolean updateOrderStatusWithValidation(int orderID, String newStatus, String cancelReason) {
         Order currentOrder = getOrderById(orderID);
         if (currentOrder == null) {
             return false;
@@ -221,7 +278,7 @@ public class OrderDAO {
             return false;
         }
 
-        return updateOrderStatus(orderID, newStatus.toUpperCase());
+        return updateOrderStatus(orderID, newStatus.toUpperCase(), cancelReason);
     }
 
     /**
@@ -235,9 +292,7 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
-                SELECT OrderID, CustomerID, TotalAmount,
-                       ShippingName, ShippingPhone, ShippingAddress,
-                       OrderStatus, OrderDate, UpdatedAt
+                SELECT *
                 FROM Orders
                 WHERE OrderStatus = ?
                 ORDER BY OrderDate DESC
@@ -333,9 +388,7 @@ public class OrderDAO {
     public List<Order> getOrdersFiltered(String startDate, String endDate, String status, String keyword, int page, int pageSize) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
-                SELECT OrderID, CustomerID, TotalAmount,
-                       ShippingName, ShippingPhone, ShippingAddress,
-                       OrderStatus, OrderDate, UpdatedAt
+                SELECT *
                 FROM Orders
                 WHERE 1=1
                 """);

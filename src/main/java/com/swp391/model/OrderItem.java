@@ -1,18 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.math.BigDecimal;
 
 public class OrderItem {
 
-    public int orderItemID;
-    public int orderID;
-    public int productID;
-    public int quantity;
-    public BigDecimal unitPrice;
+    private int orderItemID;
+    private int orderID;
+    private int productID;
+    private int quantity;
+    private BigDecimal unitPrice;
+    private String productName;
 
     public OrderItem() {
     }
@@ -65,5 +62,35 @@ public class OrderItem {
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
     }
-    
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public BigDecimal getSubtotal() {
+        if (unitPrice == null) return BigDecimal.ZERO;
+        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public String getFormattedUnitPrice() {
+        if (unitPrice == null) return "0";
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+        formatter.setDecimalFormatSymbols(symbols);
+        return formatter.format(unitPrice);
+    }
+
+    public String getFormattedSubtotal() {
+        BigDecimal subtotal = getSubtotal();
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+        formatter.setDecimalFormatSymbols(symbols);
+        return formatter.format(subtotal);
+    }
 }

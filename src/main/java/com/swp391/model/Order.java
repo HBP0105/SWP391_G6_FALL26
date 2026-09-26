@@ -5,15 +5,16 @@ import java.time.LocalDateTime;
 
 public class Order {
 
-    public int orderID;
-    public int customerID;
-    public BigDecimal totalAmount;
-    public String shippingName;
-    public String shippingPhone;
-    public String shippingAddress;
-    public String orderStatus;
-    public LocalDateTime orderDate;
-    public LocalDateTime updatedAt;
+    private int orderID;
+    private int customerID;
+    private BigDecimal totalAmount;
+    private String shippingName;
+    private String shippingPhone;
+    private String shippingAddress;
+    private String orderStatus;
+    private String cancelReason;
+    private LocalDateTime orderDate;
+    private LocalDateTime updatedAt;
 
     public Order() {
     }
@@ -88,6 +89,14 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
     public LocalDateTime getOrderDate() {
         return orderDate;
     }
@@ -116,5 +125,22 @@ public class Order {
     public String getFormattedOrderDate() {
         if (orderDate == null) return "";
         return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    }
+
+    public String getFormattedOrderDateOnly() {
+        if (orderDate == null) return "";
+        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public String getFormattedOrderTimeOnly() {
+        if (orderDate == null) return "";
+        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+    }
+
+    public String getFormattedUpdatedAt() {
+        if (updatedAt == null) {
+            return orderDate != null ? getFormattedOrderDate() : "N/A";
+        }
+        return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 }
