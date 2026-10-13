@@ -47,7 +47,24 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("customer", customer);
             session.setAttribute("role", "CUSTOMER");
-            response.sendRedirect(request.getContextPath() + "/views/home.jsp");
+
+            // Khởi tạo wishlist từ database vào session
+            com.swp391.dao.FavoriteDAO favoriteDAO = new com.swp391.dao.FavoriteDAO();
+            java.util.List<com.swp391.model.WishlistItemDTO> dbItems = favoriteDAO.getFavoritesByCustomerId(customer.getCustomerID());
+            java.util.Set<Integer> pIds = new java.util.LinkedHashSet<>();
+            if (dbItems != null) {
+                for (com.swp391.model.WishlistItemDTO itm : dbItems) {
+                    pIds.add(itm.getProductId());
+                }
+            } else {
+                dbItems = new java.util.ArrayList<>();
+            }
+            session.setAttribute("wishlistItems", dbItems);
+            session.setAttribute("wishlistProductIds", pIds);
+            session.setAttribute("wishlistCount", dbItems.size());
+            session.setAttribute("wishlistModified", false);
+
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
 
@@ -63,7 +80,7 @@ public class LoginServlet extends HttpServlet {
             } else if ("MANAGER".equalsIgnoreCase(staff.getRoleName())) {
                 response.sendRedirect(request.getContextPath() + "/views/manager.jsp");
             } else {
-                response.sendRedirect(request.getContextPath() + "/views/home.jsp");
+                response.sendRedirect(request.getContextPath() + "/home");
             }
             return;
         }

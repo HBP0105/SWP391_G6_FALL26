@@ -23,6 +23,7 @@ public class Review {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String customerName;
 
     public Review() {
     }
@@ -100,6 +101,24 @@ public class Review {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getFormattedDate() {
+        if (createdAt == null) return "";
+        try {
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, h:mm a");
+            return createdAt.format(formatter);
+        } catch (Exception e) {
+            return createdAt.toString();
+        }
     }
 
 }

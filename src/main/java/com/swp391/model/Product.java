@@ -35,6 +35,8 @@ public class Product {
     private String categoryName;
     private String brandName;
     private String imageUrl;
+    private double rating;
+    private int reviewCount;
 
     // join object
     private Category category;
@@ -43,7 +45,11 @@ public class Product {
     public Product() {
     }
 
-    public Product(int productId, int categoryId, int brandId, String productName, String description, BigDecimal price, int stockQuantity, String imageURL, String connectionType, Double driverSize, boolean noiseCancelling, Integer batteryLife, boolean microphone, String waterResistance, Double weight, String status, LocalDateTime createdAt, LocalDateTime updatedAt, Category category, Brand brand, String categoryName, String brandName) {
+    public Product(int productId, int categoryId, int brandId, String productName, String description, BigDecimal price,
+            int stockQuantity, String imageURL, String connectionType, Double driverSize, boolean noiseCancelling,
+            Integer batteryLife, boolean microphone, String waterResistance, Double weight, String status,
+            LocalDateTime createdAt, LocalDateTime updatedAt, Category category, Brand brand, String categoryName,
+            String brandName) {
         this.productId = productId;
         this.categoryId = categoryId;
         this.brandId = brandId;
@@ -248,6 +254,22 @@ public class Product {
 
     public void setBrand(Brand brand) {
         this.brand = brand;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
     }
 
 }

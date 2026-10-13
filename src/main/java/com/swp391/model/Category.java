@@ -5,6 +5,7 @@
 package com.swp391.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  *
@@ -19,10 +20,16 @@ public class Category {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Associated products for home tabs
+    private List<Product> newProducts;
+    private List<Product> topSellingProducts;
+    private int productCount;
+
     public Category() {
     }
 
-    public Category(int categoryId, String categoryName, String description, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Category(int categoryId, String categoryName, String description, String status, LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
@@ -77,6 +84,30 @@ public class Category {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<Product> getNewProducts() {
+        return newProducts;
+    }
+
+    public void setNewProducts(List<Product> newProducts) {
+        this.newProducts = newProducts;
+    }
+
+    public List<Product> getTopSellingProducts() {
+        return topSellingProducts;
+    }
+
+    public void setTopSellingProducts(List<Product> topSellingProducts) {
+        this.topSellingProducts = topSellingProducts;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
     }
 
 }

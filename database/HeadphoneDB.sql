@@ -908,4 +908,95 @@ VALUES
 );
 GO
 
+-- =========================================================
+-- SAMPLE CUSTOMERS (password: 123456)
+-- Note: login compares PasswordHash as plain text (CustomerDAO.login)
+-- =========================================================
+INSERT INTO Customers (FullName, Email, PasswordHash, Phone, Status)
+SELECT v.FullName, v.Email, v.PasswordHash, v.Phone, 'ACTIVE'
+FROM (VALUES
+    (N'Nguyen Van An',   'an.nguyen@gmail.com',   '123456', '0901000001'),
+    (N'Tran Thi Binh',   'binh.tran@gmail.com',   '123456', '0901000002'),
+    (N'Le Hoang Cuong',  'cuong.le@gmail.com',    '123456', '0901000003'),
+    (N'Pham Minh Duc',   'duc.pham@gmail.com',    '123456', '0901000004'),
+    (N'Vo Thi Ha',       'ha.vo@gmail.com',       '123456', '0901000005')
+) AS v(FullName, Email, PasswordHash, Phone)
+WHERE NOT EXISTS (SELECT 1 FROM Customers c WHERE c.Email = v.Email);
+GO
+
+-- =========================================================
+-- SAMPLE REVIEWS (3-5 reviews per product)
+-- Each customer reviews a product at most once (UQ_Reviews_Customer_Product)
+-- =========================================================
+INSERT INTO Reviews (CustomerID, ProductID, Rating, Comment, Status, CreatedAt)
+SELECT c.CustomerID, p.ProductID, v.Rating, v.Comment, 'VISIBLE', DATEADD(DAY, -v.DaysAgo, GETDATE())
+FROM (VALUES
+    -- Sony WH-1000XM5 (5 reviews)
+    (N'Sony WH-1000XM5', 'an.nguyen@gmail.com',  5, N'Best noise cancelling I have ever used. Very comfortable for long flights.', 30),
+    (N'Sony WH-1000XM5', 'binh.tran@gmail.com',  5, N'Sound is clear and balanced, battery lasts the whole week.', 25),
+    (N'Sony WH-1000XM5', 'cuong.le@gmail.com',   4, N'Great headphones, but a bit pricey.', 20),
+    (N'Sony WH-1000XM5', 'duc.pham@gmail.com',   5, N'Call quality is excellent, the app is easy to use.', 12),
+    (N'Sony WH-1000XM5', 'ha.vo@gmail.com',      4, N'Very good overall, the case is larger than I expected.', 5),
+
+    -- Bose QuietComfort 45 (4 reviews)
+    (N'Bose QuietComfort 45', 'an.nguyen@gmail.com', 5, N'Extremely comfortable, I can wear it all day.', 28),
+    (N'Bose QuietComfort 45', 'cuong.le@gmail.com',  4, N'Noise cancelling is strong, bass could be deeper.', 18),
+    (N'Bose QuietComfort 45', 'duc.pham@gmail.com',  4, N'Solid build and good battery life.', 10),
+    (N'Bose QuietComfort 45', 'ha.vo@gmail.com',     3, N'Good, but no EQ customization in the app.', 3),
+
+    -- JBL Tune 770NC (3 reviews)
+    (N'JBL Tune 770NC', 'binh.tran@gmail.com', 4, N'Great value for the price, punchy bass.', 22),
+    (N'JBL Tune 770NC', 'duc.pham@gmail.com',  4, N'Light and foldable, noise cancelling is decent.', 14),
+    (N'JBL Tune 770NC', 'ha.vo@gmail.com',     3, N'Ear cups get warm after an hour.', 6),
+
+    -- Audio-Technica ATH-M50x (5 reviews)
+    (N'Audio-Technica ATH-M50x', 'an.nguyen@gmail.com',  5, N'Accurate sound, perfect for music production.', 40),
+    (N'Audio-Technica ATH-M50x', 'binh.tran@gmail.com',  4, N'Detailed sound, clamping force is a bit tight at first.', 33),
+    (N'Audio-Technica ATH-M50x', 'cuong.le@gmail.com',   5, N'Detachable cables are a big plus. Very durable.', 21),
+    (N'Audio-Technica ATH-M50x', 'duc.pham@gmail.com',   5, N'Studio classic, worth every penny.', 9),
+    (N'Audio-Technica ATH-M50x', 'ha.vo@gmail.com',      4, N'Great sound but wired only.', 2),
+
+    -- Sennheiser HD 560S (4 reviews)
+    (N'Sennheiser HD 560S', 'an.nguyen@gmail.com', 5, N'Wide soundstage, amazing for classical music.', 27),
+    (N'Sennheiser HD 560S', 'binh.tran@gmail.com', 4, N'Very comfortable, leaks sound since it is open-back.', 19),
+    (N'Sennheiser HD 560S', 'cuong.le@gmail.com',  5, N'Natural and detailed sound.', 11),
+    (N'Sennheiser HD 560S', 'ha.vo@gmail.com',     4, N'Needs a decent source to shine.', 4),
+
+    -- Marshall Major V (3 reviews)
+    (N'Marshall Major V', 'cuong.le@gmail.com', 4, N'Stylish design and incredible battery life.', 24),
+    (N'Marshall Major V', 'duc.pham@gmail.com', 3, N'On-ear fit hurts a little after long use.', 15),
+    (N'Marshall Major V', 'ha.vo@gmail.com',    4, N'Warm sound signature, love the control knob.', 7),
+
+    -- Apple AirPods Pro 2 (5 reviews)
+    (N'Apple AirPods Pro 2', 'an.nguyen@gmail.com',  5, N'Seamless with iPhone, ANC and transparency mode are excellent.', 35),
+    (N'Apple AirPods Pro 2', 'binh.tran@gmail.com',  5, N'Small, light and the sound is great.', 26),
+    (N'Apple AirPods Pro 2', 'cuong.le@gmail.com',   4, N'Very good, but expensive for Android users.', 17),
+    (N'Apple AirPods Pro 2', 'duc.pham@gmail.com',   5, N'Spatial audio is impressive.', 8),
+    (N'Apple AirPods Pro 2', 'ha.vo@gmail.com',      4, N'Battery could last longer.', 1),
+
+    -- JBL Tune Buds (4 reviews)
+    (N'JBL Tune Buds', 'an.nguyen@gmail.com', 4, N'Strong bass and comfortable fit.', 23),
+    (N'JBL Tune Buds', 'binh.tran@gmail.com', 3, N'Okay for the price, microphone is average.', 16),
+    (N'JBL Tune Buds', 'cuong.le@gmail.com',  4, N'Long battery life, good for gym.', 9),
+    (N'JBL Tune Buds', 'duc.pham@gmail.com',  3, N'Touch controls are a bit too sensitive.', 4),
+
+    -- Anker Soundcore Liberty 4 (3 reviews)
+    (N'Anker Soundcore Liberty 4', 'binh.tran@gmail.com', 4, N'Feature-packed for the price.', 20),
+    (N'Anker Soundcore Liberty 4', 'cuong.le@gmail.com',  5, N'Sound quality rivals much more expensive earbuds.', 13),
+    (N'Anker Soundcore Liberty 4', 'ha.vo@gmail.com',     4, N'Good ANC, the app has many options.', 5),
+
+    -- Sony WF-1000XM5 (5 reviews)
+    (N'Sony WF-1000XM5', 'an.nguyen@gmail.com',  5, N'Smallest Sony earbuds yet, amazing sound.', 29),
+    (N'Sony WF-1000XM5', 'binh.tran@gmail.com',  5, N'Best ANC in true wireless earbuds.', 21),
+    (N'Sony WF-1000XM5', 'cuong.le@gmail.com',   4, N'Great, but the foam tips take time to get used to.', 14),
+    (N'Sony WF-1000XM5', 'duc.pham@gmail.com',   5, N'LDAC support sounds fantastic.', 6),
+    (N'Sony WF-1000XM5', 'ha.vo@gmail.com',      4, N'Excellent, slightly slippery case.', 2)
+) AS v(ProductName, Email, Rating, Comment, DaysAgo)
+JOIN Products p  ON p.ProductName = v.ProductName
+JOIN Customers c ON c.Email = v.Email
+WHERE NOT EXISTS (
+    SELECT 1 FROM Reviews r WHERE r.CustomerID = c.CustomerID AND r.ProductID = p.ProductID
+);
+GO
+
 

@@ -1,0 +1,224 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Sep 29, 2026, 3:33:00 PM
+    Author     : Admin
+*/
+
+/* ===== IMAGE SLIDER ===== */
+.pd-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    background: #fafafa;
+}
+.pd-img-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+.pd-img-slide {
+    min-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.pd-img-slide img {
+    max-width: 100%;
+    max-height: 340px;
+    object-fit: contain;
+}
+
+/* Arrow buttons */
+.pd-img-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.88);
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.pd-img-arrow:hover {
+    background: #D10024;
+    color: #fff;
+    border-color: #D10024;
+    box-shadow: 0 4px 12px rgba(209,0,36,0.25);
+}
+.pd-img-arrow i {
+    font-size: 14px;
+}
+.pd-img-prev {
+    left: 10px;
+}
+.pd-img-next {
+    right: 10px;
+}
+
+/* Thumbnails */
+.pd-thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: center;
+}
+.pd-thumb {
+    width: 64px;
+    height: 64px;
+    border: 2px solid #e5e5e5;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    padding: 4px;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+.pd-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.pd-thumb.active,
+.pd-thumb:hover {
+    border-color: #D10024;
+}
+
+/* ===== PRODUCT INFO ===== */
+.product-details h2.product-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #222;
+}
+.detail-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.badge-active   {
+    background: #e6f9ed;
+    color: #1a7a3a;
+}
+.badge-inactive {
+    background: #fdf0f0;
+    color: #c0392b;
+}
+
+/* Specs table in Details tab */
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.specs-table tr:nth-child(odd) td {
+    background: #f9f9f9;
+}
+.specs-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+.specs-table td:first-child {
+    font-weight: 600;
+    color: #555;
+    width: 40%;
+}
+
+/* Stock badge */
+.product-available {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a7a3a;
+}
+.product-unavailable {
+    font-size: 13px;
+    font-weight: 600;
+    color: #c0392b;
+}
+
+/* Not found box */
+.not-found-box {
+    text-align: center;
+    padding: 80px 20px;
+}
+.not-found-box i {
+    font-size: 60px;
+    color: #ddd;
+    margin-bottom: 20px;
+    display: block;
+}
+.not-found-box h3 {
+    color: #888;
+}
+
+/* ===== SEARCH AUTOCOMPLETE ===== */
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.15s ease;
+}
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background-color: #f5f5f5;
+}
+.suggestion-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    border: 1px solid #eee;
+}
+.suggestion-info {
+    flex: 1;
+    overflow: hidden;
+}
+.suggestion-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.suggestion-meta {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+}
+.suggestion-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #D10024;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+.suggestion-no-result {
+    padding: 12px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+}

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="5.0" xmlns="https://jakarta.ee/xml/ns/jakartaee">
     <display-name>Headphone Shop</display-name>
+    <servlet>
+        <servlet-name>CompareServlet</servlet-name>
+        <servlet-class>com.swp391.controller.CompareServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CompareServlet</servlet-name>
+        <url-pattern>/compare</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

@@ -138,7 +138,7 @@
 
                             <!-- Back Home -->
                             <div class="text-center">
-                                <a href="${pageContext.request.contextPath}/views/home.jsp">
+                                <a href="${pageContext.request.contextPath}/home">
                                     <i class="fa fa-arrow-left"></i>
                                     Back to Home
                                 </a>

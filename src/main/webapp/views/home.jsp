@@ -21,6 +21,7 @@
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nouislider.min.css" />
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/font-awesome.min.css">
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
+        <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/home.css" />
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -31,195 +32,8 @@
     </head>
 
     <body>
-        <!-- HEADER -->
-        <header>
-            <!-- TOP HEADER -->
-            <div id="top-header">
-                <div class="container">
-                    <ul class="header-links pull-left">
-                        <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                        <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
-                        <li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
-                    </ul>
-                    <ul class="header-links pull-right">
-                        <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-                            <%@ page import="com.swp391.model.Customer" %>
-                            <%@ page import="com.swp391.model.Staff" %>
-                            <%
-                                    Object currentUser = session.getAttribute("customer");
-                                    if (currentUser == null) {
-                                        currentUser = session.getAttribute("user");
-                                    }
-                                    if (currentUser == null) {
-                            %>
-                        <!-- Chua dang nhap -->
-                        <li>
-                            <a href="${pageContext.request.contextPath}/login">
-                                <i class="fa fa-user-o"></i> My Account
-                            </a>
-                        </li>
-                        <%
-                                } else {
-                                        String displayName = "";
-                                        if (currentUser instanceof Customer) {
-                                                displayName = ((Customer) currentUser).getFullName();
-                                        } else if (currentUser instanceof Staff) {
-                                                displayName = ((Staff) currentUser).getFullName();
-                                        }
-                        %>
-                        <!-- Da dang nhap -->
-                        <li>
-                            <a href="${pageContext.request.contextPath}/profile">
-                                <i class="fa fa-user"></i> <%= displayName %>
-                            </a>
-                        </li>
-                        <%
-                                }
-                        %>
-                    </ul>
-                </div>
-            </div>
-            <!-- /TOP HEADER -->
-
-            <!-- MAIN HEADER -->
-            <div id="header">
-                <!-- container -->
-                <div class="container">
-                    <!-- row -->
-                    <div class="row">
-                        <!-- LOGO -->
-                        <div class="col-md-3">
-                            <div class="header-logo">
-                                <a href="#" class="logo">
-                                    <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="">
-                                </a>
-                            </div>
-                        </div>
-                        <!-- /LOGO -->
-
-                        <!-- SEARCH BAR -->
-                        <div class="col-md-6">
-                            <div class="header-search" style="position: relative;">
-                                <form id="search-form" action="${pageContext.request.contextPath}/productList" method="get" autocomplete="off">
-                                    <input id="search-input" class="input" name="q" placeholder="Search here" type="text">
-                                    <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
-                                </form>
-                                <!-- Autocomplete dropdown -->
-                                <div id="search-suggestions" style="
-                                    display: none;
-                                    position: absolute;
-                                    top: 100%;
-                                    left: 0;
-                                    right: 0;
-                                    background: #fff;
-                                    border: 1px solid #d4d4d4;
-                                    border-top: none;
-                                    z-index: 9999;
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                    border-radius: 0 0 4px 4px;
-                                    max-height: 320px;
-                                    overflow-y: auto;
-                                "></div>
-                            </div>
-                        </div>
-                        <!-- /SEARCH BAR -->
-
-                        <!-- ACCOUNT -->
-                        <div class="col-md-3 clearfix">
-                            <div class="header-ctn">
-                                <!-- Wishlist -->
-                                <div>
-                                    <a href="#">
-                                        <i class="fa fa-heart-o"></i>
-                                        <span>Your Wishlist</span>
-                                        <div class="qty">2</div>
-                                    </a>
-                                </div>
-                                <!-- /Wishlist -->
-
-                                <!-- Cart -->
-                                <div class="dropdown">
-                                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                                        <i class="fa fa-shopping-cart"></i>
-                                        <span>Your Cart</span>
-                                        <div class="qty">3</div>
-                                    </a>
-                                    <div class="cart-dropdown">
-                                        <div class="cart-list">
-                                            <div class="product-widget">
-                                                <div class="product-img">
-                                                    <img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="">
-                                                </div>
-                                                <div class="product-body">
-                                                    <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                    <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-                                                </div>
-                                                <button class="delete"><i class="fa fa-close"></i></button>
-                                            </div>
-
-                                            <div class="product-widget">
-                                                <div class="product-img">
-                                                    <img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="">
-                                                </div>
-                                                <div class="product-body">
-                                                    <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                                    <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-                                                </div>
-                                                <button class="delete"><i class="fa fa-close"></i></button>
-                                            </div>
-                                        </div>
-                                        <div class="cart-summary">
-                                            <small>3 Item(s) selected</small>
-                                            <h5>SUBTOTAL: $2940.00</h5>
-                                        </div>
-                                        <div class="cart-btns">
-                                            <a href="cart.jsp">View Cart</a>
-                                            <a href="checkout.jsp">Checkout <i class="fa fa-arrow-circle-right"></i></a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- /Cart -->
-
-                                <!-- Menu Toogle -->
-                                <div class="menu-toggle">
-                                    <a href="#">
-                                        <i class="fa fa-bars"></i>
-                                        <span>Menu</span>
-                                    </a>
-                                </div>
-                                <!-- /Menu Toogle -->
-                            </div>
-                        </div>
-                        <!-- /ACCOUNT -->
-                    </div>
-                    <!-- row -->
-                </div>
-                <!-- container -->
-            </div>
-            <!-- /MAIN HEADER -->
-        </header>
-        <!-- /HEADER -->
-
-        <!-- NAVIGATION -->
-        <nav id="navigation">
-            <!-- container -->
-            <div class="container">
-                <!-- responsive-nav -->
-                <div id="responsive-nav">
-                    <!-- NAV -->
-                    <ul class="main-nav nav navbar-nav">
-                        <li class="active"><a href="${pageContext.request.contextPath}/home">Home</a></li>
-                        <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
-                        <li><a href="#">Headphones</a></li>
-                        <li><a href="#">Earbuds</a></li>
-                    </ul>
-                    <!-- /NAV -->
-                </div>
-                <!-- /responsive-nav -->
-            </div>
-            <!-- /container -->
-        </nav>
-        <!-- /NAVIGATION -->
+        <c:set var="activeNav" value="home" scope="request" />
+        <jsp:include page="/assets/components/header.jsp" />
 
         <!-- SECTION -->
         <div class="section">
@@ -288,9 +102,10 @@
                             <h3 class="title">New Products</h3>
                             <div class="section-nav">
                                 <ul class="section-tab-nav tab-nav">
-                                    <li class="active"><a data-toggle="tab" href="#tab1">All</a></li>
-                                    <li><a data-toggle="tab" href="#tab1">Headphones</a></li>
-                                    <li><a data-toggle="tab" href="#tab1">Earbuds</a></li>
+                                    <li class="active"><a data-toggle="tab" href="#tab-new-all">All</a></li>
+                                    <c:forEach var="cat" items="${categories}">
+                                        <li><a data-toggle="tab" href="#tab-new-${cat.categoryId}">${cat.categoryName}</a></li>
+                                    </c:forEach>
                                 </ul>
                             </div>
                         </div>
@@ -301,10 +116,9 @@
                     <div class="col-md-12">
                         <div class="row">
                             <div class="products-tabs">
-                                <!-- tab -->
-                                <div id="tab1" class="tab-pane active">
-                                    <div class="products-slick" data-nav="#slick-nav-1">
-
+                                <!-- tab All -->
+                                <div id="tab-new-all" class="tab-pane fade in active">
+                                    <div class="products-slick" data-nav="#slick-nav-new-all">
                                         <c:forEach var="product" items="${newProducts}">
                                             <!-- product -->
                                             <div class="product">
@@ -316,7 +130,7 @@
                                                 </div>
                                                 <div class="product-body">
                                                     <p class="product-category">${product.categoryName}</p>
-                                                    <h3 class="product-name"><a href="#">${product.productName}</a></h3>
+                                                    <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a></h3>
                                                     <h4 class="product-price"><fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> &#8363;</h4>
                                                     <div class="product-rating">
                                                         <i class="fa fa-star"></i>
@@ -326,8 +140,9 @@
                                                         <i class="fa fa-star-o"></i>
                                                     </div>
                                                     <div class="product-btns">
-                                                        <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                                                        <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                        <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
+                                                        <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                        <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
                                                         <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                     </div>
                                                 </div>
@@ -338,9 +153,60 @@
                                             <!-- /product -->
                                         </c:forEach>
                                     </div>
-                                    <div id="slick-nav-1" class="products-slick-nav"></div>
+                                    <div id="slick-nav-new-all" class="products-slick-nav"></div>
                                 </div>
-                                <!-- /tab -->
+                                <!-- /tab All -->
+
+                                <!-- tabs per category -->
+                                <c:forEach var="cat" items="${categories}">
+                                    <div id="tab-new-${cat.categoryId}" class="tab-pane fade">
+                                        <c:choose>
+                                            <c:when test="${not empty cat.newProducts}">
+                                                <div class="products-slick" data-nav="#slick-nav-new-${cat.categoryId}">
+                                                    <c:forEach var="product" items="${cat.newProducts}">
+                                                        <!-- product -->
+                                                        <div class="product">
+                                                            <div class="product-img">
+                                                                <img src="${pageContext.request.contextPath}/${product.imageUrl}" alt="${product.productName}">
+                                                                <div class="product-label">
+                                                                    <span class="new">NEW</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="product-body">
+                                                                <p class="product-category">${product.categoryName}</p>
+                                                                <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a></h3>
+                                                                <h4 class="product-price"><fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> &#8363;</h4>
+                                                                <div class="product-rating">
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star-o"></i>
+                                                                </div>
+                                                                <div class="product-btns">
+                                                                    <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
+                                                                    <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                                    <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="add-to-cart">
+                                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                            </div>
+                                                        </div>
+                                                        <!-- /product -->
+                                                    </c:forEach>
+                                                </div>
+                                                <div id="slick-nav-new-${cat.categoryId}" class="products-slick-nav"></div>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="text-center" style="padding: 40px 0; color: #8D99AE;">
+                                                    <p>Không có sản phẩm.</p>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </c:forEach>
                             </div>
                         </div>
                     </div>
@@ -411,9 +277,10 @@
                             <h3 class="title">Top Selling</h3>
                             <div class="section-nav">
                                 <ul class="section-tab-nav tab-nav">
-                                    <li class="active"><a data-toggle="tab" href="#tab2">All</a></li>
-                                    <li><a data-toggle="tab" href="#tab2">Headphones</a></li>
-                                    <li><a data-toggle="tab" href="#tab2">Earbuds</a></li>
+                                    <li class="active"><a data-toggle="tab" href="#tab-top-all">All</a></li>
+                                    <c:forEach var="cat" items="${categories}">
+                                        <li><a data-toggle="tab" href="#tab-top-${cat.categoryId}">${cat.categoryName}</a></li>
+                                    </c:forEach>
                                 </ul>
                             </div>
                         </div>
@@ -424,9 +291,9 @@
                     <div class="col-md-12">
                         <div class="row">
                             <div class="products-tabs">
-                                <!-- tab -->
-                                <div id="tab2" class="tab-pane fade in active">
-                                    <div class="products-slick" data-nav="#slick-nav-2">
+                                <!-- tab All -->
+                                <div id="tab-top-all" class="tab-pane fade in active">
+                                    <div class="products-slick" data-nav="#slick-nav-top-all">
                                         <c:forEach var="product" items="${topSellingProducts}">
                                             <!-- product -->
                                             <div class="product">
@@ -435,7 +302,7 @@
                                                 </div>
                                                 <div class="product-body">
                                                     <p class="product-category">${product.categoryName}</p>
-                                                    <h3 class="product-name"><a href="#">${product.productName}</a></h3>
+                                                    <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a></h3>
                                                     <h4 class="product-price"><fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> &#8363;</h4>
                                                     <div class="product-rating">
                                                         <i class="fa fa-star"></i>
@@ -445,8 +312,9 @@
                                                         <i class="fa fa-star-o"></i>
                                                     </div>
                                                     <div class="product-btns">
-                                                        <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-                                                        <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                        <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
+                                                        <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                        <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
                                                         <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                     </div>
                                                 </div>
@@ -457,9 +325,57 @@
                                             <!-- /product -->
                                         </c:forEach>
                                     </div>
-                                    <div id="slick-nav-2" class="products-slick-nav"></div>
+                                    <div id="slick-nav-top-all" class="products-slick-nav"></div>
                                 </div>
-                                <!-- /tab -->
+                                <!-- /tab All -->
+
+                                <!-- tabs per category -->
+                                <c:forEach var="cat" items="${categories}">
+                                    <div id="tab-top-${cat.categoryId}" class="tab-pane fade">
+                                        <c:choose>
+                                            <c:when test="${not empty cat.topSellingProducts}">
+                                                <div class="products-slick" data-nav="#slick-nav-top-${cat.categoryId}">
+                                                    <c:forEach var="product" items="${cat.topSellingProducts}">
+                                                        <!-- product -->
+                                                        <div class="product">
+                                                            <div class="product-img">
+                                                                <img src="${pageContext.request.contextPath}/${product.imageUrl}" alt="${product.productName}">
+                                                            </div>
+                                                            <div class="product-body">
+                                                                <p class="product-category">${product.categoryName}</p>
+                                                                <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a></h3>
+                                                                <h4 class="product-price"><fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> &#8363;</h4>
+                                                                <div class="product-rating">
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star"></i>
+                                                                    <i class="fa fa-star-o"></i>
+                                                                </div>
+                                                                <div class="product-btns">
+                                                                    <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
+                                                                    <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                                    <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="add-to-cart">
+                                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                            </div>
+                                                        </div>
+                                                        <!-- /product -->
+                                                    </c:forEach>
+                                                </div>
+                                                <div id="slick-nav-top-${cat.categoryId}" class="products-slick-nav"></div>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="text-center" style="padding: 40px 0; color: #8D99AE;">
+                                                    <p>Không có sản phẩm.</p>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </c:forEach>
                             </div>
                         </div>
                     </div>
@@ -761,219 +677,8 @@
         <script src="${pageContext.request.contextPath}/assets/js/nouislider.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/jquery.zoom.min.js"></script>
         <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
-
-        <!-- Search Autocomplete Script -->
-        <style>
-            .search-suggestion-item {
-                display: flex;
-                align-items: center;
-                padding: 8px 12px;
-                cursor: pointer;
-                border-bottom: 1px solid #f0f0f0;
-                text-decoration: none;
-                color: #333;
-                transition: background 0.15s ease;
-            }
-            .search-suggestion-item:last-child {
-                border-bottom: none;
-            }
-            .search-suggestion-item:hover,
-            .search-suggestion-item.active {
-                background-color: #f5f5f5;
-            }
-            .suggestion-img {
-                width: 40px;
-                height: 40px;
-                object-fit: cover;
-                border-radius: 4px;
-                margin-right: 10px;
-                flex-shrink: 0;
-                border: 1px solid #eee;
-            }
-            .suggestion-info {
-                flex: 1;
-                overflow: hidden;
-            }
-            .suggestion-name {
-                font-size: 13px;
-                font-weight: 600;
-                color: #333;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .suggestion-meta {
-                font-size: 11px;
-                color: #999;
-                margin-top: 2px;
-            }
-            .suggestion-price {
-                font-size: 13px;
-                font-weight: 700;
-                color: #D10024;
-                white-space: nowrap;
-                margin-left: 8px;
-            }
-            .suggestion-no-result {
-                padding: 12px;
-                text-align: center;
-                color: #999;
-                font-size: 13px;
-            }
-        </style>
-        <script>
-            (function () {
-                var searchInput = document.getElementById('search-input');
-                var suggestionsBox = document.getElementById('search-suggestions');
-                var searchForm = document.getElementById('search-form');
-                var contextPath = '${pageContext.request.contextPath}';
-                var debounceTimer = null;
-                var activeIndex = -1;
-                var currentSuggestions = [];
-
-                if (!searchInput || !suggestionsBox) return;
-
-                // Debounce function
-                function debounce(fn, delay) {
-                    return function () {
-                        var args = arguments;
-                        clearTimeout(debounceTimer);
-                        debounceTimer = setTimeout(function () { fn.apply(null, args); }, delay);
-                    };
-                }
-
-                // Format number với dấu phẩy
-                function formatPrice(price) {
-                    return parseFloat(price).toLocaleString('vi-VN') + ' ₫';
-                }
-
-                // Render suggestions vào dropdown
-                function renderSuggestions(data) {
-                    suggestionsBox.innerHTML = '';
-                    activeIndex = -1;
-                    currentSuggestions = data;
-
-                    if (!data || data.length === 0) {
-                        suggestionsBox.innerHTML = '<div class="suggestion-no-result">Không tìm thấy sản phẩm</div>';
-                        suggestionsBox.style.display = 'block';
-                        return;
-                    }
-
-                    data.forEach(function (item, idx) {
-                        var a = document.createElement('a');
-                        a.className = 'search-suggestion-item';
-                        a.href = contextPath + '/productDetail?id=' + item.productID;
-                        a.setAttribute('data-index', idx);
-
-                        var imgSrc = item.imageUrl.indexOf('http') === 0
-                            ? item.imageUrl
-                            : contextPath + '/' + item.imageUrl;
-
-                        a.innerHTML =
-                            '<img class="suggestion-img" src="' + imgSrc + '" alt="' + escapeHtml(item.productName) + '" onerror="this.src=\'' + contextPath + '/assets/img/product01.png\'">' +
-                            '<div class="suggestion-info">' +
-                                '<div class="suggestion-name">' + escapeHtml(item.productName) + '</div>' +
-                                '<div class="suggestion-meta">' + escapeHtml(item.categoryName || '') + '</div>' +
-                            '</div>' +
-                            '<span class="suggestion-price">' + formatPrice(item.price) + '</span>';
-
-                        suggestionsBox.appendChild(a);
-                    });
-
-                    suggestionsBox.style.display = 'block';
-                }
-
-                // Ẩn suggestions
-                function hideSuggestions() {
-                    suggestionsBox.style.display = 'none';
-                    activeIndex = -1;
-                }
-
-                // Escape HTML
-                function escapeHtml(text) {
-                    var div = document.createElement('div');
-                    div.appendChild(document.createTextNode(text));
-                    return div.innerHTML;
-                }
-
-                // Gọi API gợi ý
-                function fetchSuggestions(keyword) {
-                    if (keyword.length < 3) {
-                        hideSuggestions();
-                        return;
-                    }
-
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', contextPath + '/searchSuggest?q=' + encodeURIComponent(keyword), true);
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            try {
-                                var data = JSON.parse(xhr.responseText);
-                                renderSuggestions(data);
-                            } catch (e) {
-                                hideSuggestions();
-                            }
-                        }
-                    };
-                    xhr.send();
-                }
-
-                var debouncedFetch = debounce(fetchSuggestions, 300);
-
-                // Xử lý keyboard navigation trong dropdown
-                searchInput.addEventListener('keydown', function (e) {
-                    var items = suggestionsBox.querySelectorAll('.search-suggestion-item');
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        activeIndex = Math.min(activeIndex + 1, items.length - 1);
-                        updateActive(items);
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        activeIndex = Math.max(activeIndex - 1, -1);
-                        updateActive(items);
-                    } else if (e.key === 'Escape') {
-                        hideSuggestions();
-                    }
-                    // Enter được xử lý bởi form submit
-                });
-
-                function updateActive(items) {
-                    items.forEach(function (item, i) {
-                        if (i === activeIndex) {
-                            item.classList.add('active');
-                        } else {
-                            item.classList.remove('active');
-                        }
-                    });
-                }
-
-                // Lắng nghe input
-                searchInput.addEventListener('input', function () {
-                    var keyword = this.value.trim();
-                    debouncedFetch(keyword);
-                });
-
-                // Click ngoài dropdown -> đóng
-                document.addEventListener('click', function (e) {
-                    if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                        hideSuggestions();
-                    }
-                });
-
-                // Focus lại input -> hiện lại nếu có kết quả
-                searchInput.addEventListener('focus', function () {
-                    if (this.value.trim().length >= 3 && suggestionsBox.innerHTML !== '') {
-                        suggestionsBox.style.display = 'block';
-                    }
-                });
-
-                // Submit form (Enter hoặc nút Search) -> dẫn đến trang danh sách
-                searchForm.addEventListener('submit', function () {
-                    hideSuggestions();
-                    // Form submit bình thường, không cần làm gì thêm
-                });
-            })();
-        </script>
+        <script>window.__contextPath = '${pageContext.request.contextPath}';</script>
+        <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
 
     </body>
 

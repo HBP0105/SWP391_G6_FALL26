@@ -1,6 +1,8 @@
 package com.swp391.controller;
 
+import com.swp391.dao.CategoryDAO;
 import com.swp391.dao.ProductDAO;
+import com.swp391.model.Category;
 import com.swp391.model.Product;
 import java.io.IOException;
 import java.util.List;
@@ -16,22 +18,28 @@ public class HomeServerlet extends HttpServlet {
             throws ServletException, IOException {
 
         ProductDAO productDAO = new ProductDAO();
+        CategoryDAO categoryDAO = new CategoryDAO();
 
-        // 1. (New Products carousel)
+        // Load active categories from database
+        List<Category> categories = categoryDAO.getAllActiveCategories();
+
+        // 1. (New Products)
         List<Product> newProducts = productDAO.getNewProducts(10);
-        List<Product> newHeadphones = productDAO.getNewProductsByCategory(1, 10);
-        List<Product> newEarbuds = productDAO.getNewProductsByCategory(2, 10);
+        for (Category cat : categories) {
+            cat.setNewProducts(productDAO.getNewProductsByCategory(cat.getCategoryId(), 10));
+            cat.setTopSellingProducts(productDAO.getTopSellingProductsByCategory(cat.getCategoryId(), 10));
+        }
 
         // 2. (Top Selling carousel & widgets)
         List<Product> topSellingProducts = productDAO.getTopSellingProducts(10);
         List<Product> topHeadphones = productDAO.getTopSellingProductsByCategory(1, 6);
         List<Product> topEarbuds = productDAO.getTopSellingProductsByCategory(2, 6);
 
+        request.setAttribute("categories", categories);
         request.setAttribute("newProducts", newProducts);
-        request.setAttribute("newHeadphones", newHeadphones);
-        request.setAttribute("newEarbuds", newEarbuds);
-
         request.setAttribute("topSellingProducts", topSellingProducts);
+
+        // Keep for bottom widgets
         request.setAttribute("topHeadphones", topHeadphones);
         request.setAttribute("topEarbuds", topEarbuds);
 

@@ -18,11 +18,13 @@ public class Brand {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private int productCount;
 
     public Brand() {
     }
 
-    public Brand(int brandId, String brandName, String description, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Brand(int brandId, String brandName, String description, String status, LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
         this.brandId = brandId;
         this.brandName = brandName;
         this.description = description;
@@ -77,6 +79,14 @@ public class Brand {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
     }
 
 }

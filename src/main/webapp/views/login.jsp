@@ -96,7 +96,7 @@
                     </div>
 
                     <div class="text-center">
-                        <a href="Home.jsp">
+                        <a href="${pageContext.request.contextPath}/home">
                             <i class="fa fa-arrow-left"></i>
                             Back to Home
                         </a>

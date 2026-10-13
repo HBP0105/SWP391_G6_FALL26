@@ -78,7 +78,7 @@ public class CartDAO extends DBContext{
             ResultSet rs = ptmCheck.executeQuery();
             
             if (rs.next()) {
-                // S?n ph?m ?„ t?n t?i -> C?p nh?t c?ng thÍm s? l??ng
+                // S?n ph?m ?√£ t?n t?i -> C?p nh?t c?ng th√™m s? l??ng
                 int oldQty = rs.getInt("Quantity");
                 String updateSql = "UPDATE CartItems SET Quantity = ? WHERE CartID = ? AND ProductID = ?";
                 PreparedStatement ptmUpdate = connection.prepareStatement(updateSql);
@@ -87,7 +87,7 @@ public class CartDAO extends DBContext{
                 ptmUpdate.setInt(3, productId);
                 ptmUpdate.executeUpdate();
             } else {
-                // S?n ph?m m?i tinh -> Insert dÚng m?i
+                // S?n ph?m m?i tinh -> Insert d√≤ng m?i
                 String insertSql = "INSERT INTO CartItems (CartID, ProductID, Quantity) VALUES (?, ?, ?)";
                 PreparedStatement ptmInsert = connection.prepareStatement(insertSql);
                 ptmInsert.setInt(1, cartId);
