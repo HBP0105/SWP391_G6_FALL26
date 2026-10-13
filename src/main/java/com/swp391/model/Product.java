@@ -28,7 +28,6 @@ public class Product {
     private Integer batteryLife;
     private boolean microphone;
     private String waterResistance;
-    private Double weight;
 
     private String status;
     private LocalDateTime createdAt;
@@ -58,7 +57,6 @@ public class Product {
         this.batteryLife = batteryLife;
         this.microphone = microphone;
         this.waterResistance = waterResistance;
-        this.weight = weight;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -196,13 +194,6 @@ public class Product {
         this.waterResistance = waterResistance;
     }
 
-    public Double getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Double weight) {
-        this.weight = weight;
-    }
 
     public String getStatus() {
         return status;

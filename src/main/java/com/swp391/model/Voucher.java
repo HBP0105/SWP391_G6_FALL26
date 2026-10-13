@@ -1,16 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-/**
- *
- * @author ADMIN
- */
 public class Voucher {
 
     private int voucherId;
@@ -36,7 +29,10 @@ public class Voucher {
     public Voucher() {
     }
 
-    public Voucher(int voucherId, String voucherCode, String description, String discountType, BigDecimal discountValue, BigDecimal minOrderAmount, BigDecimal maxDiscount, LocalDateTime startDate, LocalDateTime endDate, Integer usageLimit, int usedCount, String status, Integer createdBy, LocalDateTime createdAt) {
+    public Voucher(int voucherId, String voucherCode, String description, String discountType,
+                   BigDecimal discountValue, BigDecimal minOrderAmount, BigDecimal maxDiscount,
+                   LocalDateTime startDate, LocalDateTime endDate, Integer usageLimit,
+                   int usedCount, String status, Integer createdBy, LocalDateTime createdAt) {
         this.voucherId = voucherId;
         this.voucherCode = voucherCode;
         this.description = description;
@@ -59,6 +55,15 @@ public class Voucher {
 
     public void setVoucherId(int voucherId) {
         this.voucherId = voucherId;
+    }
+
+    // Alias for JSP EL accessing ${voucher.voucherID}
+    public int getVoucherID() {
+        return voucherId;
+    }
+
+    public void setVoucherID(int voucherID) {
+        this.voucherId = voucherID;
     }
 
     public String getVoucherCode() {
@@ -165,4 +170,16 @@ public class Voucher {
         this.createdAt = createdAt;
     }
 
+    // Helper methods for safe display in JSP
+    public String getFormattedStartDate() {
+        return startDate != null ? startDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")) : "—";
+    }
+
+    public String getFormattedEndDate() {
+        return endDate != null ? endDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")) : "—";
+    }
+
+    public String getFormattedCreatedAt() {
+        return createdAt != null ? createdAt.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")) : "—";
+    }
 }

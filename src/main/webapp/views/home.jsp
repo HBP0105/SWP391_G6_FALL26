@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -28,9 +28,7 @@
 </head>
 
 <body>
-	<!-- HEADER -->
 	<header>
-		<!-- TOP HEADER -->
 		<div id="top-header">
 			<div class="container">
 				<ul class="header-links pull-left">
@@ -44,9 +42,7 @@
 				</ul>
 			</div>
 		</div>
-		<!-- /TOP HEADER -->
 
-		<!-- MAIN HEADER -->
 		<div id="header">
 			<!-- container -->
 			<div class="container">
@@ -60,9 +56,7 @@
 							</a>
 						</div>
 					</div>
-					<!-- /LOGO -->
 
-					<!-- SEARCH BAR -->
 					<div class="col-md-6">
 						<div class="header-search">
 							<form>
@@ -76,9 +70,7 @@
 							</form>
 						</div>
 					</div>
-					<!-- /SEARCH BAR -->
 
-					<!-- ACCOUNT -->
 					<div class="col-md-3 clearfix">
 						<div class="header-ctn">
 							<!-- Wishlist -->
@@ -127,34 +119,25 @@
 										<h5>SUBTOTAL: $2940.00</h5>
 									</div>
 									<div class="cart-btns">
-										<a href="#">View Cart</a>
+										<a href="/views/cart.jsp">View Cart</a>
 										<a href="#">Checkout <i class="fa fa-arrow-circle-right"></i></a>
 									</div>
 								</div>
 							</div>
-							<!-- /Cart -->
 
-							<!-- Menu Toogle -->
 							<div class="menu-toggle">
 								<a href="#">
 									<i class="fa fa-bars"></i>
 									<span>Menu</span>
 								</a>
 							</div>
-							<!-- /Menu Toogle -->
 						</div>
 					</div>
-					<!-- /ACCOUNT -->
 				</div>
-				<!-- row -->
 			</div>
-			<!-- container -->
 		</div>
-		<!-- /MAIN HEADER -->
 	</header>
-	<!-- /HEADER -->
 
-	<!-- NAVIGATION -->
 	<nav id="navigation">
 		<!-- container -->
 		<div class="container">
@@ -170,19 +153,13 @@
 					<li><a href="#">Cameras</a></li>
 					<li><a href="#">Accessories</a></li>
 				</ul>
-				<!-- /NAV -->
 			</div>
-			<!-- /responsive-nav -->
 		</div>
-		<!-- /container -->
 	</nav>
-	<!-- /NAVIGATION -->
 
-	<!-- SECTION -->
 	<div class="section">
 		<!-- container -->
 		<div class="container">
-			<!-- row -->
 			<div class="row">
 				<!-- shop -->
 				<div class="col-md-4 col-xs-6">
@@ -196,9 +173,7 @@
 						</div>
 					</div>
 				</div>
-				<!-- /shop -->
 
-				<!-- shop -->
 				<div class="col-md-4 col-xs-6">
 					<div class="shop">
 						<div class="shop-img">
@@ -210,9 +185,7 @@
 						</div>
 					</div>
 				</div>
-				<!-- /shop -->
 
-				<!-- shop -->
 				<div class="col-md-4 col-xs-6">
 					<div class="shop">
 						<div class="shop-img">
@@ -224,22 +197,14 @@
 						</div>
 					</div>
 				</div>
-				<!-- /shop -->
 			</div>
-			<!-- /row -->
 		</div>
-		<!-- /container -->
 	</div>
-	<!-- /SECTION -->
 
-	<!-- SECTION -->
 	<div class="section">
-		<!-- container -->
 		<div class="container">
-			<!-- row -->
 			<div class="row">
 
-				<!-- section title -->
 				<div class="col-md-12">
 					<div class="section-title">
 						<h3 class="title">New Products</h3>
@@ -253,9 +218,7 @@
 						</div>
 					</div>
 				</div>
-				<!-- /section title -->
 
-				<!-- Products tab & slick -->
 				<div class="col-md-12">
 					<div class="row">
 						<div class="products-tabs">
@@ -490,16 +453,13 @@
 		</div>
 		<!-- /container -->
 	</div>
-	<!-- /HOT DEAL SECTION -->
 
 	<!-- SECTION -->
 	<div class="section">
-		<!-- container -->
 		<div class="container">
 			<!-- row -->
 			<div class="row">
 
-				<!-- section title -->
 				<div class="col-md-12">
 					<div class="section-title">
 						<h3 class="title">Top selling</h3>
@@ -513,9 +473,7 @@
 						</div>
 					</div>
 				</div>
-				<!-- /section title -->
 
-				<!-- Products tab & slick -->
 				<div class="col-md-12">
 					<div class="row">
 						<div class="products-tabs">
