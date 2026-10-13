@@ -18,21 +18,6 @@ public class Staff {
     public Staff() {
     }
 
-    public Staff(int staffID, int roleID, String fullName,
-            String email, String passwordHash, String phone,
-            String status, LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
-        this.staffID = staffID;
-        this.roleID = roleID;
-        this.fullName = fullName;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.phone = phone;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public Staff(int staffID, Role role, String fullName, String email,
             String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.staffID = staffID;
@@ -103,6 +88,9 @@ public class Staff {
         this.fullName = fullName;
     }
 
+    public String getRoleName(){
+        return (role!=null) ? role.getRoleName() : null;
+    }
     public String getEmail() {
         return email;
     }

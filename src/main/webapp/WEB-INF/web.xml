@@ -2,6 +2,6 @@
 <web-app version="5.0" xmlns="https://jakarta.ee/xml/ns/jakartaee">
     <display-name>Headphone Shop</display-name>
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>views/home.jsp</welcome-file>
     </welcome-file-list>
 </web-app>
