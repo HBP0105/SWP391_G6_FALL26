@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page import="java.time.LocalDate" %>
 
 <!DOCTYPE html>
@@ -23,10 +25,11 @@
       font-size: 0.76rem;
     }
     .btn-action-sm {
-      padding: 0.15rem 0.35rem;
-      font-size: 0.71rem;
+      padding: 0.12rem 0.32rem;
+      font-size: 0.68rem;
       font-weight: 700;
       border-radius: 4px;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -114,31 +117,25 @@
           </div>
 
           <!-- Alert Notification Success -->
-          <c:if test="${not empty sessionScope.msgSuccess}">
+          <c:if test="${not empty msgSuccess || not empty sessionScope.msgSuccess}">
             <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-              <i class="bi bi-check-circle-fill me-2"></i><strong>Success!</strong> Order <strong>#ORD-${sessionScope.msgSuccessOrderId}</strong> updated to: <strong>${sessionScope.msgSuccessStatus}</strong>
+              <i class="bi bi-check-circle-fill me-2"></i><strong>Success!</strong> Order <strong>#ORD-<c:out value="${not empty msgSuccessOrderId ? msgSuccessOrderId : sessionScope.msgSuccessOrderId}"/></strong> updated to: <strong><c:out value="${not empty msgSuccessStatus ? msgSuccessStatus : sessionScope.msgSuccessStatus}"/></strong>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <% 
-              session.removeAttribute("msgSuccess"); 
-              session.removeAttribute("msgSuccessOrderId"); 
-              session.removeAttribute("msgSuccessStatus"); 
-            %>
           </c:if>
 
           <!-- Alert Notification Error Status Transition -->
-          <c:if test="${not empty sessionScope.msgErrorStatus}">
+          <c:if test="${not empty msgErrorStatus || not empty sessionScope.msgErrorStatus}">
             <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-              <i class="bi bi-x-octagon-fill me-2"></i><strong>Action Rejected:</strong> ${sessionScope.msgErrorStatus}
+              <i class="bi bi-x-octagon-fill me-2"></i><strong>Action Rejected:</strong> <c:out value="${not empty msgErrorStatus ? msgErrorStatus : sessionScope.msgErrorStatus}"/>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <% session.removeAttribute("msgErrorStatus"); %>
           </c:if>
 
           <!-- Alert Notification Error Validation -->
           <c:if test="${not empty msgError}">
             <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Validation Error:</strong> ${msgError}
+              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Validation Error:</strong> <c:out value="${msgError}"/>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           </c:if>
@@ -151,7 +148,7 @@
                   <span class="metric-label">PENDING</span>
                   <span class="metric-icon"><i class="bi bi-clock-history"></i></span>
                 </div>
-                <div class="metric-value">${pendingCount != null ? pendingCount : 0}</div>
+                <div class="metric-value"><c:out value="${pendingCount}" default="0"/></div>
                 <div class="metric-meta"><small class="text-muted">Pending approval</small></div>
               </div>
             </div>
@@ -162,7 +159,7 @@
                   <span class="metric-label">CONFIRMED</span>
                   <span class="metric-icon"><i class="bi bi-check2-square"></i></span>
                 </div>
-                <div class="metric-value">${confirmedCount != null ? confirmedCount : 0}</div>
+                <div class="metric-value"><c:out value="${confirmedCount}" default="0"/></div>
                 <div class="metric-meta"><small class="text-muted">Confirmed & processing</small></div>
               </div>
             </div>
@@ -173,7 +170,7 @@
                   <span class="metric-label">SHIPPING</span>
                   <span class="metric-icon"><i class="bi bi-truck"></i></span>
                 </div>
-                <div class="metric-value">${shippingCount != null ? shippingCount : 0}</div>
+                <div class="metric-value"><c:out value="${shippingCount}" default="0"/></div>
                 <div class="metric-meta"><small class="text-muted">In transit to customer</small></div>
               </div>
             </div>
@@ -184,7 +181,7 @@
                   <span class="metric-label">DELIVERED</span>
                   <span class="metric-icon"><i class="bi bi-check-circle-fill"></i></span>
                 </div>
-                <div class="metric-value">${deliveredCount != null ? deliveredCount : 0}</div>
+                <div class="metric-value"><c:out value="${deliveredCount}" default="0"/></div>
                 <div class="metric-meta"><small class="text-muted">Successfully delivered</small></div>
               </div>
             </div>
@@ -195,7 +192,7 @@
                   <span class="metric-label">CANCELLED</span>
                   <span class="metric-icon"><i class="bi bi-x-circle-fill"></i></span>
                 </div>
-                <div class="metric-value">${cancelledCount != null ? cancelledCount : 0}</div>
+                <div class="metric-value"><c:out value="${cancelledCount}" default="0"/></div>
                 <div class="metric-meta"><small class="text-muted">Cancelled or rejected</small></div>
               </div>
             </div>
@@ -211,7 +208,7 @@
             </div>
 
             <form method="get" action="${pageContext.request.contextPath}/staff/orders" id="filterForm">
-              <input type="hidden" name="keyword" value="${selectedKeyword}">
+              <input type="hidden" name="keyword" value="<c:out value='${selectedKeyword}'/>">
               <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1">Order Status:</label>
@@ -227,12 +224,12 @@
 
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1">From Date:</label>
-                  <input type="date" name="startDate" id="startDate" value="${selectedStartDate}" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('startDate')">
+                  <input type="date" name="startDate" id="startDate" value="<c:out value='${selectedStartDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('startDate')">
                 </div>
 
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1">To Date:</label>
-                  <input type="date" name="endDate" id="endDate" value="${selectedEndDate}" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('endDate')">
+                  <input type="date" name="endDate" id="endDate" value="<c:out value='${selectedEndDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('endDate')">
                 </div>
 
                 <div class="col-md-3 text-end">
@@ -253,115 +250,158 @@
               </div>
               <div style="max-width: 320px;" class="w-100">
                 <form method="get" action="${pageContext.request.contextPath}/staff/orders" class="m-0" id="searchForm">
-                  <input type="hidden" name="status" value="${selectedStatus}">
-                  <input type="hidden" name="startDate" value="${selectedStartDate}">
-                  <input type="hidden" name="endDate" value="${selectedEndDate}">
+                  <input type="hidden" name="status" value="<c:out value='${selectedStatus}'/>">
+                  <input type="hidden" name="startDate" value="<c:out value='${selectedStartDate}'/>">
+                  <input type="hidden" name="endDate" value="<c:out value='${selectedEndDate}'/>">
                   <div class="input-group input-group-sm">
                     <button type="submit" class="input-group-text bg-white text-muted border-end-0" style="cursor: pointer;" title="Search entire database"><i class="bi bi-search"></i></button>
-                    <input class="form-control form-control-sm border-start-0 ps-0" name="keyword" value="${selectedKeyword}" id="searchInput" type="search" placeholder="Search Order ID, Name, Phone..." aria-label="Search" autocomplete="off">
+                    <input class="form-control form-control-sm border-start-0 ps-0" name="keyword" value="<c:out value='${selectedKeyword}'/>" id="searchInput" type="search" placeholder="Search Order ID, Name, Phone..." aria-label="Search" autocomplete="off">
                   </div>
                 </form>
               </div>
             </div>
 
-            <div class="table-responsive">
-              <table class="table align-middle mb-0 table-orders" id="ordersTable">
+            <div class="table-responsive" style="overflow-x: hidden !important;">
+              <table class="table align-middle mb-0 table-orders" id="ordersTable" style="table-layout: fixed; width: 100%;">
                 <thead>
                   <tr>
-                    <th class="text-center">Order ID</th>
-                    <th>Customer</th>
-                    <th>Phone</th>
-                    <th>Shipping Address</th>
-                    <th class="text-end">Total</th>
-                    <th>Order Date</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-end pe-2">Actions</th>
+                    <th class="text-center" style="width: 7%;">Order ID</th>
+                    <th style="width: 20%;">Customer</th>
+                    <th style="width: 18%;">Product Name</th>
+                    <th class="text-center" style="width: 6%;">Qty</th>
+                    <th class="text-end" style="width: 12%;">Total</th>
+                    <th class="text-center" style="width: 10%;">Order Date</th>
+                    <th class="text-center" style="width: 9%;">Status</th>
+                    <th class="text-center" style="width: 18%;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <c:forEach var="o" items="${orders}">
+                    <c:set var="cust" value="${o.customer}" />
+                    <c:set var="addr" value="${o.address}" />
+                    <c:set var="ship" value="${o.shipment}" />
+                    <c:set var="pay" value="${o.payment}" />
+                    <c:set var="upperStatus" value="${fn:toUpperCase(o.orderStatus)}" />
                     <tr>
-                      <td class="text-center fw-bold text-nowrap" style="font-size: 0.76rem;">#ORD-${o.orderID}</td>
+                      <td class="text-center fw-bold text-nowrap" style="font-size: 0.76rem;">#ORD-<c:out value="${o.orderID}"/></td>
                       <td>
-                        <div class="fw-bold" style="font-size: 0.76rem;" title="${o.shippingName}">${o.shippingName}</div>
-                      </td>
-                      <td class="text-nowrap" style="font-size: 0.74rem;"><i class="bi bi-telephone text-muted me-1"></i>${o.shippingPhone}</td>
-                      <td>
-                        <div class="address-cell" title="${o.shippingAddress}">
-                          <i class="bi bi-geo-alt text-danger me-1"></i>${o.shippingAddress}
+                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.75rem;">
+                          <i class="bi bi-person-circle text-primary me-1"></i><c:out value="${not empty cust && not empty cust.fullName ? cust.fullName : 'N/A'}" />
+                          <small class="text-muted ms-1">(<i class="bi bi-telephone me-0.5"></i><c:out value="${not empty addr && not empty addr.receiverPhone ? addr.receiverPhone : (not empty cust && not empty cust.phone ? cust.phone : 'N/A')}" />)</small>
+                        </div>
+                        <div class="address-cell text-muted text-truncate" style="font-size: 0.68rem;">
+                          <i class="bi bi-geo-alt text-danger me-1"></i><c:out value="${not empty addr && not empty addr.fullAddress ? addr.fullAddress : o.shippingAddress}" />
                         </div>
                       </td>
-                      <td class="text-end price-badge text-nowrap" style="font-size: 0.76rem;">${o.formattedTotalAmount} VND</td>
                       <td>
+                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.75rem;">
+                          <i class="bi bi-headphones text-primary me-1"></i><c:out value="${not empty o.productSummary ? o.productSummary : 'Headphone Product'}" />
+                        </div>
+                        <c:if test="${(upperStatus == 'SHIPPING' || upperStatus == 'DELIVERED') && not empty o.shippingName}">
+                          <div style="font-size: 0.65rem;" class="text-info mt-0.5 text-truncate">
+                            <i class="bi bi-truck me-1"></i>Shipper: <c:out value="${o.shippingName}" /> <c:if test="${not empty o.shippingPhone}">(<c:out value="${o.shippingPhone}" />)</c:if>
+                          </div>
+                        </c:if>
+                      </td>
+                      <td class="text-center text-nowrap">
+                        <span class="badge text-bg-light border text-dark fw-bold" style="font-size: 0.72rem; padding: 0.25em 0.55em;" title="Total quantity of items in this order">
+                          <c:out value="${o.totalQuantity}" />
+                        </span>
+                      </td>
+                      <td class="text-end price-badge text-nowrap" style="font-size: 0.76rem;">
+                        <div><fmt:formatNumber value="${o.totalAmount}" pattern="#,###"/> VND</div>
+                        <c:set var="upperPayStatus" value="${not empty pay ? fn:toUpperCase(pay.paymentStatus) : ''}" />
+                        <c:set var="isPaid" value="${upperPayStatus == 'SUCCESS' || upperPayStatus == 'PAID' || upperPayStatus == 'COMPLETED' || upperStatus == 'DELIVERED'}" />
+                        <c:set var="payMethod" value="${not empty pay && not empty pay.paymentMethod ? fn:toUpperCase(pay.paymentMethod) : 'COD'}" />
+                        <c:choose>
+                          <c:when test="${payMethod == 'VNPAY'}">
+                            <span class="badge ${isPaid ? 'text-bg-success' : 'text-bg-warning'}" style="font-size: 0.62rem; padding: 0.15em 0.38em;">
+                              <i class="bi bi-qr-code-scan me-1"></i>VNPAY ${isPaid ? '(Paid)' : '(Unpaid)'}
+                            </span>
+                          </c:when>
+                          <c:when test="${payMethod == 'BANK_TRANSFER' || payMethod == 'BANKING'}">
+                            <span class="badge ${isPaid ? 'text-bg-info text-white' : 'text-bg-warning'}" style="font-size: 0.62rem; padding: 0.15em 0.38em;">
+                              <i class="bi bi-bank me-1"></i>Banking ${isPaid ? '(Paid)' : '(Unpaid)'}
+                            </span>
+                          </c:when>
+                          <c:otherwise>
+                            <span class="badge ${isPaid ? 'text-bg-success' : 'text-bg-light border text-secondary'}" style="font-size: 0.62rem; padding: 0.15em 0.38em;">
+                              <i class="bi bi-cash-stack me-1"></i>COD ${isPaid ? '(Paid)' : '(Unpaid)'}
+                            </span>
+                          </c:otherwise>
+                        </c:choose>
+                      </td>
+                      <td class="text-center">
                         <div class="lh-sm text-nowrap" style="font-size: 0.71rem;">
-                          <div><i class="bi bi-calendar3 me-1 text-muted"></i>${o.formattedOrderDateOnly}</div>
-                          <c:if test="${not empty o.formattedOrderTimeOnly}">
-                            <small class="text-muted d-block" style="font-size: 0.67rem; margin-left: 1.1rem;">${o.formattedOrderTimeOnly}</small>
+                          <c:if test="${not empty o.orderDate}">
+                            <div><i class="bi bi-calendar3 me-1 text-muted"></i><c:out value="${o.formattedOrderDate}"/></div>
+                            <small class="text-muted d-block" style="font-size: 0.67rem;"><c:out value="${o.formattedOrderTime}"/></small>
                           </c:if>
                         </div>
                       </td>
                       <td class="text-center">
                         <c:choose>
-                          <c:when test="${o.orderStatus == 'PENDING'}">
+                          <c:when test="${upperStatus == 'PENDING'}">
                             <span class="badge text-bg-warning" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-clock me-1"></i>Pending</span>
                           </c:when>
-                          <c:when test="${o.orderStatus == 'CONFIRMED'}">
+                          <c:when test="${upperStatus == 'CONFIRMED' || upperStatus == 'PROCESSING'}">
                             <span class="badge text-bg-info" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-check-lg me-1"></i>Confirmed</span>
                           </c:when>
-                          <c:when test="${o.orderStatus == 'SHIPPING'}">
+                          <c:when test="${upperStatus == 'SHIPPING'}">
                             <span class="badge text-bg-primary" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-truck me-1"></i>Shipping</span>
                           </c:when>
-                          <c:when test="${o.orderStatus == 'DELIVERED'}">
+                          <c:when test="${upperStatus == 'DELIVERED'}">
                             <span class="badge text-bg-success" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-check-circle me-1"></i>Delivered</span>
                           </c:when>
-                          <c:otherwise>
+                          <c:when test="${upperStatus == 'CANCELLED'}">
                             <span class="badge text-bg-danger" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
+                          </c:when>
+                          <c:otherwise>
+                            <span class="badge text-bg-secondary" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-question-circle me-1"></i><c:out value="${o.orderStatus}" default="Unknown"/></span>
                           </c:otherwise>
                         </c:choose>
                       </td>
-                      <td class="text-end pe-2" style="white-space: nowrap;">
-                        <c:choose>
-                          <c:when test="${o.orderStatus == 'PENDING'}">
-                            <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to CONFIRM order #ORD-${o.orderID}?');">
-                              <input type="hidden" name="action" value="updateStatus">
-                              <input type="hidden" name="orderId" value="${o.orderID}">
-                              <input type="hidden" name="newStatus" value="CONFIRMED">
-                              <button type="submit" class="btn btn-info btn-action-sm text-white" title="Confirm order">
-                                <i class="bi bi-check-lg"></i> Confirm
+                      <td class="text-center" style="white-space: nowrap;">
+                        <div class="d-inline-flex gap-1 align-items-center justify-content-center">
+                          <c:choose>
+                            <c:when test="${upperStatus == 'PENDING'}">
+                              <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to CONFIRM order #ORD-${o.orderID}?');">
+                                <input type="hidden" name="action" value="updateStatus">
+                                <input type="hidden" name="orderId" value="${o.orderID}">
+                                <input type="hidden" name="newStatus" value="CONFIRMED">
+                                <button type="submit" class="btn btn-info btn-action-sm text-white" title="Confirm order">
+                                  <i class="bi bi-check-lg"></i> Confirm
+                                </button>
+                              </form>
+                              <button type="button" class="btn btn-danger btn-action-sm" title="Cancel order" onclick="openCancelModal(${o.orderID})">
+                                <i class="bi bi-x-lg"></i> Cancel
                               </button>
-                            </form>
-                            <button type="button" class="btn btn-danger btn-action-sm" title="Cancel order" onclick="openCancelModal(${o.orderID})">
-                              <i class="bi bi-x-lg"></i> Cancel
-                            </button>
-                          </c:when>
-                          <c:when test="${o.orderStatus == 'CONFIRMED'}">
-                            <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to start SHIPPING order #ORD-${o.orderID}?');">
-                              <input type="hidden" name="action" value="updateStatus">
-                              <input type="hidden" name="orderId" value="${o.orderID}">
-                              <input type="hidden" name="newStatus" value="SHIPPING">
-                              <button type="submit" class="btn btn-primary btn-action-sm" title="Start shipping">
+                            </c:when>
+                            <c:when test="${upperStatus == 'CONFIRMED' || upperStatus == 'PROCESSING'}">
+                              <c:set var="rowAddr" value="${not empty addr && not empty addr.fullAddress ? addr.fullAddress : (not empty o.shippingAddress ? o.shippingAddress : '')}" />
+                              <button type="button" class="btn btn-primary btn-action-sm" title="Start shipping" onclick="openShipModal(${o.orderID}, '${fn:escapeXml(o.shippingName)}', '${fn:escapeXml(o.shippingPhone)}', '${fn:escapeXml(rowAddr)}')">
                                 <i class="bi bi-truck"></i> Ship
                               </button>
-                            </form>
-                            <button type="button" class="btn btn-danger btn-action-sm" title="Cancel order" onclick="openCancelModal(${o.orderID})">
-                              <i class="bi bi-x-lg"></i> Cancel
-                            </button>
-                          </c:when>
-                          <c:when test="${o.orderStatus == 'SHIPPING'}">
-                            <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to mark order #ORD-${o.orderID} as COMPLETED?');">
-                              <input type="hidden" name="action" value="updateStatus">
-                              <input type="hidden" name="orderId" value="${o.orderID}">
-                              <input type="hidden" name="newStatus" value="DELIVERED">
-                              <button type="submit" class="btn btn-success btn-action-sm" title="Complete order">
-                                <i class="bi bi-check-circle"></i> Complete
+                              <button type="button" class="btn btn-danger btn-action-sm" title="Cancel order" onclick="openCancelModal(${o.orderID})">
+                                <i class="bi bi-x-lg"></i> Cancel
                               </button>
-                            </form>
-                          </c:when>
-                        </c:choose>
+                            </c:when>
+                            <c:when test="${upperStatus == 'SHIPPING'}">
+                              <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to mark order #ORD-${o.orderID} as COMPLETED?');">
+                                <input type="hidden" name="action" value="updateStatus">
+                                <input type="hidden" name="orderId" value="${o.orderID}">
+                                <input type="hidden" name="newStatus" value="DELIVERED">
+                                <button type="submit" class="btn btn-success btn-action-sm" title="Complete order">
+                                  <i class="bi bi-check-circle"></i> Complete
+                                </button>
+                              </form>
+                            </c:when>
+                          </c:choose>
 
-                        <a href="${pageContext.request.contextPath}/staff/order-detail?id=${o.orderID}" class="btn btn-light btn-action-sm border">
-                          <i class="bi bi-eye"></i> Details
-                        </a>
+                          <a href="${pageContext.request.contextPath}/staff/order-detail?id=${o.orderID}" class="btn btn-light btn-action-sm border" title="View Order Details">
+                            <i class="bi bi-eye"></i> Details
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   </c:forEach>
@@ -387,26 +427,41 @@
 
                 <ul class="pagination pagination-sm mb-0">
                   <c:if test="${currentPage > 1}">
+                    <c:url var="prevPageUrl" value="/staff/orders">
+                      <c:param name="page" value="${currentPage - 1}"/>
+                      <c:param name="status" value="${selectedStatus}"/>
+                      <c:param name="startDate" value="${selectedStartDate}"/>
+                      <c:param name="endDate" value="${selectedEndDate}"/>
+                      <c:param name="keyword" value="${selectedKeyword}"/>
+                    </c:url>
                     <li class="page-item">
-                      <a class="page-link" href="${pageContext.request.contextPath}/staff/orders?page=${currentPage - 1}&status=${selectedStatus}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
-                        &laquo; Prev
-                      </a>
+                      <a class="page-link" href="${prevPageUrl}">&laquo; Prev</a>
                     </li>
                   </c:if>
                   
                   <c:forEach var="p" begin="1" end="${totalPages}">
+                    <c:url var="pageUrl" value="/staff/orders">
+                      <c:param name="page" value="${p}"/>
+                      <c:param name="status" value="${selectedStatus}"/>
+                      <c:param name="startDate" value="${selectedStartDate}"/>
+                      <c:param name="endDate" value="${selectedEndDate}"/>
+                      <c:param name="keyword" value="${selectedKeyword}"/>
+                    </c:url>
                     <li class="page-item ${p == currentPage ? 'active' : ''}">
-                      <a class="page-link" href="${pageContext.request.contextPath}/staff/orders?page=${p}&status=${selectedStatus}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
-                        ${p}
-                      </a>
+                      <a class="page-link" href="${pageUrl}">${p}</a>
                     </li>
                   </c:forEach>
                   
                   <c:if test="${currentPage < totalPages}">
+                    <c:url var="nextPageUrl" value="/staff/orders">
+                      <c:param name="page" value="${currentPage + 1}"/>
+                      <c:param name="status" value="${selectedStatus}"/>
+                      <c:param name="startDate" value="${selectedStartDate}"/>
+                      <c:param name="endDate" value="${selectedEndDate}"/>
+                      <c:param name="keyword" value="${selectedKeyword}"/>
+                    </c:url>
                     <li class="page-item">
-                      <a class="page-link" href="${pageContext.request.contextPath}/staff/orders?page=${currentPage + 1}&status=${selectedStatus}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
-                        Next &raquo;
-                      </a>
+                      <a class="page-link" href="${nextPageUrl}">Next &raquo;</a>
                     </li>
                   </c:if>
                 </ul>
@@ -477,14 +532,128 @@
     </div>
   </div>
 
+  <!-- SHIPPING INFORMATION MODAL -->
+  <div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0">
+        <form method="post" action="${pageContext.request.contextPath}/staff/orders">
+          <input type="hidden" name="action" value="updateStatus">
+          <input type="hidden" name="orderId" id="shipModalOrderId">
+          <input type="hidden" name="newStatus" value="SHIPPING">
+
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title fw-bold" id="shipOrderModalLabel">
+              <i class="bi bi-truck me-2"></i>Start Shipping Order <span id="shipModalOrderDisplayId">#ORD-0</span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <p class="text-secondary small mb-3">Please select the shipping courier, enter shipper details, and tracking code for this delivery.</p>
+
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-person-badge text-success me-1"></i>Shipper Name:</label>
+                <input type="text" class="form-control form-control-sm" name="shipperName" id="shipModalShipperName" placeholder="e.g. Nguyễn Văn Vận">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-telephone text-success me-1"></i>Shipper Phone:</label>
+                <input type="text" class="form-control form-control-sm" name="shipperPhone" id="shipModalShipperPhone" placeholder="e.g. 0988112233">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold fs-7 mb-2"><i class="bi bi-building text-primary me-1"></i>Courier / Shipping Carrier:</label>
+              <select class="form-select form-select-sm" name="shippingProvider" id="shipModalProvider" onchange="onShippingProviderChange()">
+                <option value="Giao Hàng Nhanh (GHN)">Giao Hàng Nhanh (GHN)</option>
+                <option value="Giao Hàng Tiết Kiệm (GHTK)">Giao Hàng Tiết Kiệm (GHTK)</option>
+                <option value="Viettel Post (VTP)">Viettel Post (VTP)</option>
+                <option value="Shopee Express (SPX)">Shopee Express (SPX)</option>
+                <option value="VNPost (Bưu điện Việt Nam)">VNPost (Bưu điện Việt Nam)</option>
+              </select>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-barcode text-info me-1"></i>Tracking Code / Waybill Number:</label>
+              <input type="text" class="form-control form-control-sm" name="trackingNumber" id="shipModalTracking" placeholder="e.g. GHN88921049 (Leave empty to auto-generate)">
+              <small class="text-muted d-block mt-1 fs-8">* Smart Auto-Fill: Pre-generated based on carrier and customer location.</small>
+            </div>
+          </div>
+
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold">
+              <i class="bi bi-truck me-1"></i> Confirm & Start Shipping
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   
   <!-- Client-side Search, Date Validation, Modal, Export CSV & Theme Toggle Script -->
   <script>
+    // Smart Shipping Courier & Tracking Number Helpers
+    function autoDetectShippingProvider(address) {
+      if (!address) return 'Giao Hàng Nhanh (GHN)';
+      var addr = address.toLowerCase();
+      if (addr.indexOf('hà nội') !== -1 || addr.indexOf('hanoi') !== -1 ||
+          addr.indexOf('hồ chí minh') !== -1 || addr.indexOf('ho chi minh') !== -1 ||
+          addr.indexOf('hcm') !== -1 || addr.indexOf('sài gòn') !== -1 || addr.indexOf('sai gon') !== -1 ||
+          addr.indexOf('đà nẵng') !== -1 || addr.indexOf('da nang') !== -1) {
+        return 'Giao Hàng Nhanh (GHN)';
+      }
+      return 'Viettel Post (VTP)';
+    }
+
+    function generateTrackingNumber(provider) {
+      var prefix = 'GHN';
+      if (provider.indexOf('GHTK') !== -1) prefix = 'GHTK';
+      else if (provider.indexOf('Viettel') !== -1 || provider.indexOf('VTP') !== -1) prefix = 'VTP';
+      else if (provider.indexOf('Shopee') !== -1 || provider.indexOf('SPX') !== -1) prefix = 'SPX';
+      else if (provider.indexOf('VNPost') !== -1) prefix = 'VNP';
+      var randomCode = Math.floor(100000000 + Math.random() * 900000000);
+      return prefix + randomCode;
+    }
+
+    function onShippingProviderChange() {
+      var provider = document.getElementById('shipModalProvider').value;
+      var trackingInput = document.getElementById('shipModalTracking');
+      if (trackingInput) {
+        trackingInput.value = generateTrackingNumber(provider);
+      }
+    }
+
+    // Open Ship Modal with Smart Auto-detection
+    function openShipModal(orderId, shipperName, shipperPhone, address) {
+      document.getElementById('shipModalOrderId').value = orderId;
+      document.getElementById('shipModalOrderDisplayId').innerText = '#ORD-' + orderId;
+
+      var detectedProvider = autoDetectShippingProvider(address);
+      var providerSelect = document.getElementById('shipModalProvider');
+      if (providerSelect) {
+        providerSelect.value = detectedProvider;
+      }
+
+      var trackingInput = document.getElementById('shipModalTracking');
+      if (trackingInput) {
+        trackingInput.value = generateTrackingNumber(detectedProvider);
+      }
+
+      document.getElementById('shipModalShipperName').value = shipperName || '';
+      document.getElementById('shipModalShipperPhone').value = shipperPhone || '';
+
+      var modalEl = new bootstrap.Modal(document.getElementById('shipOrderModal'));
+      modalEl.show();
+    }
+
     // Export ALL Matching Orders to Excel / CSV via Servlet Action
     function exportOrdersToCSV() {
-      var status = "${selectedStatus}";
+      var statusSelect = document.querySelector('select[name="status"]');
+      var status = statusSelect ? statusSelect.value : 'ALL';
       var startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
       var endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
       var keyword = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
@@ -539,23 +708,14 @@
       return true;
     }
 
-    // Server-side Full Database Search across ALL pages
-    var searchTimeout = null;
+    // Search input handler (Triggers on Enter key press or search button click)
     var searchInput = document.getElementById('searchInput');
     if (searchInput) {
       searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
-          clearTimeout(searchTimeout);
           document.getElementById('searchForm').submit();
         }
-      });
-
-      searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-          document.getElementById('searchForm').submit();
-        }, 500);
       });
     }
 

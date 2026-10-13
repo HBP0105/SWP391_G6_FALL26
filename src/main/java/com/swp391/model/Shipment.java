@@ -114,4 +114,14 @@ public class Shipment {
     public void setDeliveredAt(LocalDateTime deliveredAt) {
         this.deliveredAt = deliveredAt;
     }
+
+    public String getFormattedEstimatedDate() {
+        if (estimatedDeliveryDate == null) return "3-5 business days";
+        return estimatedDeliveryDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public String getFormattedDeliveredAt() {
+        if (deliveredAt == null) return null;
+        return deliveredAt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
+    }
 }

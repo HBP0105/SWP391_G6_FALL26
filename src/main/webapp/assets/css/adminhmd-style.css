@@ -301,29 +301,41 @@ a { text-decoration: none; }
 
 /* Table Order Optimization to fit screen without horizontal scrollbar */
 .table-orders {
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   width: 100% !important;
-  table-layout: auto;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 .table-orders th {
-  font-size: 0.71rem;
+  font-size: 0.70rem;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--admin-muted);
   white-space: nowrap;
-  padding: 0.4rem 0.2rem;
+  padding: 0.45rem 0.25rem;
+  vertical-align: middle;
 }
 .table-orders th,
 .table-orders td {
-  padding: 0.4rem 0.2rem;
+  padding: 0.4rem 0.25rem;
   vertical-align: middle;
 }
 .table-orders .address-cell {
   line-height: 1.25;
-  font-size: 0.73rem;
-  word-break: break-word;
-  white-space: normal;
-  max-width: 220px;
+  font-size: 0.70rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table-orders .product-name-cell {
+  line-height: 1.25;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table-responsive {
+  overflow-x: hidden !important;
 }
 
 /* Dark mode overrides */

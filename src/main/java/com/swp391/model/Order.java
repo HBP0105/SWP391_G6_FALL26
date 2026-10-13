@@ -113,34 +113,79 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
-    public String getFormattedTotalAmount() {
-        if (totalAmount == null) return "0";
-        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
-        symbols.setGroupingSeparator('.');
-        formatter.setDecimalFormatSymbols(symbols);
-        return formatter.format(totalAmount);
+    // Associated Entities loaded via SQL JOIN
+    private Customer customer;
+    private Address address;
+    private Shipment shipment;
+    private Payment payment;
+    private String productSummary;
+    private int totalQuantity;
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public Shipment getShipment() {
+        return shipment;
+    }
+
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public String getProductSummary() {
+        return productSummary;
+    }
+
+    public void setProductSummary(String productSummary) {
+        this.productSummary = productSummary;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
     }
 
     public String getFormattedOrderDate() {
-        if (orderDate == null) return "";
-        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-    }
-
-    public String getFormattedOrderDateOnly() {
-        if (orderDate == null) return "";
+        if (orderDate == null) return "N/A";
         return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
-    public String getFormattedOrderTimeOnly() {
+    public String getFormattedOrderTime() {
         if (orderDate == null) return "";
         return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
 
+    public String getFormattedOrderDateTime() {
+        if (orderDate == null) return "N/A";
+        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
+    }
+
     public String getFormattedUpdatedAt() {
-        if (updatedAt == null) {
-            return orderDate != null ? getFormattedOrderDate() : "N/A";
-        }
-        return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        if (updatedAt == null) return "N/A";
+        return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
     }
 }

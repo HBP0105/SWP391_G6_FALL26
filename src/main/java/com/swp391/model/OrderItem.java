@@ -75,22 +75,4 @@ public class OrderItem {
         if (unitPrice == null) return BigDecimal.ZERO;
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
-
-    public String getFormattedUnitPrice() {
-        if (unitPrice == null) return "0";
-        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
-        symbols.setGroupingSeparator('.');
-        formatter.setDecimalFormatSymbols(symbols);
-        return formatter.format(unitPrice);
-    }
-
-    public String getFormattedSubtotal() {
-        BigDecimal subtotal = getSubtotal();
-        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
-        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols();
-        symbols.setGroupingSeparator('.');
-        formatter.setDecimalFormatSymbols(symbols);
-        return formatter.format(subtotal);
-    }
 }

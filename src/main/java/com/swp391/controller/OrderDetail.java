@@ -1,11 +1,9 @@
 package com.swp391.controller;
 
-import com.swp391.dao.OrderDAO;
-import com.swp391.model.Order;
-import com.swp391.model.OrderItem;
+import com.swp391.service.OrderService;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,16 +11,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Controller for Order Details & Status Update (Screen 2)
+ * Thin Controller for Order Details & Status Update (Screen 2).
+ * Delegates all data bundling, validation, state machine transitions, and updates to OrderService.
  */
 @WebServlet(name = "OrderDetail", urlPatterns = {"/staff/order-detail"})
 public class OrderDetail extends HttpServlet {
 
-    private OrderDAO orderDAO;
+    private OrderService orderService;
 
     @Override
     public void init() {
-        orderDAO = new OrderDAO();
+        orderService = new OrderService();
     }
 
     @Override
@@ -30,32 +29,44 @@ public class OrderDetail extends HttpServlet {
             throws ServletException, IOException {
 
         String idParam = request.getParameter("id");
-        if (idParam == null || idParam.trim().isEmpty()) {
+        int orderId = 0;
+        if (idParam != null && !idParam.trim().isEmpty()) {
+            try {
+                orderId = Integer.parseInt(idParam.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (orderId <= 0) {
             request.getSession().setAttribute("msgErrorStatus", "Invalid Order ID specified!");
             response.sendRedirect(request.getContextPath() + "/staff/orders");
             return;
         }
 
-        int orderId;
-        try {
-            orderId = Integer.parseInt(idParam.trim());
-        } catch (NumberFormatException e) {
-            request.getSession().setAttribute("msgErrorStatus", "Order ID must be a numeric value!");
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
-            return;
+        // PRG Session Flash Message cleanup (transfers attributes to Request scope)
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        if (session != null) {
+            if (session.getAttribute("msgSuccess") != null) {
+                request.setAttribute("msgSuccess", session.getAttribute("msgSuccess"));
+                request.setAttribute("msgSuccessOrderId", session.getAttribute("msgSuccessOrderId"));
+                request.setAttribute("msgSuccessStatus", session.getAttribute("msgSuccessStatus"));
+                session.removeAttribute("msgSuccess");
+                session.removeAttribute("msgSuccessOrderId");
+                session.removeAttribute("msgSuccessStatus");
+            }
+            if (session.getAttribute("msgErrorStatus") != null) {
+                request.setAttribute("msgErrorStatus", session.getAttribute("msgErrorStatus"));
+                session.removeAttribute("msgErrorStatus");
+            }
         }
 
-        Order order = orderDAO.getOrderById(orderId);
-        if (order == null) {
+        Map<String, Object> bundle = orderService.getOrderDetailBundle(orderId);
+        if (bundle == null || bundle.get("order") == null) {
             request.getSession().setAttribute("msgErrorStatus", "Order #ORD-" + orderId + " was not found in database!");
             response.sendRedirect(request.getContextPath() + "/staff/orders");
             return;
         }
 
-        List<OrderItem> items = orderDAO.getOrderItems(orderId);
-
-        request.setAttribute("order", order);
-        request.setAttribute("items", items);
+        bundle.forEach(request::setAttribute);
 
         request.getRequestDispatcher("/views/staff/order-detail.jsp").forward(request, response);
     }
@@ -75,23 +86,22 @@ public class OrderDetail extends HttpServlet {
                 orderId = Integer.parseInt(request.getParameter("orderId"));
                 String newStatus = request.getParameter("newStatus");
                 String cancelReason = request.getParameter("cancelReason");
+                String shippingProvider = request.getParameter("shippingProvider");
+                String trackingNumber = request.getParameter("trackingNumber");
+                String shipperName = request.getParameter("shipperName");
+                String shipperPhone = request.getParameter("shipperPhone");
 
-                // Validation for CANCELLED reason if status is CANCELLED
-                if ("CANCELLED".equalsIgnoreCase(newStatus) && (cancelReason == null || cancelReason.trim().isEmpty())) {
-                    request.getSession().setAttribute("msgErrorStatus", "Cancellation reason is required when cancelling an order!");
+                // Delegate status update & business validation to OrderService
+                String errorMessage = orderService.processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, shipperName, shipperPhone);
+                if (errorMessage == null) {
+                    request.getSession().setAttribute("msgSuccess", "true");
+                    request.getSession().setAttribute("msgSuccessOrderId", orderId);
+                    request.getSession().setAttribute("msgSuccessStatus", newStatus);
                 } else {
-                    // State Machine Backend Validation
-                    boolean success = orderDAO.updateOrderStatusWithValidation(orderId, newStatus, cancelReason);
-                    if (success) {
-                        request.getSession().setAttribute("msgSuccess", "true");
-                        request.getSession().setAttribute("msgSuccessOrderId", orderId);
-                        request.getSession().setAttribute("msgSuccessStatus", newStatus);
-                    } else {
-                        request.getSession().setAttribute("msgErrorStatus", "Invalid status transition for Order #ORD-" + orderId + "!");
-                    }
+                    request.getSession().setAttribute("msgErrorStatus", errorMessage);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                request.getSession().setAttribute("msgErrorStatus", "Invalid order update parameters!");
             }
         }
 
@@ -107,3 +117,4 @@ public class OrderDetail extends HttpServlet {
         return "Order Detail Servlet";
     }
 }
+

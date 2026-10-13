@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 public class AuditLog {
     public long auditLogID;
+    public Integer staffID;
     public Integer customerID;
     public String action;
     public String entityName;
@@ -16,13 +17,14 @@ public class AuditLog {
     public AuditLog() {
     }
 
-    public AuditLog(long auditLogID, Integer customerID, String action,
+    public AuditLog(long auditLogID, Integer staffID, String action,
             String entityName, String entityID,
             String oldData, String newData,
             LocalDateTime createdAt) {
 
         this.auditLogID = auditLogID;
-        this.customerID = customerID;
+        this.staffID = staffID;
+        this.customerID = staffID;
         this.action = action;
         this.entityName = entityName;
         this.entityID = entityID;
@@ -39,12 +41,21 @@ public class AuditLog {
         this.auditLogID = auditLogID;
     }
 
+    public Integer getStaffID() {
+        return staffID != null ? staffID : customerID;
+    }
+
+    public void setStaffID(Integer staffID) {
+        this.staffID = staffID;
+        this.customerID = staffID;
+    }
+
     public Integer getcustomerID() {
-        return customerID;
+        return getStaffID();
     }
 
     public void setcustomerID(Integer customerID) {
-        this.customerID = customerID;
+        setStaffID(customerID);
     }
 
     public String getAction() {

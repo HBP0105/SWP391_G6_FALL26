@@ -50,6 +50,14 @@ public class AIRecommendation {
         this.recommendationID = recommendationID;
     }
 
+    public Integer getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(Integer customerID) {
+        this.customerID = customerID;
+    }
+
     public Integer getCutomerID() {
         return customerID;
     }
