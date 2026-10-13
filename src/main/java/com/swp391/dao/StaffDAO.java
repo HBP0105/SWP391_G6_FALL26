@@ -85,4 +85,25 @@ public class StaffDAO {
         }
         return false;
     }
+    
+    /**
+     * Kiem tra email, phone co ton tai trong bang staff hay chua.
+     */
+    public boolean checkEmailAndPhoneExist(String email, String phone) {
+        String sql = "SELECT 1 FROM Staff WHERE Email = ? OR Phone = ?";
+        try (Connection conn = dbContext.getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, phone);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

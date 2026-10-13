@@ -74,8 +74,8 @@ public class RegisterServlet extends HttpServlet {
             errorMsg = "Phone number cannot be empty!";
         } else if (!phone.matches("^(0[3|5|7|8|9])[0-9]{8}$")) {
             errorMsg = "Phone number is not valid!";
-        } else if (customerDAO.checkEmailExist(email) || staffDAO.checkEmailExist(email)) {
-            errorMsg = "Email already exists!";
+        } else if (customerDAO.checkEmailAndPhoneExist(email, phone) || staffDAO.checkEmailExist(email)) {
+            errorMsg = "Email or Phone already exists!";
         }
 
         if (errorMsg != null) {

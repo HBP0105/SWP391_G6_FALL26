@@ -98,7 +98,7 @@ public class ForgotPasswordServlet extends HttpServlet {
 
         if (newPassword == null || newPassword.trim().isEmpty()) {
             errorMsg = "Password cannot be empty!";
-        } else if (newPassword.length() < 6) {
+        } else if (newPassword.length() < 6) { //!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$")
             errorMsg = "Password must have at least 6 characters!";
         } else if (confirmPassword == null || !newPassword.equals(confirmPassword)) {
             errorMsg = "Confirm password does not match!";

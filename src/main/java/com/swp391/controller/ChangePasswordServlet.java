@@ -91,7 +91,7 @@ public class ChangePasswordServlet extends HttpServlet {
             return;
         }
 
-        // Email hợp lệ → chuyển sang bước nhập mật khẩu mới
+        // Email hop le thi chuyen sang nhap mat khau moi 
         request.setAttribute("step", "reset");
         request.setAttribute("checkedEmail", email);
         request.getRequestDispatcher("/authen/changePassword.jsp").forward(request, response);
@@ -131,7 +131,7 @@ public class ChangePasswordServlet extends HttpServlet {
         String errorMsg = null;
         if (newPassword == null || newPassword.trim().isEmpty()) {
             errorMsg = "New password cannot be empty!";
-        } else if (newPassword.length() < 6) {
+        } else if (newPassword.length() < 6) { //!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$")
             errorMsg = "Password must have at least 6 characters!";
         } else if (confirmPassword == null || !newPassword.equals(confirmPassword)) {
             errorMsg = "Confirm password does not match!";
