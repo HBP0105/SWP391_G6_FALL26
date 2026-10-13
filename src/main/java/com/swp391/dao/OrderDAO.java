@@ -201,81 +201,56 @@ public class OrderDAO {
     // =========================================================================
     private String getOrderListQuery() {
         return """
-                SELECT o.OrderID, o.CustomerID,
-                       COALESCE(o.TotalAmount, oi.CalcTotalAmount) AS TotalAmount, 
-                       o.OrderDate, o.OrderStatus, o.UpdatedAt, o.CancelReason,
+                SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.OrderDate, o.OrderStatus, o.UpdatedAt, o.CancelReason,
                        o.ShippingName, o.ShippingPhone, o.ShippingAddress,
                        c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
-                       s.ShipmentID, s.ShippingProvider, s.TrackingNumber, s.ShippingStatus,
-                       COALESCE(oi.ProductSummary, 'Headphone Product') AS ProductSummary,
-                       COALESCE(oi.CalcTotalQuantity, 0) AS TotalQuantity
+                       p.PaymentID, p.PaymentMethod, p.PaymentStatus
                 FROM Orders o
                 LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
-                LEFT JOIN (
-                    SELECT p1.OrderID, p1.PaymentID, p1.PaymentMethod, p1.PaymentStatus
-                    FROM Payments p1
-                    INNER JOIN (SELECT OrderID, MAX(PaymentID) AS MaxID FROM Payments GROUP BY OrderID) p2 
-                    ON p1.PaymentID = p2.MaxID
-                ) p ON o.OrderID = p.OrderID
-                LEFT JOIN (
-                    SELECT s1.OrderID, s1.ShipmentID, s1.ShippingProvider, s1.TrackingNumber, s1.ShippingStatus
-                    FROM Shipments s1
-                    INNER JOIN (SELECT OrderID, MAX(ShipmentID) AS MaxID FROM Shipments GROUP BY OrderID) s2 
-                    ON s1.ShipmentID = s2.MaxID
-                ) s ON o.OrderID = s.OrderID
-                LEFT JOIN (
-                    SELECT oi.OrderID,
-                           SUM(oi.Quantity * oi.UnitPrice) AS CalcTotalAmount,
-                           SUM(oi.Quantity) AS CalcTotalQuantity,
-                           STRING_AGG(COALESCE(pr.ProductName, CONCAT('Product #', oi.ProductID)), ', ') AS ProductSummary
-                    FROM OrderItems oi
-                    LEFT JOIN Products pr ON oi.ProductID = pr.ProductID
-                    GROUP BY oi.OrderID
-                ) oi ON o.OrderID = oi.OrderID
+                LEFT JOIN Payments p ON o.OrderID = p.OrderID
                 """;
     }
 
     private void applyFilters(StringBuilder sql, List<Object> params,
             String startDate, String endDate, String status, String keyword) {
+        // 1. Loc theo trang thai don hang (PENDING, SHIPPING, DELIVERED,...)
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
-            sql.append(" AND UPPER(o.OrderStatus) = UPPER(?)");
+            sql.append(" AND o.OrderStatus = ?");
             params.add(status.trim());
         }
+
+        // 2. Loc tu ngay
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append(" AND o.OrderDate >= ?");
-            params.add(startDate);
+            params.add(startDate.trim());
         }
+
+        // 3. Loc den ngay
         if (endDate != null && !endDate.trim().isEmpty()) {
-            if (endDate.endsWith(" 00:00:00")) {
-                sql.append(" AND o.OrderDate < ?");
-            } else {
-                sql.append(" AND o.OrderDate <= ?");
-            }
-            params.add(endDate);
+            sql.append(" AND o.OrderDate <= ?");
+            params.add(endDate.trim());
         }
+
+        // 4. Tim kiem tu khoa theo Ma don, Ten khach hang hoac So dien thoai
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)");
-            String kPattern = "%" + keyword.trim() + "%";
-            params.add(kPattern);
-            params.add(kPattern);
-            params.add(kPattern);
+            String pattern = "%" + keyword.trim() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
         }
     }
 
     public Map<String, Integer> getOrderStatusCountsMap(String startDate, String endDate) {
         Map<String, Integer> map = new HashMap<>();
-        map.put("PENDING", 0);
-        map.put("CONFIRMED", 0);
-        map.put("SHIPPING", 0);
-        map.put("DELIVERED", 0);
-        map.put("CANCELLED", 0);
+        for (String st : java.util.List.of("PENDING", "CONFIRMED", "SHIPPING", "DELIVERED", "CANCELLED")) {
+            map.put(st, 0);
+        }
 
-        StringBuilder sql = new StringBuilder("SELECT UPPER(o.OrderStatus) AS Status, COUNT(DISTINCT o.OrderID) "
-                + "AS Qty FROM Orders o WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT o.OrderStatus, COUNT(o.OrderID) AS Qty FROM Orders o WHERE 1=1");
         List<Object> params = new ArrayList<>();
         applyFilters(sql, params, startDate, endDate, null, null);
-        sql.append(" GROUP BY UPPER(o.OrderStatus)");
+        sql.append(" GROUP BY o.OrderStatus");
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
@@ -283,7 +258,7 @@ public class OrderDAO {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    String st = rs.getString("Status");
+                    String st = rs.getString("OrderStatus");
                     if (st != null) {
                         map.put(st, rs.getInt("Qty"));
                     }
@@ -296,7 +271,7 @@ public class OrderDAO {
     }
 
     public int getTotalOrdersFilteredCount(String startDate, String endDate, String status, String keyword) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(DISTINCT o.OrderID) FROM Orders o "
+        StringBuilder sql = new StringBuilder("SELECT COUNT(o.OrderID) FROM Orders o "
                 + "LEFT JOIN Customers c ON o.CustomerID = c.CustomerID WHERE 1=1");
         List<Object> params = new ArrayList<>();
         applyFilters(sql, params, startDate, endDate, status, keyword);
@@ -324,18 +299,10 @@ public class OrderDAO {
         applyFilters(sql, params, startDate, endDate, status, keyword);
 
         sql.append(" ORDER BY o.OrderDate DESC, o.OrderID DESC");
-        if (pageSize > 0 && pageSize < Integer.MAX_VALUE) {
+        if (pageSize > 0) {
+            int currentPage = Math.max(page, 1);
             sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-            if (page < 1) {
-                page = 1;
-            }
-
-            if (pageSize <= 0) {
-                throw new IllegalArgumentException(
-                        "pageSize must be greater than 0"
-                );
-            }
-            params.add((page - 1) * pageSize);
+            params.add((currentPage - 1) * pageSize);
             params.add(pageSize);
         }
 
@@ -345,7 +312,28 @@ public class OrderDAO {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    orders.add(mapOrder(rs, false));
+                    Order order = mapOrder(rs, false);
+                    orders.add(order);
+                }
+            }
+
+            // Gan thong tin san pham cho cac don hang trong trang
+            for (Order order : orders) {
+                List<OrderItem> items = getOrderItems(order.getOrderID());
+                if (items != null && !items.isEmpty()) {
+                    int totalQty = 0;
+                    StringBuilder summary = new StringBuilder();
+                    for (int i = 0; i < items.size(); i++) {
+                        OrderItem it = items.get(i);
+                        totalQty += it.getQuantity();
+                        if (i > 0) summary.append(", ");
+                        summary.append(it.getProductName());
+                    }
+                    order.setTotalQuantity(totalQty);
+                    order.setProductSummary(summary.toString());
+                } else {
+                    order.setTotalQuantity(0);
+                    order.setProductSummary("Tai nghe");
                 }
             }
         } catch (Exception e) {
@@ -362,35 +350,15 @@ public class OrderDAO {
                 SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, 
                        o.OrderStatus, o.CancelReason, o.OrderDate, o.UpdatedAt,
                        c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       a.AddressID, a.ReceiverName AS AddrReceiverName, a.ReceiverPhone AS AddrReceiverPhone, 
+                       a.ReceiverName AS AddrReceiverName, a.ReceiverPhone AS AddrReceiverPhone, 
                        a.AddressLine, a.Ward, a.District, a.Province,
-                       s.ShipmentID, s.ShippingProvider, s.TrackingNumber, s.ShippingStatus, s.EstimatedDeliveryDate, 
-                       s.ShippedAt, s.DeliveredAt,
-                       p.PaymentID, p.PaymentMethod, p.PaymentStatus, p.TransactionID, p.PaymentDate,
-                       (
-                           SELECT STRING_AGG(COALESCE(pr.ProductName, CONCAT('Product #', oi.ProductID)) 
-                           + CASE WHEN oi.Quantity > 1 THEN CONCAT(' (x', oi.Quantity, ')') ELSE '' END, ', ')
-                           FROM OrderItems oi
-                           LEFT JOIN Products pr ON oi.ProductID = pr.ProductID
-                           WHERE oi.OrderID = o.OrderID
-                       ) AS ProductSummary
+                       s.ShippingProvider, s.TrackingNumber, s.EstimatedDeliveryDate, s.ShippedAt, s.DeliveredAt,
+                       p.PaymentMethod, p.PaymentStatus
                 FROM Orders o
                 LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
-                LEFT JOIN (
-                    SELECT a1.* FROM Addresses a1
-                    INNER JOIN (SELECT CustomerID, MAX(AddressID) AS MaxID FROM Addresses WHERE IsDefault = 1 OR IsDefault IS NULL GROUP BY CustomerID) a2 
-                    ON a1.AddressID = a2.MaxID
-                ) a ON o.CustomerID = a.CustomerID
-                LEFT JOIN (
-                    SELECT s1.* FROM Shipments s1
-                    INNER JOIN (SELECT OrderID, MAX(ShipmentID) AS MaxID FROM Shipments GROUP BY OrderID) s2 
-                    ON s1.ShipmentID = s2.MaxID
-                ) s ON o.OrderID = s.OrderID
-                LEFT JOIN (
-                    SELECT p1.* FROM Payments p1
-                    INNER JOIN (SELECT OrderID, MAX(PaymentID) AS MaxID FROM Payments GROUP BY OrderID) p2 
-                    ON p1.PaymentID = p2.MaxID
-                ) p ON o.OrderID = p.OrderID
+                LEFT JOIN Addresses a ON o.CustomerID = a.CustomerID AND a.IsDefault = 1
+                LEFT JOIN Shipments s ON o.OrderID = s.OrderID
+                LEFT JOIN Payments p ON o.OrderID = p.OrderID
                 WHERE o.OrderID = ?
                 """;
     }
@@ -454,18 +422,6 @@ public class OrderDAO {
     // =========================================================================
     // 4. ATOMIC DATABASE TRANSACTIONS (STATUS UPDATES & STOCK RESTORATION)
     // =========================================================================
-    public boolean updateOrderStatus(int orderID, String newStatus, String cancelReason) {
-        String sql = "UPDATE Orders SET OrderStatus = ?, CancelReason = ?, UpdatedAt = GETDATE() WHERE OrderID = ?";
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, newStatus);
-            ps.setString(2, cancelReason);
-            ps.setInt(3, orderID);
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating status #" + orderID, e);
-            return false;
-        }
-    }
 
     public boolean updateOrderStatusWithShipmentAndPayment(int orderID, String newStatus, String cancelReason,
             String shippingProvider, String trackingNumber, String shipperName, String shipperPhone) {
@@ -550,30 +506,20 @@ public class OrderDAO {
                 try {
                     conn.rollback();
                 } catch (SQLException rollbackEx) {
-                    LOGGER.log(
-                            Level.SEVERE,
-                            "Lỗi rollback đơn hàng #" + orderID,
-                            rollbackEx
-                    );
+                    LOGGER.log(Level.SEVERE, "Rollback failed for order #" + orderID, rollbackEx);
                 }
             }
-
             return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException closeEx) {
+                    LOGGER.log(Level.WARNING, "Failed to close connection for order #" + orderID, closeEx);
+                }
+            }
         }
-        }
-
-    
-
-    public boolean updateOrderStatusWithShipmentAndPayment(int orderID, String newStatus, String cancelReason,
-            String shippingProvider, String trackingNumber) {
-        return updateOrderStatusWithShipmentAndPayment(orderID, newStatus, cancelReason, shippingProvider,
-                trackingNumber, null, null);
-    }
-
-    public boolean restoreStockForCancelledOrder(int orderID) {
-        Order o = getOrderById(orderID);
-        String reason = (o != null && o.getCancelReason() != null) ? o.getCancelReason() : "Cancelled Order #" + orderID;
-        return cancelOrderWithStockRestoration(orderID, reason);
     }
 
     /**

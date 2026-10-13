@@ -1,8 +1,6 @@
 package com.swp391.service;
 
 import com.swp391.dao.OrderDAO;
-import com.swp391.dao.PaymentDAO;
-import com.swp391.dao.ShipmentDAO;
 import com.swp391.model.Address;
 import com.swp391.model.Customer;
 import com.swp391.model.Order;
@@ -30,20 +28,14 @@ import java.util.Map;
 public class OrderService {
 
     private final OrderDAO orderDAO;
-    private final ShipmentDAO shipmentDAO;
-    private final PaymentDAO paymentDAO;
     private static final int MAX_EXPORT_LIMIT = 5000;
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
-        this.shipmentDAO = new ShipmentDAO();
-        this.paymentDAO = new PaymentDAO();
     }
 
-    public OrderService(OrderDAO orderDAO, ShipmentDAO shipmentDAO, PaymentDAO paymentDAO) {
+    public OrderService(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
-        this.shipmentDAO = shipmentDAO;
-        this.paymentDAO = paymentDAO;
     }
 
     /**
@@ -130,10 +122,6 @@ public class OrderService {
                 status, cleanedKw);
     }
 
-    public int getTotalOrdersFilteredCount(String startDate, String endDate, String status) {
-        return getTotalOrdersFilteredCount(startDate, endDate, status, null);
-    }
-
     /**
      * State Machine Validation Rule: Checks if transition from currentStatus to newStatus is allowed.
      */
@@ -192,19 +180,6 @@ public class OrderService {
 
         return orderDAO.updateOrderStatusWithShipmentAndPayment(orderId, newStatus.toUpperCase(), 
                 null, shippingProvider, trackingNumber, cleanShipperName, cleanShipperPhone);
-    }
-
-    public boolean updateOrderStatus(int orderId, String newStatus, String cancelReason, 
-            String shippingProvider, String trackingNumber) {
-        return updateOrderStatus(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, null, null);
-    }
-
-    public boolean updateOrderStatus(int orderId, String newStatus, String cancelReason) {
-        return updateOrderStatus(orderId, newStatus, cancelReason, null, null);
-    }
-
-    public boolean updateOrderStatus(int orderId, String newStatus) {
-        return updateOrderStatus(orderId, newStatus, null, null, null);
     }
 
     /**

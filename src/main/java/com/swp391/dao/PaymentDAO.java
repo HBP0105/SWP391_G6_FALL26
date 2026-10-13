@@ -23,25 +23,16 @@ public class PaymentDAO {
      * @return true if updated successfully
      */
     public boolean updateCODPaymentToPaid(int orderID) {
-        String sql = "UPDATE Payments SET PaymentStatus = 'SUCCESS', PaymentDate = GETDATE() WHERE OrderID = ? "
-                + "AND (PaymentMethod = 'COD' OR PaymentMethod IS NULL)";
+        String sql = "UPDATE Payments SET PaymentStatus = 'SUCCESS', PaymentDate = GETDATE() "
+                + "WHERE OrderID = ? AND (PaymentMethod = 'COD' OR PaymentMethod IS NULL)";
         try (Connection connection = dbContext.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, orderID);
-            int updated = ps.executeUpdate();
-            if (updated > 0) return true;
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            String sqlFallback = "UPDATE Payments SET PaymentStatus = 'Paid', PaymentDate = GETDATE() WHERE OrderID = ? "
-                    + "AND (PaymentMethod = 'COD' OR PaymentMethod IS NULL)";
-            try (Connection connection = dbContext.getConnection();
-                 PreparedStatement ps = connection.prepareStatement(sqlFallback)) {
-                ps.setInt(1, orderID);
-                return ps.executeUpdate() > 0;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public boolean updatePaymentToPaid(int orderID) {
