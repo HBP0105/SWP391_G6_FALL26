@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class Address {
 
-    private int addressID;
-    private int customerID;
+    private int addressId;
+    private int customerId;
     private String receiverName;
     private String receiverPhone;
     private String addressLine;
@@ -19,10 +19,10 @@ public class Address {
     public Address() {
     }
 
-    public Address(int addressID, int customerID, String receiverName, String receiverPhone,
+    public Address(int addressId, int customerId, String receiverName, String receiverPhone,
                    String addressLine, String ward, String district, String province, boolean isDefault) {
-        this.addressID = addressID;
-        this.customerID = customerID;
+        this.addressId = addressId;
+        this.customerId = customerId;
         this.receiverName = receiverName;
         this.receiverPhone = receiverPhone;
         this.addressLine = addressLine;
@@ -32,28 +32,53 @@ public class Address {
         this.isDefault = isDefault;
     }
 
+    public Address(int addressId, int customerId, String receiverName, String receiverPhone,
+                   String addressLine, String ward, String district, String province, boolean isDefault,
+                   LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this(addressId, customerId, receiverName, receiverPhone, addressLine, ward, district, province, isDefault);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public int getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(int addressId) {
+        this.addressId = addressId;
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
+
+    // Aliases
     public int getAddressID() {
-        return addressID;
+        return addressId;
     }
 
     public void setAddressID(int addressID) {
-        this.addressID = addressID;
+        this.addressId = addressID;
     }
 
     public int getCustomerID() {
-        return customerID;
+        return customerId;
     }
 
     public void setCustomerID(int customerID) {
-        this.customerID = customerID;
+        this.customerId = customerID;
     }
 
     public int getUserID() {
-        return customerID;
+        return customerId;
     }
 
     public void setUserID(int userID) {
-        this.customerID = userID;
+        this.customerId = userID;
     }
 
     public String getReceiverName() {
@@ -112,6 +137,14 @@ public class Address {
         this.isDefault = isDefault;
     }
 
+    public boolean isIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -128,9 +161,6 @@ public class Address {
         this.updatedAt = updatedAt;
     }
 
-    /**
-     * Get full formatted address.
-     */
     public String getFullAddress() {
         StringBuilder address = new StringBuilder();
 

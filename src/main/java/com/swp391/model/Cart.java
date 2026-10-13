@@ -6,39 +6,42 @@ package com.swp391.model;
 
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author ADMIN
+ */
 public class Cart {
 
-   
-    public int cartID;
-    public int userID;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
+    private int cartId;
+    private int customerId;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Cart() {
     }
 
-    public Cart(int cartID, int userID,
-            LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.cartID = cartID;
-        this.userID = userID;
+    public Cart(int cartId, int customerId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.cartId = cartId;
+        this.customerId = customerId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public int getCartID() {
-        return cartID;
+    public int getCartId() {
+        return cartId;
     }
 
-    public void setCartID(int cartID) {
-        this.cartID = cartID;
+    public void setCartId(int cartId) {
+        this.cartId = cartId;
     }
 
-    public int getUserID() {
-        return userID;
+    public int getCustomerId() {
+        return customerId;
     }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -56,5 +59,6 @@ public class Cart {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+    
     
 }

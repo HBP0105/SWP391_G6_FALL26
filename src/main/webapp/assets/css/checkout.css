@@ -1,0 +1,125 @@
+/* checkout.css - Custom styling for the checkout page */
+.checkout-section {
+    padding: 60px 0;
+    min-height: 500px;
+}
+
+.checkout-details {
+    background: #fff;
+    padding: 30px;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    margin-bottom: 30px;
+}
+
+.checkout-details h3 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 24px;
+    color: #2B2D42;
+    border-bottom: 1px solid #E4E7ED;
+    padding-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    border-color: #D10024;
+    outline: none;
+}
+
+.order-summary {
+    background: #FBFBFC;
+    padding: 30px;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+}
+
+.order-summary h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #2B2D42;
+    border-bottom: 1px solid #E4E7ED;
+    padding-bottom: 15px;
+}
+
+.order-products {
+    margin-bottom: 20px;
+}
+
+.order-col {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.order-col.order-col-header {
+    font-weight: 700;
+    border-bottom: 1px solid #E4E7ED;
+    padding-bottom: 10px;
+}
+
+.order-total {
+    border-top: 1px solid #E4E7ED;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.order-total .order-col strong, .order-total strong.order-total-price {
+    font-size: 20px;
+    color: #D10024;
+}
+
+.payment-method {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.payment-method h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #2B2D42;
+}
+
+.payment-method .input-radio {
+    margin-bottom: 15px;
+}
+
+.payment-method .input-radio input[type="radio"] {
+    margin-right: 10px;
+}
+
+.payment-method .input-radio label {
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+}
+
+.place-order-btn {
+    width: 100%;
+    display: block;
+    padding: 15px;
+    font-size: 18px;
+    text-transform: uppercase;
+}

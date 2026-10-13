@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 
 public class Order {
 
-    private int orderID;
-    private int customerID;
+    private int orderId;
+    private int customerId;
     private BigDecimal totalAmount;
     private String shippingName;
     private String shippingPhone;
@@ -19,11 +19,11 @@ public class Order {
     public Order() {
     }
 
-    public Order(int orderID, int customerID, BigDecimal totalAmount,
+    public Order(int orderId, int customerId, BigDecimal totalAmount,
             String shippingName, String shippingPhone, String shippingAddress,
             String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
-        this.orderID = orderID;
-        this.customerID = customerID;
+        this.orderId = orderId;
+        this.customerId = customerId;
         this.totalAmount = totalAmount;
         this.shippingName = shippingName;
         this.shippingPhone = shippingPhone;
@@ -33,20 +33,37 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
+    // Getters and Setters with dual-naming support
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
+
     public int getOrderID() {
-        return orderID;
+        return orderId;
     }
 
     public void setOrderID(int orderID) {
-        this.orderID = orderID;
+        this.orderId = orderID;
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
     }
 
     public int getCustomerID() {
-        return customerID;
+        return customerId;
     }
 
     public void setCustomerID(int customerID) {
-        this.customerID = customerID;
+        this.customerId = customerID;
     }
 
     public BigDecimal getTotalAmount() {

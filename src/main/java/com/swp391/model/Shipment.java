@@ -1,62 +1,73 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author HP
- */
 public class Shipment {
-    public long shipmentID;
-    public int orderID;
-    public String shippingProvider;
-    public String trackingNumber;
-    public String shippingAddress;
-    public String shippingStatus;
-    public LocalDate estimatedDeliveryDate;
-    public LocalDateTime shippedAt;
-    public LocalDateTime deliveredAt;
+
+    private long shipmentId;
+    private int orderId;
+    private String shippingProvider;
+    private String trackingNumber;
+    private String shippingAddress;
+    private String shippingStatus;
+    private LocalDate estimatedDeliveryDate;
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
 
     public Shipment() {
     }
 
-    public Shipment(long shipmentID, int orderID,
-            String shippingProvider, String trackingNumber,
-            String shippingAddress, String shippingStatus,
-            LocalDate estimatedDeliveryDate,
-            LocalDateTime shippedAt,
-            LocalDateTime deliveredAt) {
-
-        this.shipmentID = shipmentID;
-        this.orderID = orderID;
+    public Shipment(long shipmentId, int orderId, String shippingProvider,
+            String trackingNumber, String shippingAddress, String shippingStatus,
+            LocalDateTime shippedAt, LocalDateTime deliveredAt) {
+        this.shipmentId = shipmentId;
+        this.orderId = orderId;
         this.shippingProvider = shippingProvider;
         this.trackingNumber = trackingNumber;
         this.shippingAddress = shippingAddress;
         this.shippingStatus = shippingStatus;
-        this.estimatedDeliveryDate = estimatedDeliveryDate;
         this.shippedAt = shippedAt;
         this.deliveredAt = deliveredAt;
     }
 
+    public Shipment(long shipmentId, int orderId, String shippingProvider,
+            String trackingNumber, String shippingAddress, String shippingStatus,
+            LocalDate estimatedDeliveryDate, LocalDateTime shippedAt, LocalDateTime deliveredAt) {
+        this(shipmentId, orderId, shippingProvider, trackingNumber, shippingAddress, shippingStatus, shippedAt, deliveredAt);
+        this.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
+    public long getShipmentId() {
+        return shipmentId;
+    }
+
+    public void setShipmentId(long shipmentId) {
+        this.shipmentId = shipmentId;
+    }
+
     public long getShipmentID() {
-        return shipmentID;
+        return shipmentId;
     }
 
     public void setShipmentID(long shipmentID) {
-        this.shipmentID = shipmentID;
+        this.shipmentId = shipmentID;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
     public int getOrderID() {
-        return orderID;
+        return orderId;
     }
 
     public void setOrderID(int orderID) {
-        this.orderID = orderID;
+        this.orderId = orderID;
     }
 
     public String getShippingProvider() {

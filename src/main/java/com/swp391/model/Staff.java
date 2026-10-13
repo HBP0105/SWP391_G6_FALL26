@@ -1,10 +1,11 @@
-
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
 public class Staff {
+
     private int staffID;
+    private Role role;
     private int roleID;
     private String fullName;
     private String email;
@@ -18,12 +19,27 @@ public class Staff {
     }
 
     public Staff(int staffID, int roleID, String fullName,
-                 String email, String passwordHash, String phone,
-                 String status, LocalDateTime createdAt,
-                 LocalDateTime updatedAt) {
-
+            String email, String passwordHash, String phone,
+            String status, LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
         this.staffID = staffID;
         this.roleID = roleID;
+        this.fullName = fullName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.phone = phone;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public Staff(int staffID, Role role, String fullName, String email,
+            String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.staffID = staffID;
+        this.role = role;
+        if (role != null) {
+            this.roleID = role.getRoleId();
+        }
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -41,12 +57,42 @@ public class Staff {
         this.staffID = staffID;
     }
 
+    public int getStaffId() {
+        return staffID;
+    }
+
+    public void setStaffId(int staffId) {
+        this.staffID = staffId;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+        if (role != null) {
+            this.roleID = role.getRoleId();
+        }
+    }
+
     public int getRoleID() {
+        if (role != null) {
+            return role.getRoleId();
+        }
         return roleID;
     }
 
     public void setRoleID(int roleID) {
         this.roleID = roleID;
+    }
+
+    public int getRoleId() {
+        return getRoleID();
+    }
+
+    public void setRoleId(int roleId) {
+        setRoleID(roleId);
     }
 
     public String getFullName() {

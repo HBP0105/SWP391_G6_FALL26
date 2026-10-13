@@ -4,47 +4,80 @@ import java.math.BigDecimal;
 
 public class OrderItem {
 
-    private int orderItemID;
-    private int orderID;
-    private int productID;
+    private int orderItemId;
+    private int orderId;
+    private int productId;
     private int quantity;
     private BigDecimal unitPrice;
+    private BigDecimal subtotal;
     private String productName;
 
     public OrderItem() {
     }
 
-    public OrderItem(int orderItemID, int orderID, int productID,
-            int quantity, BigDecimal unitPrice) {
-        this.orderItemID = orderItemID;
-        this.orderID = orderID;
-        this.productID = productID;
+    public OrderItem(int orderItemId, int orderId, int productId, int quantity, BigDecimal unitPrice) {
+        this.orderItemId = orderItemId;
+        this.orderId = orderId;
+        this.productId = productId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
 
+    public OrderItem(int orderItemId, int orderId, int productId, int quantity, BigDecimal unitPrice, BigDecimal subtotal) {
+        this.orderItemId = orderItemId;
+        this.orderId = orderId;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+        this.subtotal = subtotal;
+    }
+
+    public int getOrderItemId() {
+        return orderItemId;
+    }
+
+    public void setOrderItemId(int orderItemId) {
+        this.orderItemId = orderItemId;
+    }
+
     public int getOrderItemID() {
-        return orderItemID;
+        return orderItemId;
     }
 
     public void setOrderItemID(int orderItemID) {
-        this.orderItemID = orderItemID;
+        this.orderItemId = orderItemID;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
     public int getOrderID() {
-        return orderID;
+        return orderId;
     }
 
     public void setOrderID(int orderID) {
-        this.orderID = orderID;
+        this.orderId = orderID;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public int getProductID() {
-        return productID;
+        return productId;
     }
 
     public void setProductID(int productID) {
-        this.productID = productID;
+        this.productId = productID;
     }
 
     public int getQuantity() {
@@ -72,7 +105,16 @@ public class OrderItem {
     }
 
     public BigDecimal getSubtotal() {
-        if (unitPrice == null) return BigDecimal.ZERO;
+        if (subtotal != null) {
+            return subtotal;
+        }
+        if (unitPrice == null) {
+            return BigDecimal.ZERO;
+        }
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 }

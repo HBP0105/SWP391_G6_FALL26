@@ -1,37 +1,38 @@
-
 package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class AIRecommendation {
-    public long recommendationID;
-    public Integer customerID;
-    public String sessionID;
-    public int productID;
-    public String recommendationType;
-    public BigDecimal similarityScore;
-    public BigDecimal behaviorScore;
-    public BigDecimal finalScore;
-    public String reason;
-    public boolean isClicked;
-    public boolean isPurchased;
-    public LocalDateTime createdAt;
+
+    private long recommendationId;
+    private Integer customerId;
+    private String sessionId;
+    private int productId;
+
+    private String recommendationType;
+
+    private BigDecimal similarityScore;
+    private BigDecimal behaviorScore;
+    private BigDecimal finalScore;
+
+    private String reason;
+
+    private boolean isClicked;
+    private boolean isPurchased;
+
+    private LocalDateTime createdAt;
 
     public AIRecommendation() {
     }
 
-    public AIRecommendation(long recommendationID, Integer customerID, String sessionID,
-            int productID, String recommendationType,
-            BigDecimal similarityScore, BigDecimal behaviorScore,
-            BigDecimal finalScore, String reason,
-            boolean isClicked, boolean isPurchased,
-            LocalDateTime createdAt) {
-
-        this.recommendationID = recommendationID;
-        this.customerID = customerID;
-        this.sessionID = sessionID;
-        this.productID = productID;
+    public AIRecommendation(long recommendationId, Integer customerId, String sessionId, int productId,
+            String recommendationType, BigDecimal similarityScore, BigDecimal behaviorScore,
+            BigDecimal finalScore, String reason, boolean isClicked, boolean isPurchased, LocalDateTime createdAt) {
+        this.recommendationId = recommendationId;
+        this.customerId = customerId;
+        this.sessionId = sessionId;
+        this.productId = productId;
         this.recommendationType = recommendationType;
         this.similarityScore = similarityScore;
         this.behaviorScore = behaviorScore;
@@ -42,44 +43,78 @@ public class AIRecommendation {
         this.createdAt = createdAt;
     }
 
+    // Standard getters/setters (CamelCase)
+    public long getRecommendationId() {
+        return recommendationId;
+    }
+
+    public void setRecommendationId(long recommendationId) {
+        this.recommendationId = recommendationId;
+    }
+
+    public Integer getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    // Alias getters/setters (UPPERCASE for backward compatibility)
     public long getRecommendationID() {
-        return recommendationID;
+        return recommendationId;
     }
 
     public void setRecommendationID(long recommendationID) {
-        this.recommendationID = recommendationID;
+        this.recommendationId = recommendationID;
     }
 
     public Integer getCustomerID() {
-        return customerID;
+        return customerId;
     }
 
     public void setCustomerID(Integer customerID) {
-        this.customerID = customerID;
+        this.customerId = customerID;
     }
 
     public Integer getCutomerID() {
-        return customerID;
+        return customerId;
     }
 
     public void setCutomerID(Integer customerID) {
-        this.customerID = customerID;
+        this.customerId = customerID;
     }
 
     public String getSessionID() {
-        return sessionID;
+        return sessionId;
     }
 
     public void setSessionID(String sessionID) {
-        this.sessionID = sessionID;
+        this.sessionId = sessionID;
     }
 
     public int getProductID() {
-        return productID;
+        return productId;
     }
 
     public void setProductID(int productID) {
-        this.productID = productID;
+        this.productId = productID;
     }
 
     public String getRecommendationType() {
@@ -127,7 +162,15 @@ public class AIRecommendation {
     }
 
     public void setClicked(boolean clicked) {
-        isClicked = clicked;
+        this.isClicked = clicked;
+    }
+
+    public boolean isIsClicked() {
+        return isClicked;
+    }
+
+    public void setIsClicked(boolean isClicked) {
+        this.isClicked = isClicked;
     }
 
     public boolean isPurchased() {
@@ -135,7 +178,15 @@ public class AIRecommendation {
     }
 
     public void setPurchased(boolean purchased) {
-        isPurchased = purchased;
+        this.isPurchased = purchased;
+    }
+
+    public boolean isIsPurchased() {
+        return isPurchased;
+    }
+
+    public void setIsPurchased(boolean isPurchased) {
+        this.isPurchased = isPurchased;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -145,5 +196,4 @@ public class AIRecommendation {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
 }
