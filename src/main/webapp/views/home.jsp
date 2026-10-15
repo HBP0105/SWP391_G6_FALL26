@@ -173,8 +173,8 @@
                                             <h5>SUBTOTAL: $2940.00</h5>
                                         </div>
                                         <div class="cart-btns">
-                                            <a href="cart.jsp">View Cart</a>
-                                            <a href="checkout.jsp">Checkout <i class="fa fa-arrow-circle-right"></i></a>
+                                            <a href="${pageContext.request.contextPath}/cart">View Cart</a>
+                                            <a href="${pageContext.request.contextPath}/checkout">Checkout <i class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -210,6 +210,7 @@
                     <ul class="main-nav nav navbar-nav">
                         <li class="active"><a href="${pageContext.request.contextPath}/home">Home</a></li>
                         <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
+                        <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
                         <li><a href="#">Headphones</a></li>
                         <li><a href="#">Earbuds</a></li>
                     </ul>
@@ -333,7 +334,15 @@
                                                     </div>
                                                 </div>
                                                 <div class="add-to-cart">
-                                                    <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                        <input type="hidden" name="action" value="add">
+                                                        <input type="hidden" name="productId" value="${product.productId}"> 
+                                                        <input type="hidden" name="quantity" value="1">
+
+                                                        <button type="submit" class="add-to-cart-btn">
+                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             </div>
                                             <!-- /product -->
@@ -452,7 +461,15 @@
                                                     </div>
                                                 </div>
                                                 <div class="add-to-cart">
-                                                    <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                    <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                        <input name="action" value="add">
+                                                        <input name="productId" value="${product.productId}"> 
+                                                        <input name="quantity" value="1">
+
+                                                        <button type="submit" class="add-to-cart-btn">
+                                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                                        </button>
+    </form>
                                                 </div>
                                             </div>
                                             <!-- /product -->
@@ -863,7 +880,7 @@
                     data.forEach(function (item, idx) {
                         var a = document.createElement('a');
                         a.className = 'search-suggestion-item';
-                        a.href = contextPath + '/productDetail?id=' + item.productID;
+                        a.href = contextPath + '/productDetail?id=' + item.productId;
                         a.setAttribute('data-index', idx);
 
                         var imgSrc = item.imageUrl.indexOf('http') === 0
