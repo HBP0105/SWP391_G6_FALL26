@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -35,7 +36,39 @@
                     <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+                    <%@ page import="com.swp391.model.Customer" %>
+                    <%@ page import="com.swp391.model.Staff" %>
+                    <%
+                        Object currentUser = session.getAttribute("customer");
+                        if (currentUser == null) {
+                            currentUser = session.getAttribute("user");
+                        }
+                        if (currentUser == null) {
+                    %>
+                    <!-- Chua dang nhap -->
+                    <li>
+                        <a href="${pageContext.request.contextPath}/login">
+                            <i class="fa fa-user-o"></i> My Account
+                        </a>
+                    </li>
+                    <%
+                        } else {
+                            String displayName = "";
+                            if (currentUser instanceof Customer) {
+                                displayName = ((Customer) currentUser).getFullName();
+                            } else if (currentUser instanceof Staff) {
+                                displayName = ((Staff) currentUser).getFullName();
+                            }
+                    %>
+                    <!-- Da dang nhap -->
+                    <li>
+                        <a href="${pageContext.request.contextPath}/profile">
+                            <i class="fa fa-user"></i> <%= displayName %>
+                        </a>
+                    </li>
+                    <%
+                        }
+                    %>
                 </ul>
             </div>
         </div>
@@ -48,7 +81,7 @@
                     <!-- LOGO -->
                     <div class="col-md-3">
                         <div class="header-logo">
-                            <a href="${pageContext.request.contextPath}/views/home.jsp" class="logo">
+                            <a href="${pageContext.request.contextPath}/home" class="logo">
                                 <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
                             </a>
                         </div>
@@ -66,8 +99,8 @@
         <div class="container">
             <div id="responsive-nav">
                 <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
-                    <li><a href="#">Categories</a></li>
+                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                    <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
                     <li class="active"><a href="#">Cart</a></li>
                 </ul>
             </div>
@@ -116,11 +149,20 @@
                                         <td class="cart-item-title">${item.productName}</td>
                                         <td>$${item.price}</td>
                                         <td>
-                                            <input type="number" class="qty-input" value="${item.quantity}" min="1">
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="display: flex; align-items: center; gap: 5px; margin: 0;">
+                                                <input type="hidden" name="action" value="update">
+                                                <input type="hidden" name="productId" value="${item.productId}">
+                                                
+                                                <input type="number" name="quantity" class="qty-input" value="${item.quantity}" min="1" style="width: 60px;" onchange="this.form.submit()">
+                                            </form>
                                         </td>
-                                        <td>$${item.price * item.quantity}</td>
+                                        <td>$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></td>
                                         <td>
-                                            <button class="remove-btn"><i class="fa fa-trash"></i></button>
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="action" value="remove">
+                                                <input type="hidden" name="productId" value="${item.productId}">
+                                                <button type="submit" class="remove-btn"><i class="fa fa-trash"></i></button>
+                                            </form>
                                         </td>
                                     </tr>
                                     <c:set var="totalPrice" value="${totalPrice + (item.price * item.quantity)}" />
@@ -137,9 +179,9 @@
                         <h3>Order Summary</h3>
                         <div class="summary-item summary-total" style="border-top: none; padding-top: 0;">
                             <span>Total:</span>
-                            <span>$${totalPrice}</span>
+                            <span>$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></span>
                         </div>
-                        <a href="checkout.jsp" class="primary-btn checkout-btn text-center">Proceed to Checkout</a>
+                        <a href="${pageContext.request.contextPath}/checkout" class="primary-btn checkout-btn text-center">Proceed to Checkout</a>
                     </div>
                 </div>
                 <!-- /Cart Summary -->

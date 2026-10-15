@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%--
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <%
     // Kiểm tra phân quyền: Chỉ cho phép Customer xem trang checkout
     Object customer = session.getAttribute("customer");
@@ -9,7 +11,7 @@
         return; 
     }
 %>
---%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,7 +46,40 @@
                     <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+                    <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+                    <%@ page import="com.swp391.model.Customer" %>
+                    <%@ page import="com.swp391.model.Staff" %>
+                    <%
+                        Object currentUser = session.getAttribute("customer");
+                        if (currentUser == null) {
+                            currentUser = session.getAttribute("user");
+                        }
+                        if (currentUser == null) {
+                    %>
+                    <!-- Chưa đăng nhập -->
+                    <li>
+                        <a href="${pageContext.request.contextPath}/login">
+                            <i class="fa fa-user-o"></i> My Account
+                        </a>
+                    </li>
+                    <%
+                        } else {
+                            String displayName = "";
+                            if (currentUser instanceof Customer) {
+                                displayName = ((Customer) currentUser).getFullName();
+                            } else if (currentUser instanceof Staff) {
+                                displayName = ((Staff) currentUser).getFullName();
+                            }
+                    %>
+                    <!-- Đã đăng nhập -->
+                    <li>
+                        <a href="${pageContext.request.contextPath}/profile">
+                            <i class="fa fa-user"></i> <%= displayName %>
+                        </a>
+                    </li>
+                    <%
+                        }
+                    %>
                 </ul>
             </div>
         </div>
@@ -76,8 +111,7 @@
             <div id="responsive-nav">
                 <ul class="main-nav nav navbar-nav">
                     <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
-                    <li><a href="#">Categories</a></li>
-                    <li><a href="${pageContext.request.contextPath}/views/cart.jsp">Cart</a></li>
+                    <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
                     <li class="active"><a href="#">Checkout</a></li>
                 </ul>
             </div>
@@ -88,51 +122,51 @@
     <!-- CHECKOUT SECTION -->
     <div class="section checkout-section">
         <div class="container">
-            <form action="#" method="POST">
+            <form action="${pageContext.request.contextPath}/checkout" method="POST">
                 <div class="row">
                     <!-- Billing Details -->
                     <div class="col-md-7">
                         <div class="checkout-details">
-                            <h3>Shipping Address</h3>
+                            <h3>Shipping Information</h3>
                             
                             <div class="form-group">
-                                <label for="shippingName">Receiver Name</label>
-                                <input type="text" class="form-control" id="shippingName" name="shippingName" placeholder="Enter receiver's name" required>
+                                <label>Customer Name</label>
+                                <input type="text" class="form-control" value="${sessionScope.customer.fullName}" readonly style="background-color: #f5f5f5;">
                             </div>
                             
                             <div class="form-group">
-                                <label for="shippingPhone">Receiver Phone</label>
-                                <input type="tel" class="form-control" id="shippingPhone" name="shippingPhone" placeholder="Enter receiver's phone number" required>
+                                <label>Customer Phone</label>
+                                <input type="tel" class="form-control" value="${sessionScope.customer.phone}" readonly style="background-color: #f5f5f5;">
                             </div>
                             
                             <div class="form-group">
-                                <label for="shippingEmail">Email Address</label>
-                                <input type="email" class="form-control" id="shippingEmail" name="shippingEmail" placeholder="Enter email for notifications" required>
+                                <label>Email Address</label>
+                                <input type="email" class="form-control" value="${sessionScope.customer.email}" readonly style="background-color: #f5f5f5;">
                             </div>
 
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="province">Province/City</label>
+                                        <label for="province">Province/City <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="province" name="province" placeholder="Province" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="district">District</label>
+                                        <label for="district">District <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="district" name="district" placeholder="District" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="ward">Ward</label>
+                                        <label for="ward">Ward <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="ward" name="ward" placeholder="Ward" required>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="addressLine">Address Line</label>
+                                <label for="addressLine">Address Line <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="addressLine" name="addressLine" placeholder="Street name, house number, etc." required>
                             </div>
 
@@ -154,20 +188,19 @@
                                     <strong>Product</strong>
                                     <strong>Total</strong>
                                 </div>
-                                <!-- Static Data Example -->
-                                <div class="order-col">
-                                    <div>1x Headphone XYZ Model 1</div>
-                                    <div>$150.00</div>
-                                </div>
-                                <div class="order-col">
-                                    <div>2x Wireless Earbuds Pro</div>
-                                    <div>$400.00</div>
-                                </div>
+                                <c:set var="totalPrice" value="0" />
+                                <c:forEach items="${requestScope.listCart}" var="item">
+                                    <div class="order-col">
+                                        <div>${item.quantity}x ${item.productName}</div>
+                                        <div>$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></div>
+                                    </div>
+                                    <c:set var="totalPrice" value="${totalPrice + (item.price * item.quantity)}" />
+                                </c:forEach>
                             </div>
                             
                             <div class="order-col">
                                 <div><strong>Subtotal</strong></div>
-                                <div><strong>$550.00</strong></div>
+                                <div><strong>$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></strong></div>
                             </div>
                             <div class="order-col">
                                 <div><strong>Shipping</strong></div>
@@ -184,7 +217,7 @@
                             
                             <div class="order-col order-total">
                                 <div><strong>TOTAL</strong></div>
-                                <div><strong class="order-total-price">$550.00</strong></div>
+                                <div><strong class="order-total-price">$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></strong></div>
                             </div>
 
                             <!-- Payment Method -->

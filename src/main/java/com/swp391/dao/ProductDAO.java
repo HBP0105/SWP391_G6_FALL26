@@ -87,11 +87,11 @@ public class ProductDAO {
         String sql;
         if (categoryId > 0) {
             sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL " +
+                  "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
+                  "WHERE p.Status = 'ACTIVE' AND p.CategoryID = ? " +
                   "FROM Products p " +
                   "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                   "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                  "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
-                  "WHERE p.Status = 'ACTIVE' AND p.CategoryID = ? " +
                   "ORDER BY p.CreatedAt DESC, p.ProductID DESC";
         } else {
             sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL " +

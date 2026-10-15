@@ -47,7 +47,7 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("customer", customer);
             session.setAttribute("role", "CUSTOMER");
-            response.sendRedirect(request.getContextPath() + "/views/home.jsp");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
 
