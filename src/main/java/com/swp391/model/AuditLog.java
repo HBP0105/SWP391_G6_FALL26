@@ -14,6 +14,11 @@ public class AuditLog {
     private String newData;
     private LocalDateTime createdAt;
 
+    // Joined Staff details for Display
+    private String staffName;
+    private String staffEmail;
+    private String roleName;
+
     public AuditLog() {
     }
 
@@ -134,5 +139,40 @@ public class AuditLog {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getDetails() {
+        if (oldData != null && !oldData.isBlank() && newData != null && !newData.isBlank()) {
+            return oldData + " -> " + newData;
+        } else if (newData != null && !newData.isBlank()) {
+            return newData;
+        } else if (oldData != null && !oldData.isBlank()) {
+            return oldData;
+        }
+        return "No details";
     }
 }

@@ -2,6 +2,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+  pageContext.setAttribute("dmyFmt", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+  pageContext.setAttribute("dtFmt", DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
+%>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -17,51 +22,39 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
-    html, body {
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
+    body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    .admin-shell {
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-    }
     .admin-main {
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       flex: 1;
-      overflow: hidden;
     }
     .dashboard-content {
       flex: 1;
-      overflow-y: auto !important;
-      padding: 0.5rem 0.85rem !important;
-      display: flex;
-      flex-direction: column;
+      padding: 0.75rem 1rem !important;
       background: var(--admin-bg, #f8fafc);
     }
     .panel-compact {
-      padding: 0.45rem 0.7rem !important;
-      margin-bottom: 0.4rem !important;
+      padding: 0.65rem 0.9rem !important;
+      margin-bottom: 0.5rem !important;
       border-radius: 8px;
       border: 1px solid rgba(0,0,0,0.06);
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .invoice-table td, .invoice-table th {
-      padding: 0.3rem 0.55rem !important;
-      font-size: 0.75rem !important;
+      padding: 0.45rem 0.65rem !important;
+      font-size: 0.78rem !important;
     }
     .items-table-wrapper {
-      max-height: 250px;
-      overflow-y: auto;
+      overflow-x: auto;
+      width: 100%;
     }
     .price-badge {
       font-weight: 700;
       color: #0284c7;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
     }
 
     /* PRINT ONLY STYLES FOR OFFICIAL INVOICE RECEIPT */
@@ -112,13 +105,13 @@
           <div><strong>Email Address:</strong> <c:out value="${not empty customer && not empty customer.email ? customer.email : 'N/A'}" /></div>
           <div><strong>Phone Number:</strong> <c:out value="${not empty address && not empty address.receiverPhone ? address.receiverPhone : (not empty customer && not empty customer.phone ? customer.phone : 'N/A')}" /></div>
           <div><strong>Account ID:</strong> #CUST-${order.customerID}</div>
-          <div><strong>Delivery Address:</strong> <c:out value="${not empty address && not empty address.fullAddress ? address.fullAddress : (not empty order.shippingAddress ? order.shippingAddress : 'N/A')}" /></div>
+          <div><strong>Delivery Address:</strong> <c:out value="${not empty order.shippingAddress ? order.shippingAddress : (not empty address && not empty address.addressLine ? address.addressLine : 'N/A')}" /></div>
         </div>
       </div>
       <div class="col-6">
         <div class="p-2.5 border rounded h-100 bg-light">
           <h6 class="fw-bold border-bottom pb-1 mb-2 text-uppercase text-secondary" style="font-size: 11px;">2. ORDER & SHIPPING DETAILS</h6>
-          <div><strong>Order Date:</strong> <c:out value="${order.formattedOrderDateTime}" /></div>
+          <div><strong>Order Date:</strong> <c:out value="${not empty order.orderDate ? order.orderDate.format(dtFmt) : 'N/A'}" /></div>
           <div><strong>Status:</strong> <c:out value="${order.orderStatus}" /></div>
           <c:if test="${(order.orderStatus == 'SHIPPING' || order.orderStatus == 'Shipping' || order.orderStatus == 'DELIVERED' || order.orderStatus == 'Delivered') && not empty order.shippingName}">
             <div><strong>Assigned Shipper:</strong> <c:out value="${order.shippingName}" /> <c:if test="${not empty order.shippingPhone}">(Phone: <c:out value="${order.shippingPhone}" />)</c:if></div>
@@ -128,23 +121,23 @@
           </c:if>
           <div><strong>Estimated Delivery Date:</strong> 
             <c:choose>
-              <c:when test="${not empty shipment && not empty shipment.formattedEstimatedDate}">
-                <c:out value="${shipment.formattedEstimatedDate}" />
+              <c:when test="${not empty shipment && not empty shipment.estimatedDeliveryDate}">
+                <c:out value="${shipment.estimatedDeliveryDate.format(dmyFmt)}" />
               </c:when>
               <c:otherwise>3-5 business days</c:otherwise>
             </c:choose>
           </div>
           <div><strong>Actual Delivery Date:</strong> 
             <c:choose>
-              <c:when test="${not empty shipment && not empty shipment.formattedDeliveredAt}">
-                <c:out value="${shipment.formattedDeliveredAt}" />
+              <c:when test="${not empty shipment && not empty shipment.deliveredAt}">
+                <c:out value="${shipment.deliveredAt.format(dtFmt)}" />
               </c:when>
               <c:when test="${order.orderStatus == 'DELIVERED' || order.orderStatus == 'Delivered'}">
                 <c:choose>
                   <c:when test="${not empty order.updatedAt}">
-                    <c:out value="${order.formattedUpdatedAt}" />
+                    <c:out value="${order.updatedAt.format(dtFmt)}" />
                   </c:when>
-                  <c:otherwise><c:out value="${order.formattedOrderDateTime}" /></c:otherwise>
+                  <c:otherwise><c:out value="${not empty order.orderDate ? order.orderDate.format(dtFmt) : 'N/A'}" /></c:otherwise>
                 </c:choose>
               </c:when>
               <c:otherwise>Pending Delivery</c:otherwise>
@@ -254,9 +247,9 @@
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/home">
-          <span class="nav-icon"><i class="bi bi-shop"></i></span>
-          <span class="nav-text">Customer Store</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/admin/audit-logs">
+          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
+          <span class="nav-text">Audit Logs</span>
         </a>
       </nav>
     </aside>
@@ -334,7 +327,7 @@
         </c:if>
 
         <!-- Main Workspace Container (Top Summary divided into 2 boxes + Bottom Purchased Products Table) -->
-        <div class="d-flex flex-column h-100 overflow-hidden gap-2" style="min-height: 0;">
+        <div class="d-flex flex-column gap-2 mb-3">
 
           <!-- TOP SECTION: Order Summary (Divided into 2 Equal Cards Side-by-Side) -->
           <div class="row g-2 flex-shrink-0">
@@ -380,7 +373,7 @@
                         </th>
                         <td class="py-1">
                           <div class="text-dark fw-semibold" style="line-height: 1.25; font-size: 0.71rem;">
-                            <c:out value="${not empty address && not empty address.fullAddress ? address.fullAddress : (not empty order.shippingAddress ? order.shippingAddress : 'N/A')}" />
+                            <c:out value="${not empty order.shippingAddress ? order.shippingAddress : (not empty address && not empty address.addressLine ? address.addressLine : 'N/A')}" />
                           </div>
                         </td>
                       </tr>
@@ -436,7 +429,7 @@
                           <i class="bi bi-clock-history text-info me-1"></i>Order Date
                         </th>
                         <td class="py-1">
-                          <span class="fw-bold text-dark"><c:out value="${order.formattedOrderDateTime}" /></span>
+                          <span class="fw-bold text-dark"><c:out value="${not empty order.orderDate ? order.orderDate.format(dtFmt) : 'N/A'}" /></span>
                         </td>
                       </tr>
                       <tr>
@@ -446,8 +439,8 @@
                         <td class="py-1">
                           <span class="fw-bold text-dark">
                             <c:choose>
-                              <c:when test="${not empty shipment && not empty shipment.formattedEstimatedDate}">
-                                <c:out value="${shipment.formattedEstimatedDate}" />
+                              <c:when test="${not empty shipment && not empty shipment.estimatedDeliveryDate}">
+                                <c:out value="${shipment.estimatedDeliveryDate.format(dmyFmt)}" />
                               </c:when>
                               <c:otherwise>3-5 business days</c:otherwise>
                             </c:choose>
@@ -461,15 +454,15 @@
                         <td class="py-1">
                           <span class="fw-bold text-dark">
                             <c:choose>
-                              <c:when test="${not empty shipment && not empty shipment.formattedDeliveredAt}">
-                                <c:out value="${shipment.formattedDeliveredAt}" />
+                              <c:when test="${not empty shipment && not empty shipment.deliveredAt}">
+                                <c:out value="${shipment.deliveredAt.format(dtFmt)}" />
                               </c:when>
                               <c:when test="${order.orderStatus == 'DELIVERED' || order.orderStatus == 'Delivered'}">
                                 <c:choose>
                                   <c:when test="${not empty order.updatedAt}">
-                                    <c:out value="${order.formattedUpdatedAt}" />
+                                    <c:out value="${order.updatedAt.format(dtFmt)}" />
                                   </c:when>
-                                  <c:otherwise><c:out value="${order.formattedOrderDateTime}" /></c:otherwise>
+                                  <c:otherwise><c:out value="${not empty order.orderDate ? order.orderDate.format(dtFmt) : 'N/A'}" /></c:otherwise>
                                 </c:choose>
                               </c:when>
                               <c:otherwise>
@@ -519,7 +512,7 @@
                                   </button>
                                 </c:when>
                                 <c:when test="${order.orderStatus == 'CONFIRMED'}">
-                                  <c:set var="detailDeliveryAddr" value="${not empty address && not empty address.fullAddress ? address.fullAddress : (not empty order.shippingAddress ? order.shippingAddress : '')}" />
+                                  <c:set var="detailDeliveryAddr" value="${not empty order.shippingAddress ? order.shippingAddress : (not empty address && not empty address.addressLine ? address.addressLine : '')}" />
                                   <button type="button" class="btn btn-primary btn-sm fw-bold px-2 py-0.5" style="font-size: 0.70rem;" onclick="openShipModal(${order.orderID}, '${fn:escapeXml(order.shippingName)}', '${fn:escapeXml(order.shippingPhone)}', '${fn:escapeXml(detailDeliveryAddr)}')">
                                     <i class="bi bi-truck me-1"></i> Ship
                                   </button>
@@ -536,6 +529,9 @@
                                       <i class="bi bi-check-circle me-1"></i> Complete Order
                                     </button>
                                   </form>
+                                  <button type="button" class="btn btn-danger btn-sm fw-bold px-2 py-0.5 ms-1" style="font-size: 0.70rem;" onclick="openCancelModal(${order.orderID})">
+                                    <i class="bi bi-x-lg me-1"></i> Cancel
+                                  </button>
                                 </c:when>
                                 <c:otherwise>
                                   <c:choose>
@@ -578,7 +574,7 @@
           </div>
 
           <!-- BOTTOM SECTION: Purchased Products & Price Details -->
-          <section class="panel panel-compact bg-white d-flex flex-column flex-grow-1 overflow-hidden mb-0">
+          <section class="panel panel-compact bg-white mb-2 shadow-sm">
             <div class="d-flex align-items-center justify-content-between mb-1 border-bottom pb-1">
               <h2 class="h6 mb-0 section-title" style="font-size: 0.82rem;">
                 <i class="bi bi-bag-check me-1.5 text-primary"></i>Purchased Products & Pricing Details (${items.size()})
@@ -586,7 +582,7 @@
               <span class="badge text-bg-light border text-secondary" style="font-size: 0.7rem;">Order Total: <fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/> VND</span>
             </div>
 
-            <div class="items-table-wrapper flex-grow-1">
+            <div class="items-table-wrapper">
               <table class="table align-middle mb-0 invoice-table" style="font-size: 0.76rem;">
                 <thead class="sticky-top bg-light">
                   <tr class="table-light">
@@ -630,7 +626,7 @@
           </section>
 
           <!-- AI 512-VECTOR RECOMMENDATION & CROSS-SELL SECTION -->
-          <section class="panel panel-compact bg-white flex-shrink-0 mb-1" style="border-left: 4px solid #6366f1; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
+          <section class="panel panel-compact bg-white mb-3 shadow-sm" style="border-left: 4px solid #6366f1; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
             <div class="d-flex align-items-center justify-content-between mb-1.5 border-bottom pb-1">
               <div class="d-flex align-items-center gap-1.5">
                 <span class="badge" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 0.68rem;">
@@ -752,7 +748,7 @@
   <div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/order-detail">
+        <form method="post" action="${pageContext.request.contextPath}/staff/order-detail" onsubmit="return validateShipModal()">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="orderId" id="shipModalOrderId">
           <input type="hidden" name="newStatus" value="SHIPPING">
@@ -861,8 +857,42 @@
       document.getElementById('shipModalShipperName').value = shipperName || '';
       document.getElementById('shipModalShipperPhone').value = shipperPhone || '';
 
+      var shipBtn = document.querySelector('#shipOrderModal button[type="submit"]');
+      if (shipBtn) {
+        shipBtn.disabled = false;
+        shipBtn.dataset.submitting = 'false';
+        shipBtn.innerHTML = '<i class="bi bi-truck me-1"></i> Confirm & Start Shipping';
+      }
+
       var modalEl = new bootstrap.Modal(document.getElementById('shipOrderModal'));
       modalEl.show();
+    }
+
+    // Validate Ship Modal Form (Shipper Phone Regex & Double-submit Protection)
+    function validateShipModal() {
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (phoneInput && phoneInput.value.trim() !== '') {
+        var phoneVal = phoneInput.value.trim();
+        var vnPhoneRegex = /^(0[35789])[0-9]{8}$/;
+        if (!vnPhoneRegex.test(phoneVal)) {
+          alert('Invalid shipper phone number! Please enter a valid 10-digit Vietnamese phone number (starting with 03, 05, 07, 08, 09).');
+          phoneInput.focus();
+          return false;
+        }
+      }
+
+      var submitBtn = document.querySelector('#shipOrderModal button[type="submit"]');
+      if (submitBtn) {
+        if (submitBtn.dataset.submitting === 'true') {
+          return false;
+        }
+        submitBtn.dataset.submitting = 'true';
+        setTimeout(function() {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        }, 10);
+      }
+      return true;
     }
 
     function openCancelModal(orderId) {
@@ -871,6 +901,14 @@
       document.getElementById('modalPresetReason').value = '';
       document.getElementById('modalCancelReason').value = '';
       document.getElementById('reasonAsterisk').classList.add('d-none');
+
+      var cancelBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.dataset.submitting = 'false';
+        cancelBtn.innerHTML = '<i class="bi bi-x-lg me-1"></i> Confirm Cancellation';
+      }
+
       var modalEl = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
       modalEl.show();
     }
@@ -898,6 +936,17 @@
       if (!reason) {
         alert('Please enter or select a reason for cancelling the order!');
         return false;
+      }
+      var submitBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
+      if (submitBtn) {
+        if (submitBtn.dataset.submitting === 'true') {
+          return false;
+        }
+        submitBtn.dataset.submitting = 'true';
+        setTimeout(function() {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        }, 10);
       }
       return true;
     }

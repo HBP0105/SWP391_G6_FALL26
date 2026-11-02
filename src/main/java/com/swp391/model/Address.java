@@ -160,33 +160,4 @@ public class Address {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    public String getFullAddress() {
-        StringBuilder address = new StringBuilder();
-
-        if (addressLine != null && !addressLine.trim().isEmpty()) {
-            address.append(addressLine);
-        }
-
-        if (ward != null && !ward.trim().isEmpty()) {
-            appendPart(address, ward);
-        }
-
-        if (district != null && !district.trim().isEmpty()) {
-            appendPart(address, district);
-        }
-
-        if (province != null && !province.trim().isEmpty()) {
-            appendPart(address, province);
-        }
-
-        return address.toString();
-    }
-
-    private void appendPart(StringBuilder address, String part) {
-        if (address.length() > 0) {
-            address.append(", ");
-        }
-        address.append(part);
-    }
 }

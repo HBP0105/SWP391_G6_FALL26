@@ -9,6 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Thin Controller for Order Details & Status Update (Screen 2).
@@ -28,12 +29,12 @@ public class OrderDetail extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession session = request.getSession(false);
+
         String idParam = request.getParameter("id");
         int orderId = 0;
         if (idParam != null && !idParam.trim().isEmpty()) {
-            try {
                 orderId = Integer.parseInt(idParam.trim());
-            } catch (NumberFormatException ignored) {}
         }
 
         if (orderId <= 0) {
@@ -43,7 +44,6 @@ public class OrderDetail extends HttpServlet {
         }
 
         // PRG Session Flash Message cleanup (transfers attributes to Request scope)
-        jakarta.servlet.http.HttpSession session = request.getSession(false);
         if (session != null) {
             if (session.getAttribute("msgSuccess") != null) {
                 request.setAttribute("msgSuccess", session.getAttribute("msgSuccess"));
@@ -78,6 +78,7 @@ public class OrderDetail extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+
         String action = request.getParameter("action");
         int orderId = 0;
 
@@ -91,17 +92,28 @@ public class OrderDetail extends HttpServlet {
                 String shipperName = request.getParameter("shipperName");
                 String shipperPhone = request.getParameter("shipperPhone");
 
-                // Delegate status update & business validation to OrderService
-                String errorMessage = orderService.processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, shipperName, shipperPhone);
-                if (errorMessage == null) {
-                    request.getSession().setAttribute("msgSuccess", "true");
-                    request.getSession().setAttribute("msgSuccessOrderId", orderId);
-                    request.getSession().setAttribute("msgSuccessStatus", newStatus);
+                
+                String processUpdate = orderService.processStatusUpdate(
+                        orderId, newStatus, cancelReason, shippingProvider, trackingNumber,
+                        shipperName, shipperPhone);
+                HttpSession session = request.getSession();
+                if (processUpdate == null) {
+                    session.setAttribute("msgSuccess", "true");
+                    session.setAttribute("msgSuccessOrderId", orderId);
+                    session.setAttribute("msgSuccessStatus", newStatus);
+                    session.removeAttribute("msgErrorStatus");
                 } else {
-                    request.getSession().setAttribute("msgErrorStatus", errorMessage);
+                    session.setAttribute("msgErrorStatus", processUpdate);
+                    session.removeAttribute("msgSuccess");
+                    session.removeAttribute("msgSuccessOrderId");
+                    session.removeAttribute("msgSuccessStatus");
                 }
             } catch (Exception e) {
-                request.getSession().setAttribute("msgErrorStatus", "Invalid order update parameters!");
+                HttpSession session = request.getSession();
+                session.setAttribute("msgErrorStatus", "Invalid order update parameters!");
+                session.removeAttribute("msgSuccess");
+                session.removeAttribute("msgSuccessOrderId");
+                session.removeAttribute("msgSuccessStatus");
             }
         }
 

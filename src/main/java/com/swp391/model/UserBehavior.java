@@ -50,14 +50,6 @@ public class UserBehavior {
         this.customerId = customerId;
     }
 
-    public Integer getcustomerID() {
-        return customerId;
-    }
-
-    public void setcustomerID(Integer customerID) {
-        this.customerId = customerID;
-    }
-
     public Integer getCustomerID() {
         return customerId;
     }

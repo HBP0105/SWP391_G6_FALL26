@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.logging.Level;
 /**
  * Pure Data Access Object (DAO) for Admin Revenue Reporting (Screen 3).
  * Uses ONLY standard Java Map/List collection structures without any custom models.
+ * Clean SQL Text Blocks without string concatenations, aligned with Screen 1 & 2.
  */
 public class RevenueReportDAO {
 
@@ -27,20 +29,14 @@ public class RevenueReportDAO {
         this.dbContext = new DBContext();
     }
 
-    private void applyDateConditions(StringBuilder sql, List<Object> params, 
-            String formattedStartDate, String formattedEndDate, String dateColumn) {
-        if (formattedStartDate != null && !formattedStartDate.trim().isEmpty()) {
-            sql.append(" AND ").append(dateColumn).append(" >= ?");
-            params.add(formattedStartDate);
-        }
-        if (formattedEndDate != null && !formattedEndDate.trim().isEmpty()) {
-            if (formattedEndDate.endsWith(" 00:00:00")) {
-                sql.append(" AND ").append(dateColumn).append(" < ?");
-            } else {
-                sql.append(" AND ").append(dateColumn).append(" <= ?");
-            }
-            params.add(formattedEndDate);
-        }
+    /**
+     * Binds nullable start and end dates to a PreparedStatement in the (? IS NULL OR col >= ?) pattern.
+     */
+    private void setDateParameters(PreparedStatement ps, int startIndex, String startDate, String endDate) throws SQLException {
+        ps.setString(startIndex, startDate);
+        ps.setString(startIndex + 1, startDate);
+        ps.setString(startIndex + 2, endDate);
+        ps.setString(startIndex + 3, endDate);
     }
 
     /**
@@ -55,25 +51,21 @@ public class RevenueReportDAO {
         summary.put("avgOrderValue", BigDecimal.ZERO);
         summary.put("completionRate", 0.0);
 
-        StringBuilder sql = new StringBuilder("""
+        String sql = """
                 SELECT 
-                    SUM(CASE WHEN UPPER(OrderStatus) = 'DELIVERED' THEN TotalAmount ELSE 0 END) AS TotalRevenue,
+                    SUM(CASE WHEN OrderStatus = 'DELIVERED' THEN TotalAmount ELSE 0 END) AS TotalRevenue,
                     COUNT(OrderID) AS TotalOrders,
-                    SUM(CASE WHEN UPPER(OrderStatus) = 'DELIVERED' THEN 1 ELSE 0 END) AS DeliveredOrders,
-                    SUM(CASE WHEN UPPER(OrderStatus) = 'CANCELLED' THEN 1 ELSE 0 END) AS CancelledOrders
+                    SUM(CASE WHEN OrderStatus = 'DELIVERED' THEN 1 ELSE 0 END) AS DeliveredOrders,
+                    SUM(CASE WHEN OrderStatus = 'CANCELLED' THEN 1 ELSE 0 END) AS CancelledOrders
                 FROM Orders
-                WHERE 1=1
-                """);
-
-        List<Object> params = new ArrayList<>();
-        applyDateConditions(sql, params, formattedStartDate, formattedEndDate, "OrderDate");
+                WHERE (? IS NULL OR OrderDate >= ?)
+                  AND (? IS NULL OR OrderDate < ?)
+                """;
 
         try (Connection connection = dbContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            setDateParameters(ps, 1, formattedStartDate, formattedEndDate);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -86,20 +78,11 @@ public class RevenueReportDAO {
                     summary.put("totalOrders", totalOrd);
                     summary.put("deliveredOrders", deliveredOrd);
                     summary.put("cancelledOrders", cancelledOrd);
-
-                    if (deliveredOrd > 0 && totalRev.compareTo(BigDecimal.ZERO) > 0) {
-                        BigDecimal avg = totalRev.divide(new BigDecimal(deliveredOrd), 2, RoundingMode.HALF_UP);
-                        summary.put("avgOrderValue", avg);
-                    }
-
-                    if (totalOrd > 0) {
-                        double rate = (double) deliveredOrd / totalOrd * 100.0;
-                        summary.put("completionRate", Math.round(rate * 10.0) / 10.0);
-                    }
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing getRevenueSummary", e);
+            throw new RuntimeException("Lỗi truy vấn dữ liệu tổng quan doanh thu từ cơ sở dữ liệu!", e);
         }
 
         return summary;
@@ -111,28 +94,36 @@ public class RevenueReportDAO {
      */
     public List<Map<String, Object>> getRevenueTrend(String formattedStartDate, String formattedEndDate, String groupBy) {
         List<Map<String, Object>> trendList = new ArrayList<>();
-
         boolean isMonthly = "monthly".equalsIgnoreCase(groupBy);
-        String dateFormatStr = isMonthly ? "yyyy-MM" : "yyyy-MM-dd";
 
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT FORMAT(OrderDate, '").append(dateFormatStr).append("') AS PeriodLabel, ")
-           .append("SUM(TotalAmount) AS Revenue, COUNT(OrderID) AS OrderCount ")
-           .append("FROM Orders ")
-           .append("WHERE UPPER(OrderStatus) = 'DELIVERED' ");
-
-        List<Object> params = new ArrayList<>();
-        applyDateConditions(sql, params, formattedStartDate, formattedEndDate, "OrderDate");
-
-        sql.append(" GROUP BY FORMAT(OrderDate, '").append(dateFormatStr).append("') ")
-           .append(" ORDER BY PeriodLabel ASC");
+        String sql = isMonthly
+                ? """
+                  SELECT FORMAT(OrderDate, 'MM/yyyy') AS PeriodLabel,
+                         SUM(TotalAmount) AS Revenue,
+                         COUNT(OrderID) AS OrderCount
+                  FROM Orders
+                  WHERE OrderStatus = 'DELIVERED'
+                    AND (? IS NULL OR OrderDate >= ?)
+                    AND (? IS NULL OR OrderDate < ?)
+                  GROUP BY FORMAT(OrderDate, 'MM/yyyy')
+                  ORDER BY MIN(OrderDate) ASC
+                  """
+                : """
+                  SELECT FORMAT(OrderDate, 'dd/MM/yyyy') AS PeriodLabel,
+                         SUM(TotalAmount) AS Revenue,
+                         COUNT(OrderID) AS OrderCount
+                  FROM Orders
+                  WHERE OrderStatus = 'DELIVERED'
+                    AND (? IS NULL OR OrderDate >= ?)
+                    AND (? IS NULL OR OrderDate < ?)
+                  GROUP BY FORMAT(OrderDate, 'dd/MM/yyyy')
+                  ORDER BY MIN(OrderDate) ASC
+                  """;
 
         try (Connection connection = dbContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            setDateParameters(ps, 1, formattedStartDate, formattedEndDate);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -145,50 +136,45 @@ public class RevenueReportDAO {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing getRevenueTrend", e);
+            throw new RuntimeException("Lỗi truy vấn xu hướng doanh thu từ cơ sở dữ liệu!", e);
         }
 
         return trendList;
     }
 
     /**
-     * Fetch top selling products into a List of Maps.
+     * Fetch top 5 selling products into a List of Maps.
      */
-    public List<Map<String, Object>> getTopSellingProducts(String formattedStartDate, String formattedEndDate, int limit) {
+    public List<Map<String, Object>> getTopSellingProducts(String formattedStartDate, String formattedEndDate) {
         List<Map<String, Object>> topProducts = new ArrayList<>();
 
-        StringBuilder sql = new StringBuilder("""
-                SELECT TOP (?) p.ProductID, p.ProductName, COALESCE(c.CategoryName, 'General') AS CategoryName,
-                       SUM(oi.Quantity) AS TotalQty, SUM(oi.Quantity * oi.UnitPrice) AS TotalRev
+        String sql = """
+                SELECT TOP (5) p.ProductID, p.ProductName, c.CategoryName,
+                       SUM(oi.Quantity) AS TotalQty,
+                       SUM(oi.Quantity * oi.UnitPrice) AS TotalRev
                 FROM OrderItems oi
                 JOIN Orders o ON oi.OrderID = o.OrderID
                 JOIN Products p ON oi.ProductID = p.ProductID
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
-                WHERE UPPER(o.OrderStatus) = 'DELIVERED'
-                """);
-
-        List<Object> params = new ArrayList<>();
-        params.add(limit > 0 ? limit : 5);
-
-        applyDateConditions(sql, params, formattedStartDate, formattedEndDate, "o.OrderDate");
-
-        sql.append("""
+                WHERE o.OrderStatus = 'DELIVERED'
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
                 GROUP BY p.ProductID, p.ProductName, c.CategoryName
-                ORDER BY TotalRev DESC
-                """);
+                ORDER BY TotalQty DESC, TotalRev DESC
+                """;
 
         try (Connection connection = dbContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            setDateParameters(ps, 1, formattedStartDate, formattedEndDate);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> map = new HashMap<>();
                     map.put("productID", rs.getInt("ProductID"));
                     map.put("productName", rs.getString("ProductName"));
-                    map.put("categoryName", rs.getString("CategoryName"));
+                    String catName = rs.getString("CategoryName");
+                    map.put("categoryName", catName != null ? catName : "General");
                     map.put("totalQuantitySold", rs.getInt("TotalQty"));
                     map.put("totalRevenue", rs.getBigDecimal("TotalRev") != null ? rs.getBigDecimal("TotalRev") : BigDecimal.ZERO);
                     topProducts.add(map);
@@ -196,6 +182,7 @@ public class RevenueReportDAO {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing getTopSellingProducts", e);
+            throw new RuntimeException("Lỗi truy vấn danh sách sản phẩm bán chạy từ cơ sở dữ liệu!", e);
         }
 
         return topProducts;
@@ -207,62 +194,41 @@ public class RevenueReportDAO {
     public List<Map<String, Object>> getRevenueByCategory(String formattedStartDate, String formattedEndDate) {
         List<Map<String, Object>> list = new ArrayList<>();
 
-        StringBuilder sql = new StringBuilder("""
-                SELECT c.CategoryID, COALESCE(c.CategoryName, 'Uncategorized') AS CategoryName,
+        String sql = """
+                SELECT c.CategoryID, c.CategoryName,
                        COUNT(DISTINCT o.OrderID) AS OrderCount,
                        SUM(oi.Quantity * oi.UnitPrice) AS TotalRev
                 FROM OrderItems oi
                 JOIN Orders o ON oi.OrderID = o.OrderID
                 JOIN Products p ON oi.ProductID = p.ProductID
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
-                WHERE UPPER(o.OrderStatus) = 'DELIVERED'
-                """);
-
-        List<Object> params = new ArrayList<>();
-        applyDateConditions(sql, params, formattedStartDate, formattedEndDate, "o.OrderDate");
-
-        sql.append("""
+                WHERE o.OrderStatus = 'DELIVERED'
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
                 GROUP BY c.CategoryID, c.CategoryName
                 ORDER BY TotalRev DESC
-                """);
-
-        BigDecimal grandTotal = BigDecimal.ZERO;
+                """;
 
         try (Connection connection = dbContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            setDateParameters(ps, 1, formattedStartDate, formattedEndDate);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> map = new HashMap<>();
                     map.put("categoryID", rs.getInt("CategoryID"));
-                    map.put("categoryName", rs.getString("CategoryName"));
+                    String catName = rs.getString("CategoryName");
+                    map.put("categoryName", catName != null ? catName : "Uncategorized");
                     map.put("orderCount", rs.getInt("OrderCount"));
                     BigDecimal rev = rs.getBigDecimal("TotalRev") != null ? rs.getBigDecimal("TotalRev") : BigDecimal.ZERO;
                     map.put("totalRevenue", rev);
-                    grandTotal = grandTotal.add(rev);
                     list.add(map);
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing getRevenueByCategory", e);
-        }
-
-        // Calculate percentage for each category
-        if (grandTotal.compareTo(BigDecimal.ZERO) > 0) {
-            for (Map<String, Object> map : list) {
-                BigDecimal rev = (BigDecimal) map.get("totalRevenue");
-                double pct = rev.multiply(new BigDecimal(100))
-                        .divide(grandTotal, 2, RoundingMode.HALF_UP).doubleValue();
-                map.put("percentage", pct);
-            }
-        } else {
-            for (Map<String, Object> map : list) {
-                map.put("percentage", 0.0);
-            }
+            throw new RuntimeException("Lỗi truy vấn doanh thu theo danh mục từ cơ sở dữ liệu!", e);
         }
 
         return list;
@@ -274,34 +240,32 @@ public class RevenueReportDAO {
     public Map<String, BigDecimal> getRevenueByPaymentMethod(String formattedStartDate, String formattedEndDate) {
         Map<String, BigDecimal> map = new HashMap<>();
 
-        StringBuilder sql = new StringBuilder("""
-                SELECT ISNULL(p.PaymentMethod, 'COD') AS Method, SUM(o.TotalAmount) AS TotalRev
+        String sql = """
+                SELECT COALESCE(p.PaymentMethod, 'COD') AS PaymentMethod,
+                       SUM(o.TotalAmount) AS TotalRev
                 FROM Orders o
                 LEFT JOIN Payments p ON o.OrderID = p.OrderID
-                WHERE UPPER(o.OrderStatus) = 'DELIVERED'
-                """);
-
-        List<Object> params = new ArrayList<>();
-        applyDateConditions(sql, params, formattedStartDate, formattedEndDate, "o.OrderDate");
-
-        sql.append(" GROUP BY ISNULL(p.PaymentMethod, 'COD')");
+                WHERE o.OrderStatus = 'DELIVERED'
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                GROUP BY COALESCE(p.PaymentMethod, 'COD')
+                """;
 
         try (Connection connection = dbContext.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            setDateParameters(ps, 1, formattedStartDate, formattedEndDate);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    String method = rs.getString("Method");
+                    String method = rs.getString("PaymentMethod");
                     BigDecimal rev = rs.getBigDecimal("TotalRev") != null ? rs.getBigDecimal("TotalRev") : BigDecimal.ZERO;
                     map.put(method != null ? method : "COD", rev);
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing getRevenueByPaymentMethod", e);
+            throw new RuntimeException("Lỗi truy vấn doanh thu theo phương thức thanh toán từ cơ sở dữ liệu!", e);
         }
 
         return map;

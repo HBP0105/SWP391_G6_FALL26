@@ -3,12 +3,16 @@ package com.swp391.service;
 import com.swp391.dao.RevenueReportDAO;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Business Service handling all operations for Admin Revenue Reporting (Screen 3).
@@ -16,6 +20,8 @@ import java.util.Map;
  * Uses ONLY standard Java Map/List data structures without any custom models.
  */
 public class RevenueService {
+
+    private static final Logger LOGGER = Logger.getLogger(RevenueService.class.getName());
 
     private final RevenueReportDAO revenueReportDAO;
 
@@ -103,31 +109,95 @@ public class RevenueService {
 
         String activeGroupBy = ("monthly".equalsIgnoreCase(groupBy)) ? "monthly" : "daily";
 
-        // 1. Overall Summary Map
-        Map<String, Object> summary = revenueReportDAO.getRevenueSummary(formattedStart, formattedEnd);
+        try {
+            // 1. Overall Summary Map
+            Map<String, Object> summary = revenueReportDAO.getRevenueSummary(formattedStart, formattedEnd);
+            if (summary != null) {
+                BigDecimal totalRev = (BigDecimal) summary.getOrDefault("totalRevenue", BigDecimal.ZERO);
+                int totalOrd = (int) summary.getOrDefault("totalOrders", 0);
+                int deliveredOrd = (int) summary.getOrDefault("deliveredOrders", 0);
 
-        // 2. Revenue Trend Chart Data List
-        List<Map<String, Object>> trend = revenueReportDAO.getRevenueTrend(formattedStart, formattedEnd, activeGroupBy);
+                summary.put("avgOrderValue", calculateAverageOrderValue(totalRev, deliveredOrd));
+                summary.put("completionRate", calculateCompletionRate(totalOrd, deliveredOrd));
+            }
 
-        // 3. Top Selling Products List
-        List<Map<String, Object>> topProducts = revenueReportDAO.getTopSellingProducts(formattedStart, formattedEnd, 5);
+            // 2. Revenue Trend Chart Data List
+            List<Map<String, Object>> trend = revenueReportDAO.getRevenueTrend(formattedStart, formattedEnd, activeGroupBy);
 
-        // 4. Revenue By Category List
-        List<Map<String, Object>> categories = revenueReportDAO.getRevenueByCategory(formattedStart, formattedEnd);
+            // 3. Top Selling Products List (Top 5)
+            List<Map<String, Object>> topProducts = revenueReportDAO.getTopSellingProducts(formattedStart, formattedEnd);
 
-        // 5. Revenue By Payment Method Map
-        Map<String, BigDecimal> paymentMethods = revenueReportDAO.getRevenueByPaymentMethod(formattedStart, formattedEnd);
+            // 4. Revenue By Category List
+            List<Map<String, Object>> categories = revenueReportDAO.getRevenueByCategory(formattedStart, formattedEnd);
+            if (categories != null && !categories.isEmpty()) {
+                BigDecimal grandTotal = BigDecimal.ZERO;
+                for (Map<String, Object> cat : categories) {
+                    BigDecimal rev = (BigDecimal) cat.getOrDefault("totalRevenue", BigDecimal.ZERO);
+                    if (rev != null) {
+                        grandTotal = grandTotal.add(rev);
+                    }
+                }
+                for (Map<String, Object> cat : categories) {
+                    BigDecimal rev = (BigDecimal) cat.getOrDefault("totalRevenue", BigDecimal.ZERO);
+                    cat.put("percentage", calculateRevenuePercentage(rev, grandTotal));
+                }
+            }
 
-        bundle.put("summary", summary);
-        bundle.put("trend", trend);
-        bundle.put("topProducts", topProducts);
-        bundle.put("categories", categories);
-        bundle.put("paymentMethods", paymentMethods);
+            // 5. Revenue By Payment Method Map
+            Map<String, BigDecimal> paymentMethods = revenueReportDAO.getRevenueByPaymentMethod(formattedStart, formattedEnd);
+
+            bundle.put("summary", summary != null ? summary : new HashMap<String, Object>());
+            bundle.put("trend", trend);
+            bundle.put("topProducts", topProducts);
+            bundle.put("categories", categories);
+            bundle.put("paymentMethods", paymentMethods);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error querying revenue report data from database", e);
+            bundle.put("msgError", "Failed to connect or load revenue report data from database. Please verify SQL Server connection!");
+            bundle.put("summary", new HashMap<String, Object>());
+            bundle.put("trend", new ArrayList<Map<String, Object>>());
+            bundle.put("topProducts", new ArrayList<Map<String, Object>>());
+            bundle.put("categories", new ArrayList<Map<String, Object>>());
+            bundle.put("paymentMethods", new HashMap<String, BigDecimal>());
+        }
         bundle.put("selectedStartDate", startDate != null ? startDate : "");
         bundle.put("selectedEndDate", endDate != null ? endDate : "");
         bundle.put("selectedGroupBy", activeGroupBy);
 
         return bundle;
+    }
+
+    /**
+     * Business Calculation: Compute Average Order Value (AOV).
+     * Pure calculation: Takes explicit values and returns computed result without mutating caller maps.
+     */
+    public BigDecimal calculateAverageOrderValue(BigDecimal totalRevenue, int deliveredOrders) {
+        if (totalRevenue == null || deliveredOrders <= 0 || totalRevenue.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return totalRevenue.divide(new BigDecimal(deliveredOrders), 0, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Business Calculation: Compute Completion Rate percentage.
+     * Pure calculation: Takes total and delivered orders and returns percentage rounded to 1 decimal place.
+     */
+    public double calculateCompletionRate(int totalOrders, int deliveredOrders) {
+        if (totalOrders <= 0 || deliveredOrders <= 0) {
+            return 0.0;
+        }
+        double rate = (double) deliveredOrders / totalOrders * 100.0;
+        return Math.round(rate * 10.0) / 10.0;
+    }
+
+    /**
+     * Business Calculation: Compute revenue percentage of a category against the grand total.
+     */
+    public double calculateRevenuePercentage(BigDecimal part, BigDecimal grandTotal) {
+        if (part == null || grandTotal == null || grandTotal.compareTo(BigDecimal.ZERO) <= 0 || part.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0.0;
+        }
+        return part.multiply(new BigDecimal(100)).divide(grandTotal, 2, RoundingMode.HALF_UP).doubleValue();
     }
 
     /**

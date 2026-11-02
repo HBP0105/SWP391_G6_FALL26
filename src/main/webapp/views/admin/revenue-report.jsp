@@ -10,6 +10,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Revenue Overview Report | Admin Dashboard</title>
 
+  <!-- Early Theme Initialization to prevent white flash -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('adminTheme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    })();
+  </script>
+
   <!-- Bootstrap 5 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
@@ -20,6 +29,84 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
+    /* Dark mode overrides for Revenue Report */
+    html[data-theme="dark"] body {
+      background-color: var(--admin-bg, #0f172a) !important;
+      color: var(--admin-text, #e5edf7) !important;
+    }
+    html[data-theme="dark"] .admin-navbar,
+    html[data-theme="dark"] .bg-white {
+      background-color: var(--admin-surface, #182235) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .card {
+      background-color: var(--admin-surface, #182235) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .text-dark {
+      color: #f1f5f9 !important;
+    }
+    html[data-theme="dark"] .table {
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .table-light {
+      background-color: var(--admin-surface-soft, #111827) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .table-light th,
+    html[data-theme="dark"] .table-light td {
+      background-color: var(--admin-surface-soft, #111827) !important;
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .form-select,
+    html[data-theme="dark"] .form-control {
+      background-color: var(--admin-surface, #182235) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .date-ddmmyyyy-display {
+      background-color: var(--admin-surface, #182235) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+    html[data-theme="dark"] .dropdown-menu {
+      background-color: var(--admin-surface, #182235) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+      color: var(--admin-text, #e5edf7) !important;
+    }
+    html[data-theme="dark"] .dropdown-item {
+      color: var(--admin-text, #e5edf7) !important;
+    }
+    html[data-theme="dark"] .dropdown-item:hover {
+      background-color: var(--admin-surface-soft, #111827) !important;
+    }
+    html[data-theme="dark"] .badge.bg-light {
+      background-color: var(--admin-surface-soft, #111827) !important;
+      color: var(--admin-text, #e5edf7) !important;
+      border-color: var(--admin-border, #2f3b52) !important;
+    }
+
+    .date-ddmmyyyy-wrapper {
+      position: relative;
+    }
+    .date-ddmmyyyy-display {
+      background-color: #fff !important;
+      cursor: pointer;
+    }
+    .date-native-picker {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 36px;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
     .revenue-card-icon {
       width: 48px;
       height: 48px;
@@ -70,13 +157,13 @@
           <span class="nav-icon"><i class="bi bi-robot"></i></span>
           <span class="nav-text">AI Performance & Config</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/staff/orders">
-          <span class="nav-icon"><i class="bi bi-table"></i></span>
-          <span class="nav-text">Order Management</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/admin/behavior-pipeline">
+          <span class="nav-icon"><i class="bi bi-diagram-3"></i></span>
+          <span class="nav-text">Behavior Pipeline</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/home">
-          <span class="nav-icon"><i class="bi bi-shop"></i></span>
-          <span class="nav-text">Customer Store</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/admin/audit-logs">
+          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
+          <span class="nav-text">Audit Logs</span>
         </a>
       </nav>
     </aside>
@@ -124,10 +211,10 @@
             </div>
           </div>
 
-          <!-- Alert Notification Error Validation -->
+          <!-- Alert Notification Error -->
           <c:if test="${not empty msgError}">
             <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Validation Error:</strong> <c:out value="${msgError}"/>
+              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Error: </strong> <c:out value="${msgError}"/>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           </c:if>
@@ -140,7 +227,7 @@
                   <div>
                     <span class="text-muted small fw-semibold text-uppercase">Total Revenue</span>
                     <h3 class="fw-bold text-primary my-1">
-                      <fmt:formatNumber value="${summary.totalRevenue}" type="number" groupingUsed="true"/> <small class="fs-6">VND</small>
+                      <fmt:formatNumber value="${summary.totalRevenue}" type="number" groupingUsed="true" maxFractionDigits="0"/> <small class="fs-6">VND</small>
                     </h3>
                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
                       <i class="bi bi-check-circle me-1"></i>Delivered Orders
@@ -178,7 +265,7 @@
                   <div>
                     <span class="text-muted small fw-semibold text-uppercase">Avg Order Value (AOV)</span>
                     <h3 class="fw-bold text-warning my-1">
-                      <fmt:formatNumber value="${summary.avgOrderValue}" type="number" groupingUsed="true"/> <small class="fs-6">VND</small>
+                      <fmt:formatNumber value="${summary.avgOrderValue}" type="number" groupingUsed="true" maxFractionDigits="0"/> <small class="fs-6">VND</small>
                     </h3>
                     <span class="text-muted small">Per successful transaction</span>
                   </div>
@@ -215,17 +302,23 @@
               <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-calendar-event me-1"></i>From Date:</label>
-                  <input type="date" name="startDate" id="startDate" value="<c:out value='${selectedStartDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm">
+                  <div class="date-ddmmyyyy-wrapper">
+                    <input type="text" id="startDateDisplay" placeholder="dd/mm/yyyy" class="form-control form-control-sm date-ddmmyyyy-display" readonly>
+                    <input type="date" name="startDate" id="startDate" value="<c:out value='${selectedStartDate}'/>" max="<%= LocalDate.now() %>" class="date-native-picker" title="Click to pick From Date">
+                  </div>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-calendar-check me-1"></i>To Date:</label>
-                  <input type="date" name="endDate" id="endDate" value="<c:out value='${selectedEndDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm">
+                  <div class="date-ddmmyyyy-wrapper">
+                    <input type="text" id="endDateDisplay" placeholder="dd/mm/yyyy" class="form-control form-control-sm date-ddmmyyyy-display" readonly>
+                    <input type="date" name="endDate" id="endDate" value="<c:out value='${selectedEndDate}'/>" max="<%= LocalDate.now() %>" class="date-native-picker" title="Click to pick To Date">
+                  </div>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-pie-chart me-1"></i>Group By:</label>
                   <select name="groupBy" class="form-select form-select-sm">
-                    <option value="daily" ${selectedGroupBy == 'daily' ? 'selected' : ''}>Daily (Theo Ngày)</option>
-                    <option value="monthly" ${selectedGroupBy == 'monthly' ? 'selected' : ''}>Monthly (Theo Tháng)</option>
+                    <option value="daily" ${selectedGroupBy == 'daily' ? 'selected' : ''}>Daily</option>
+                    <option value="monthly" ${selectedGroupBy == 'monthly' ? 'selected' : ''}>Monthly</option>
                   </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -235,6 +328,13 @@
                   <a href="${pageContext.request.contextPath}/admin/revenue-report" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                   </a>
+                </div>
+
+                <div class="col-12 d-flex align-items-center gap-1 pt-1">
+                  <span class="text-muted small me-1" style="font-size: 0.75rem;"><i class="bi bi-lightning-charge-fill text-warning"></i> Quick select:</span>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('today')">Today</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('7days')">Last 7 days</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('month')">This month</button>
                 </div>
               </div>
             </form>
@@ -249,7 +349,13 @@
                   <h2 class="h6 fw-bold mb-0 text-dark"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Revenue Over Time Trend</h2>
                   <span class="badge bg-light text-dark border"><c:out value="${selectedGroupBy == 'monthly' ? 'Monthly Trend' : 'Daily Trend'}"/></span>
                 </div>
-                <div class="chart-container">
+                <div class="chart-container position-relative">
+                  <c:if test="${empty trend}">
+                    <div class="position-absolute top-50 start-50 translate-middle text-center text-muted">
+                      <i class="bi bi-bar-chart fs-1 opacity-50"></i>
+                      <p class="mb-0 small fw-semibold">No revenue recorded in this period</p>
+                    </div>
+                  </c:if>
                   <canvas id="revenueTrendChart"></canvas>
                 </div>
               </div>
@@ -261,7 +367,13 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h2 class="h6 fw-bold mb-0 text-dark"><i class="bi bi-credit-card-2-front text-success me-2"></i>Payment Methods</h2>
                 </div>
-                <div class="chart-container d-flex align-items-center justify-content-center">
+                <div class="chart-container d-flex align-items-center justify-content-center position-relative">
+                  <c:if test="${empty paymentMethods}">
+                    <div class="position-absolute top-50 start-50 translate-middle text-center text-muted">
+                      <i class="bi bi-credit-card fs-1 opacity-50"></i>
+                      <p class="mb-0 small fw-semibold">No payment transactions found</p>
+                    </div>
+                  </c:if>
                   <canvas id="paymentMethodChart"></canvas>
                 </div>
               </div>
@@ -299,7 +411,7 @@
                           <td><span class="badge bg-info-subtle text-info border border-info-subtle"><c:out value="${prod.categoryName}"/></span></td>
                           <td class="text-center fw-bold text-primary">${prod.totalQuantitySold}</td>
                           <td class="text-end fw-bold text-success">
-                            <fmt:formatNumber value="${prod.totalRevenue}" type="number" groupingUsed="true"/> VND
+                            <fmt:formatNumber value="${prod.totalRevenue}" type="number" groupingUsed="true" maxFractionDigits="0"/> VND
                           </td>
                         </tr>
                       </c:forEach>
@@ -336,7 +448,7 @@
                           <td class="fw-semibold"><c:out value="${cat.categoryName}"/></td>
                           <td class="text-center"><span class="badge bg-light text-dark border">${cat.orderCount}</span></td>
                           <td class="text-end fw-bold">
-                            <fmt:formatNumber value="${cat.totalRevenue}" type="number" groupingUsed="true"/>
+                            <fmt:formatNumber value="${cat.totalRevenue}" type="number" groupingUsed="true" maxFractionDigits="0"/>
                           </td>
                           <td>
                             <div class="d-flex align-items-center gap-2">
@@ -370,11 +482,166 @@
 
   <!-- Chart.js Render Script -->
   <script>
+    // Client-side Date Range Validation
+    function validateRevenueDates() {
+      const startInput = document.getElementById('startDate');
+      const endInput = document.getElementById('endDate');
+      const startVal = startInput ? startInput.value : '';
+      const endVal = endInput ? endInput.value : '';
+      const today = new Date().toISOString().split('T')[0];
+
+      if (startVal && startVal > today) {
+        alert('Validation Error: "From Date" cannot be in the future!');
+        startInput.value = '';
+        startInput.focus();
+        return false;
+      }
+
+      if (endVal && endVal > today) {
+        alert('Validation Error: "To Date" cannot be in the future!');
+        endInput.value = '';
+        endInput.focus();
+        return false;
+      }
+
+      if (startVal && endVal && startVal > endVal) {
+        alert('Validation Error: "From Date" cannot be later than "To Date"!');
+        startInput.focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    // Format Date object to local YYYY-MM-DD
+    function formatLocalDate(d) {
+      var year = d.getFullYear();
+      var month = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
+
+    // Quick Date Range Filter Handler
+    function setQuickDate(type) {
+      var now = new Date();
+      var todayStr = formatLocalDate(now);
+      var startStr = todayStr;
+      var endStr = todayStr;
+
+      if (type === 'today') {
+        startStr = todayStr;
+        endStr = todayStr;
+      } else if (type === '7days') {
+        var d7 = new Date();
+        d7.setDate(now.getDate() - 6);
+        startStr = formatLocalDate(d7);
+        endStr = todayStr;
+      } else if (type === 'month') {
+        var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        startStr = formatLocalDate(firstDay);
+        endStr = todayStr;
+      }
+
+      var startInput = document.getElementById('startDate');
+      var endInput = document.getElementById('endDate');
+      var startDisplay = document.getElementById('startDateDisplay');
+      var endDisplay = document.getElementById('endDateDisplay');
+
+      if (startInput) startInput.value = startStr;
+      if (endInput) endInput.value = endStr;
+      if (startDisplay) startDisplay.value = formatToDMY(startStr);
+      if (endDisplay) endDisplay.value = formatToDMY(endStr);
+
+      var form = document.getElementById('filterForm');
+      if (form) form.submit();
+    }
+
+    // Format YYYY-MM-DD to DD/MM/YYYY
+    function formatToDMY(isoDate) {
+      if (!isoDate || isoDate.indexOf('-') === -1) return '';
+      const parts = isoDate.split('-');
+      if (parts.length === 3) {
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+      return isoDate;
+    }
+
+    // Attach validation & format sync to filter form
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterForm = document.getElementById('filterForm');
+      const startInput = document.getElementById('startDate');
+      const endInput = document.getElementById('endDate');
+      const startDisplay = document.getElementById('startDateDisplay');
+      const endDisplay = document.getElementById('endDateDisplay');
+
+      // Initialize visible display with dd/mm/yyyy format
+      if (startInput && startDisplay) {
+        startDisplay.value = formatToDMY(startInput.value);
+        startInput.addEventListener('input', function() {
+          startDisplay.value = formatToDMY(this.value);
+        });
+        startDisplay.addEventListener('click', function() {
+          if (startInput.showPicker) {
+            startInput.showPicker();
+          } else {
+            startInput.focus();
+          }
+        });
+      }
+
+      if (endInput && endDisplay) {
+        endDisplay.value = formatToDMY(endInput.value);
+        endInput.addEventListener('input', function() {
+          endDisplay.value = formatToDMY(this.value);
+        });
+        endDisplay.addEventListener('click', function() {
+          if (endInput.showPicker) {
+            endInput.showPicker();
+          } else {
+            endInput.focus();
+          }
+        });
+      }
+
+      if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+          if (!validateRevenueDates()) {
+            e.preventDefault();
+          }
+        });
+      }
+
+      if (startInput) {
+        startInput.addEventListener('change', function() {
+          if (startDisplay) startDisplay.value = formatToDMY(this.value);
+          if (this.value && endInput && endInput.value && this.value > endInput.value) {
+            alert('Validation Error: "From Date" cannot be later than "To Date"!');
+            this.value = '';
+            if (startDisplay) startDisplay.value = '';
+          }
+        });
+      }
+
+      if (endInput) {
+        endInput.addEventListener('change', function() {
+          if (endDisplay) endDisplay.value = formatToDMY(this.value);
+          if (this.value && startInput && startInput.value && this.value < startInput.value) {
+            alert('Validation Error: "To Date" cannot be earlier than "From Date"!');
+            this.value = '';
+            if (endDisplay) endDisplay.value = '';
+          }
+        });
+      }
+    });
+
     // Export CSV Helper Function
     function exportRevenueCSV() {
-      const startDate = document.getElementById('startDate').value;
-      const endDate = document.getElementById('endDate').value;
-      const groupBy = document.querySelector('select[name="groupBy"]').value;
+      const startEl = document.getElementById('startDate');
+      const endEl = document.getElementById('endDate');
+      const groupEl = document.querySelector('select[name="groupBy"]');
+      const startDate = startEl ? startEl.value : '';
+      const endDate = endEl ? endEl.value : '';
+      const groupBy = groupEl ? groupEl.value : 'daily';
 
       const exportUrl = `${pageContext.request.contextPath}/admin/revenue-report?action=export&startDate=\${encodeURIComponent(startDate)}&endDate=\${encodeURIComponent(endDate)}&groupBy=\${encodeURIComponent(groupBy)}`;
       window.location.href = exportUrl;
@@ -472,6 +739,36 @@
         }
       }
     });
+
+    // Dark / Light Theme Toggle Script
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlTag = document.documentElement;
+
+    function applyTheme(theme) {
+      htmlTag.setAttribute('data-theme', theme);
+      htmlTag.setAttribute('data-bs-theme', theme);
+      localStorage.setItem('adminTheme', theme);
+      if (themeIcon) {
+        if (theme === 'dark') {
+          themeIcon.className = 'bi bi-sun-fill text-warning';
+        } else {
+          themeIcon.className = 'bi bi-moon-stars';
+        }
+      }
+    }
+
+    // Apply saved theme on page load
+    const savedTheme = localStorage.getItem('adminTheme') || 'light';
+    applyTheme(savedTheme);
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', function() {
+        const currentTheme = htmlTag.getAttribute('data-theme') || 'light';
+        const newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+        applyTheme(newTheme);
+      });
+    }
   </script>
 </body>
 </html>

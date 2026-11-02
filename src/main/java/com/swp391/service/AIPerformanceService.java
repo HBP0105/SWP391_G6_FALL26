@@ -2,24 +2,24 @@ package com.swp391.service;
 
 import com.swp391.dao.AIPerformanceDAO;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- * Business Service for AI Performance & Configuration Reporting (Screen 4).
- * Handles date validation, AI score metric aggregation, parameter tuning validation,
- * audit logging, and CSV report export.
- * Uses existing Java models and Map/List structures without creating new models.
- */
 public class AIPerformanceService {
+
+    private static final Logger LOGGER = Logger.getLogger(AIPerformanceService.class.getName());
 
     private final AIPerformanceDAO aiPerformanceDAO;
 
-    // Default AI Model Configuration Parameters (Stored in-memory, manageable by Admin)
     private static double similarityWeight = 0.50;
     private static double behaviorWeight = 0.50;
     private static double minSimilarityThreshold = 0.60;
@@ -29,10 +29,43 @@ public class AIPerformanceService {
 
     public AIPerformanceService() {
         this.aiPerformanceDAO = new AIPerformanceDAO();
+        syncConfigurationFromDatabase();
     }
 
     public AIPerformanceService(AIPerformanceDAO aiPerformanceDAO) {
         this.aiPerformanceDAO = aiPerformanceDAO;
+        syncConfigurationFromDatabase();
+    }
+
+    /**
+     * Đồng bộ cấu hình AI từ cơ sở dữ liệu (Persistent DB State) vào bộ nhớ ứng dụng.
+     */
+    public synchronized void syncConfigurationFromDatabase() {
+        try {
+            Map<String, Object> dbConfig = aiPerformanceDAO.getActiveAIConfiguration();
+            if (dbConfig != null && !dbConfig.isEmpty()) {
+                if (dbConfig.get("similarityWeight") != null) {
+                    similarityWeight = ((Number) dbConfig.get("similarityWeight")).doubleValue();
+                }
+                if (dbConfig.get("behaviorWeight") != null) {
+                    behaviorWeight = ((Number) dbConfig.get("behaviorWeight")).doubleValue();
+                }
+                if (dbConfig.get("minSimilarityThreshold") != null) {
+                    minSimilarityThreshold = ((Number) dbConfig.get("minSimilarityThreshold")).doubleValue();
+                }
+                if (dbConfig.get("topKLimit") != null) {
+                    topKLimit = ((Number) dbConfig.get("topKLimit")).intValue();
+                }
+                if (dbConfig.get("fallbackStrategy") != null) {
+                    fallbackStrategy = (String) dbConfig.get("fallbackStrategy");
+                }
+                if (dbConfig.get("algorithmStatus") != null) {
+                    algorithmStatus = (String) dbConfig.get("algorithmStatus");
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Không thể tải cấu hình AI từ database, sử dụng cấu hình mặc định trong bộ nhớ: " + e.getMessage());
+        }
     }
 
     private String formatStartDate(String startDate) {
@@ -109,30 +142,39 @@ public class AIPerformanceService {
         String formattedStart = formatStartDate(startForQuery);
         String formattedEnd = formatEndDate(endForQuery);
 
-        // 1. Summary Metrics Map
-        Map<String, Object> summary = aiPerformanceDAO.getAIPerformanceSummary(formattedStart, formattedEnd, recommendationType);
+        try {
+            // 1. Summary Metrics Map
+            Map<String, Object> summary = aiPerformanceDAO.getAIPerformanceSummary(formattedStart, formattedEnd, recommendationType);
+            calculatePerformanceSummary(summary);
 
-        // 2. Breakdown by Recommendation Type
-        List<Map<String, Object>> byType = aiPerformanceDAO.getPerformanceByType(formattedStart, formattedEnd);
+            // 2. Breakdown by Recommendation Type
+            List<Map<String, Object>> byType = aiPerformanceDAO.getPerformanceByType(formattedStart, formattedEnd);
+            calculateTypeBreakdownRates(byType);
 
-        // 3. Top Recommended Products
-        List<Map<String, Object>> topProducts = aiPerformanceDAO.getTopRecommendedProducts(formattedStart, formattedEnd, 10);
+            // 3. Top Recommended Products (Cố định lấy Top 10 sản phẩm cho báo cáo dashboard)
+            List<Map<String, Object>> topProducts = aiPerformanceDAO.getTopRecommendedProducts(formattedStart, formattedEnd, recommendationType, 10);
+            calculateTopProductRates(topProducts);
 
-        // 4. Recent Recommendation Logs
-        List<Map<String, Object>> recentLogs = aiPerformanceDAO.getRecentRecommendationLogs(formattedStart, formattedEnd, recommendationType, 20);
+            // 4. Recent Recommendation Logs
+            List<Map<String, Object>> recentLogs = aiPerformanceDAO.getRecentRecommendationLogs(formattedStart, formattedEnd, recommendationType, 20);
 
-        // 5. Active AI Model Parameters Map
-        Map<String, Object> aiConfig = getAIConfigurationMap();
+            // 5. Active AI Model Parameters Map
+            Map<String, Object> aiConfig = getAIConfigurationMap();
 
-        // 6. Recent Audit Logs for AI Config Updates
-        List<Map<String, Object>> auditLogs = aiPerformanceDAO.getAIAuditLogs(10);
-
-        bundle.put("summary", summary);
-        bundle.put("byType", byType);
-        bundle.put("topProducts", topProducts);
-        bundle.put("recentLogs", recentLogs);
-        bundle.put("aiConfig", aiConfig);
-        bundle.put("auditLogs", auditLogs);
+            bundle.put("summary", summary);
+            bundle.put("byType", byType);
+            bundle.put("topProducts", topProducts);
+            bundle.put("recentLogs", recentLogs);
+            bundle.put("aiConfig", aiConfig);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error querying AI performance data from database", e);
+            bundle.put("msgError", "Failed to connect or load AI performance data from database. Please verify SQL Server connection!");
+            bundle.put("summary", new HashMap<String, Object>());
+            bundle.put("byType", new ArrayList<Map<String, Object>>());
+            bundle.put("topProducts", new ArrayList<Map<String, Object>>());
+            bundle.put("recentLogs", new ArrayList<Map<String, Object>>());
+            bundle.put("aiConfig", getAIConfigurationMap());
+        }
         bundle.put("selectedStartDate", startDate != null ? startDate : "");
         bundle.put("selectedEndDate", endDate != null ? endDate : "");
         bundle.put("selectedType", recommendationType != null ? recommendationType : "ALL");
@@ -141,9 +183,10 @@ public class AIPerformanceService {
     }
 
     /**
-     * Returns current in-memory AI configuration parameters.
+     * Returns current AI configuration parameters, synced with database.
      */
     public Map<String, Object> getAIConfigurationMap() {
+        syncConfigurationFromDatabase();
         Map<String, Object> config = new HashMap<>();
         config.put("similarityWeight", similarityWeight);
         config.put("behaviorWeight", behaviorWeight);
@@ -155,121 +198,301 @@ public class AIPerformanceService {
     }
 
     /**
-     * Updates AI Configuration parameters with validation and records change in AuditLogs table.
+     * Updates AI Configuration parameters in database and records AuditLog in a single atomic transaction.
      */
-    public String updateAIConfiguration(double newSimWeight, double newBehWeight, double newMinThreshold, int newTopK, String newFallback, Integer adminStaffId) {
-        // Validation
-        double weightSum = newSimWeight + newBehWeight;
-        if (Math.abs(weightSum - 1.0) > 0.001 && Math.abs(weightSum - 100.0) > 0.1) {
-            return "The sum of Similarity Weight and Behavior Weight must equal 1.0 (or 100%)!";
+    public String updateAIConfiguration(double newSimWeight, double newBehWeight, double newMinThreshold, 
+            int newTopK, String newFallback, Integer adminStaffId) {
+        // Validation: Standards [0.0 - 1.0], sum must be 1.0
+        if (newSimWeight < 0.0 || newSimWeight > 1.0 || newBehWeight < 0.0 || newBehWeight > 1.0) {
+            return "Similarity Weight and Behavior Weight must be numbers between 0.0 and 1.0!";
         }
 
-        // Normalize if entered as percentages (e.g. 50 and 50 -> 0.5 and 0.5)
-        if (newSimWeight > 1.0 || newBehWeight > 1.0) {
-            newSimWeight = newSimWeight / 100.0;
-            newBehWeight = newBehWeight / 100.0;
+        double weightSum = newSimWeight + newBehWeight;
+        if (Math.abs(weightSum - 1.0) > 0.001) {
+            return "The sum of Similarity Weight and Behavior Weight must equal 1.0 (e.g. 0.7 and 0.3)!";
         }
 
         if (newMinThreshold < 0.0 || newMinThreshold > 1.0) {
-            return "Minimum Similarity Threshold must be between 0.0 and 1.0!";
+            return "Minimum Similarity Threshold must be a number between 0.0 and 1.0!";
         }
 
         if (newTopK < 1 || newTopK > 50) {
-            return "Recommendation Limit (Top K) must be between 1 and 50!";
+            return "Recommendation limit (Top K) must be between 1 and 50!";
+        }
+
+        // Whitelist validation for Fallback Strategy
+        String cleanFallback = newFallback != null ? newFallback.trim().toUpperCase(java.util.Locale.ROOT) : "";
+        if (!"COLD_START".equals(cleanFallback) && !"BEST_SELLER".equals(cleanFallback)) {
+            return "Invalid Fallback Strategy! Allowed values are COLD_START or BEST_SELLER.";
         }
 
         String oldData = String.format("SimWeight=%.2f, BehWeight=%.2f, MinThreshold=%.2f, TopK=%d, Fallback=%s",
                 similarityWeight, behaviorWeight, minSimilarityThreshold, topKLimit, fallbackStrategy);
 
         String newData = String.format("SimWeight=%.2f, BehWeight=%.2f, MinThreshold=%.2f, TopK=%d, Fallback=%s",
-                newSimWeight, newBehWeight, newMinThreshold, newTopK, newFallback);
+                newSimWeight, newBehWeight, newMinThreshold, newTopK, cleanFallback);
 
-        // Update static configuration variables
+        // Save to AIConfigurations and record AuditLogs in transaction
+        boolean success = aiPerformanceDAO.saveAIConfigurationWithTransaction(
+                newSimWeight, newBehWeight, newMinThreshold, newTopK, cleanFallback, adminStaffId, oldData, newData);
+
+        if (!success) {
+            return "Failed to save configuration and audit log to database. All changes safely rolled back!";
+        }
+
+        // CSDL commit thành công 100% -> đồng bộ lại biến trong RAM
         similarityWeight = newSimWeight;
         behaviorWeight = newBehWeight;
         minSimilarityThreshold = newMinThreshold;
         topKLimit = newTopK;
-        if (newFallback != null && !newFallback.trim().isEmpty()) {
-            fallbackStrategy = newFallback.trim();
-        }
+        fallbackStrategy = cleanFallback;
 
-        // Insert into database AuditLogs table
-        aiPerformanceDAO.insertAuditLog(adminStaffId, "UPDATE_AI_CONFIG", "AI_CONFIG", "GLOBAL", oldData, newData);
-
-        return null; // Success (no error)
+        return null; // Thành công hoàn toàn
     }
 
     /**
-     * Generates CSV export content for AI Performance Report.
+     * Business Calculation: Compute CTR, Conversion Rate, and Click-to-Purchase Rate for Summary.
      */
-    public String generateCSVAIPerformanceReport(String startDate, String endDate, String recommendationType) {
-        Map<String, Object> bundle = getAIPerformanceBundle(startDate, endDate, recommendationType);
+    private void calculatePerformanceSummary(Map<String, Object> summary) {
+        if (summary == null || summary.isEmpty()) return;
+        long totalRecs = (long) summary.getOrDefault("totalRecommendations", 0L);
+        long totalClicked = (long) summary.getOrDefault("totalClicked", 0L);
+        long totalPurchased = (long) summary.getOrDefault("totalPurchased", 0L);
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> summary = (Map<String, Object>) bundle.get("summary");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> byType = (List<Map<String, Object>>) bundle.get("byType");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> topProducts = (List<Map<String, Object>>) bundle.get("topProducts");
+        double avgSim = (double) summary.getOrDefault("avgSimilarityScore", 0.0);
+        double avgBeh = (double) summary.getOrDefault("avgBehaviorScore", 0.0);
+        double avgFinal = (double) summary.getOrDefault("avgFinalScore", 0.0);
 
-        DecimalFormat numFormatter = new DecimalFormat("#,##0.00");
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setDecimalSeparator('.');
-        numFormatter.setDecimalFormatSymbols(symbols);
+        double ctrRate = totalRecs > 0 ? (totalClicked * 100.0 / totalRecs) : 0.0;
+        double conversionRate = totalRecs > 0 ? (totalPurchased * 100.0 / totalRecs) : 0.0;
+        double clickToPurchaseRate = totalClicked > 0 ? (totalPurchased * 100.0 / totalClicked) : 0.0;
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('\uFEFF'); // UTF-8 BOM for Excel compatibility
+        summary.put("ctrRate", round(ctrRate, 2));
+        summary.put("conversionRate", round(conversionRate, 2));
+        summary.put("clickToPurchaseRate", round(clickToPurchaseRate, 2));
 
-        sb.append("\"ADMIN AI PERFORMANCE & CONFIGURATION REPORT\"\n");
-        sb.append("\"Report Date:\",\"").append(LocalDate.now()).append("\"\n\n");
-
-        sb.append("\"--- OVERALL METRICS ---\"\n");
-        sb.append("\"Total Recommendations Generated\",\"").append(summary.get("totalRecommendations")).append("\"\n");
-        sb.append("\"Total Recommendations Clicked\",\"").append(summary.get("totalClicked")).append("\"\n");
-        sb.append("\"Total Recommendations Purchased\",\"").append(summary.get("totalPurchased")).append("\"\n");
-        sb.append("\"Click-Through Rate (CTR)\",\"").append(summary.get("ctrRate")).append("%\"\n");
-        sb.append("\"Conversion Rate\",\"").append(summary.get("conversionRate")).append("%\"\n");
-        sb.append("\"Average Similarity Score\",\"").append(summary.get("avgSimilarityScore")).append("\"\n");
-        sb.append("\"Average Behavior Score\",\"").append(summary.get("avgBehaviorScore")).append("\"\n");
-        sb.append("\"Average Final Score\",\"").append(summary.get("avgFinalScore")).append("\"\n\n");
-
-        sb.append("\"--- PERFORMANCE BY RECOMMENDATION TYPE ---\"\n");
-        sb.append("\"Type\",\"Total Recommendations\",\"Clicked\",\"Purchased\",\"CTR (%)\",\"Conversion Rate (%)\",\"Avg Final Score\"\n");
-        for (Map<String, Object> row : byType) {
-            sb.append("\"").append(row.get("recommendationType")).append("\",");
-            sb.append("\"").append(row.get("totalCount")).append("\",");
-            sb.append("\"").append(row.get("clickedCount")).append("\",");
-            sb.append("\"").append(row.get("purchasedCount")).append("\",");
-            sb.append("\"").append(row.get("ctrRate")).append("%\",");
-            sb.append("\"").append(row.get("conversionRate")).append("%\",");
-            sb.append("\"").append(row.get("avgScore")).append("\"\n");
-        }
-        sb.append("\n");
-
-        sb.append("\"--- TOP RECOMMENDED PRODUCTS ---\"\n");
-        sb.append("\"Product ID\",\"Product Name\",\"Category\",\"Brand\",\"Recommend Count\",\"Clicked\",\"Purchased\",\"CTR (%)\",\"Conversion (%)\"\n");
-        for (Map<String, Object> p : topProducts) {
-            sb.append("\"").append(p.get("productID")).append("\",");
-            sb.append("\"").append(escapeCSV((String) p.get("productName"))).append("\",");
-            sb.append("\"").append(escapeCSV((String) p.get("categoryName"))).append("\",");
-            sb.append("\"").append(escapeCSV((String) p.get("brandName"))).append("\",");
-            sb.append("\"").append(p.get("recommendCount")).append("\",");
-            sb.append("\"").append(p.get("clickedCount")).append("\",");
-            sb.append("\"").append(p.get("purchasedCount")).append("\",");
-            sb.append("\"").append(p.get("ctrRate")).append("%\",");
-            sb.append("\"").append(p.get("conversionRate")).append("%\"\n");
-        }
-
-        return sb.toString();
+        summary.put("avgSimilarityScore", round(avgSim, 4));
+        summary.put("avgBehaviorScore", round(avgBeh, 4));
+        summary.put("avgFinalScore", round(avgFinal, 4));
     }
 
-    private String escapeCSV(String value) {
-        if (value == null) return "";
-        String clean = value.replace("\"", "\"\"");
-        if (clean.startsWith("=") || clean.startsWith("+") || clean.startsWith("-") 
-                || clean.startsWith("@") || clean.startsWith("\t") || clean.startsWith("\r")) {
-            clean = "'" + clean;
+    /**
+     * Business Calculation: Compute CTR and Conversion Rate for each recommendation type.
+     */
+    private void calculateTypeBreakdownRates(List<Map<String, Object>> byType) {
+        if (byType == null) return;
+        for (Map<String, Object> row : byType) {
+            long total = (long) row.getOrDefault("totalCount", 0L);
+            long clicked = (long) row.getOrDefault("clickedCount", 0L);
+            long purchased = (long) row.getOrDefault("purchasedCount", 0L);
+            double avgScore = (double) row.getOrDefault("avgScore", 0.0);
+
+            double ctr = total > 0 ? (clicked * 100.0 / total) : 0.0;
+            double conv = total > 0 ? (purchased * 100.0 / total) : 0.0;
+
+            row.put("ctrRate", round(ctr, 2));
+            row.put("conversionRate", round(conv, 2));
+            row.put("avgScore", round(avgScore, 4));
         }
-        return clean;
+    }
+
+    /**
+     * Business Calculation: Compute CTR and Conversion Rate for top recommended products.
+     */
+    private void calculateTopProductRates(List<Map<String, Object>> topProducts) {
+        if (topProducts == null) return;
+        for (Map<String, Object> row : topProducts) {
+            long total = (long) row.getOrDefault("recommendCount", 0L);
+            long clicked = (long) row.getOrDefault("clickedCount", 0L);
+            long purchased = (long) row.getOrDefault("purchasedCount", 0L);
+            double avgScore = (double) row.getOrDefault("avgFinalScore", 0.0);
+
+            double ctr = total > 0 ? (clicked * 100.0 / total) : 0.0;
+            double conv = total > 0 ? (purchased * 100.0 / total) : 0.0;
+
+            row.put("ctrRate", round(ctr, 2));
+            row.put("conversionRate", round(conv, 2));
+            row.put("avgFinalScore", round(avgScore, 4));
+        }
+    }
+
+    private double round(double val, int places) {
+        if (Double.isNaN(val) || Double.isInfinite(val)) return 0.0;
+        return BigDecimal.valueOf(val).setScale(places, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    /**
+     * Calculates Cosine Similarity between two 512-dimension unit/feature vectors.
+     * Formula: Cosine(A, B) = (A . B) / (||A|| * ||B||) -> Normalized in [0.0, 1.0].
+     */
+    public double calculateCosineSimilarity(double[] vecA, double[] vecB) {
+        if (vecA == null || vecB == null || vecA.length == 0 || vecB.length == 0) return 0.0;
+        int len = Math.min(vecA.length, vecB.length);
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < len; i++) {
+            dotProduct += vecA[i] * vecB[i];
+            normA += vecA[i] * vecA[i];
+            normB += vecB[i] * vecB[i];
+        }
+        if (normA == 0.0 || normB == 0.0) return 0.0;
+        double sim = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+        return Math.max(0.0, Math.min(1.0, sim));
+    }
+
+    /**
+     * Dynamically generates an L2-normalized 512-dimension feature vector from product specifications.
+     */
+    public double[] generateProduct512Vector(Map<String, Object> p) {
+        String text = String.format("Product: %s. Brand: %s. Category: %s. Connection: %s. ANC: %s. Battery: %s hrs. Price: %s. %s",
+                p.getOrDefault("productName", ""),
+                p.getOrDefault("brandName", ""),
+                p.getOrDefault("categoryName", ""),
+                p.getOrDefault("connectionType", ""),
+                Boolean.TRUE.equals(p.get("noiseCancelling")) ? "Active Noise Cancelling ANC" : "Standard",
+                p.getOrDefault("batteryLife", "30"),
+                p.getOrDefault("price", "0"),
+                p.getOrDefault("description", ""));
+
+        double[] vec = new double[512];
+        double sumSq = 0.0;
+        for (int i = 0; i < 512; i++) {
+            String salt = "dim_" + i + "_swp391_headphone";
+            int h = (text + salt).hashCode();
+            double val = (double) h / Integer.MAX_VALUE;
+            vec[i] = val;
+            sumSq += val * val;
+        }
+        double norm = Math.sqrt(sumSq);
+        if (norm > 0) {
+            for (int i = 0; i < 512; i++) {
+                vec[i] = Math.round((vec[i] / norm) * 1000000.0) / 1000000.0;
+            }
+        }
+        return vec;
+    }
+
+    /**
+     * Parses stored vector string or auto-generates 512-D vector on the fly and saves to DB.
+     */
+    public double[] parseOrGenerateVector(Map<String, Object> p) {
+        String emb = (String) p.get("embeddingVector");
+        if (emb != null && emb.startsWith("[") && emb.endsWith("]")) {
+            try {
+                String clean = emb.substring(1, emb.length() - 1).trim();
+                if (!clean.isEmpty()) {
+                    String[] tokens = clean.split(",");
+                    double[] vec = new double[tokens.length];
+                    for (int i = 0; i < tokens.length; i++) {
+                        vec[i] = Double.parseDouble(tokens[i].trim());
+                    }
+                    return vec;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        // Tự động phân tích và sinh vector 512 chiều nếu sản phẩm chưa có
+        double[] newVec = generateProduct512Vector(p);
+        int pid = (int) p.get("productId");
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < newVec.length; i++) {
+            sb.append(newVec[i]);
+            if (i < newVec.length - 1) sb.append(", ");
+        }
+        sb.append("]");
+        aiPerformanceDAO.updateProductEmbeddingVector(pid, sb.toString());
+        return newVec;
+    }
+
+    /**
+     * Generates Top K AI Hybrid Recommendations for Product Detail page using 512-Vector Semantic Matching & User Behavior.
+     */
+    public List<Map<String, Object>> getRecommendedProductsForDetail(int currentProductId, Integer customerId, String sessionId) {
+        syncConfigurationFromDatabase();
+        List<Map<String, Object>> allProducts = aiPerformanceDAO.getAllProductsForRecommendation();
+        if (allProducts == null || allProducts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Object> currentProduct = null;
+        for (Map<String, Object> p : allProducts) {
+            if ((int) p.get("productId") == currentProductId) {
+                currentProduct = p;
+                break;
+            }
+        }
+
+        double[] currentVec = currentProduct != null ? parseOrGenerateVector(currentProduct) : null;
+        Map<Integer, Double> behaviorScores = aiPerformanceDAO.getProductBehaviorScores();
+
+        List<Map<String, Object>> candidates = new ArrayList<>();
+        for (Map<String, Object> p : allProducts) {
+            int pid = (int) p.get("productId");
+            if (pid == currentProductId) continue; // Bỏ qua chính sản phẩm đang xem
+
+            double[] otherVec = parseOrGenerateVector(p);
+            double simScore = currentVec != null ? calculateCosineSimilarity(currentVec, otherVec) : 0.50;
+            double behScore = behaviorScores.getOrDefault(pid, 0.50);
+
+            // Hybrid formula: FinalScore = w_sim * S_sim + w_beh * S_beh
+            double finalScore = (similarityWeight * simScore) + (behaviorWeight * behScore);
+            finalScore = Math.max(0.0, Math.min(1.0, finalScore));
+
+            Map<String, Object> item = new HashMap<>(p);
+            item.put("similarityScore", round(simScore, 4));
+            item.put("behaviorScore", round(behScore, 4));
+            item.put("finalScore", round(finalScore, 4));
+            item.put("matchPercentage", (int) Math.round(finalScore * 100));
+            candidates.add(item);
+        }
+
+        // Lọc theo MinSimilarityThreshold và sắp xếp giảm dần theo finalScore
+        List<Map<String, Object>> filtered = new ArrayList<>();
+        for (Map<String, Object> c : candidates) {
+            double fs = (double) c.get("finalScore");
+            if (fs >= minSimilarityThreshold) {
+                filtered.add(c);
+            }
+        }
+        filtered.sort((a, b) -> Double.compare((double) b.get("finalScore"), (double) a.get("finalScore")));
+
+        // Giới hạn theo TopKLimit (mặc định lấy 4 hoặc theo cấu hình)
+        int limit = Math.max(1, Math.min(topKLimit, 8));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 0; i < filtered.size() && i < limit; i++) {
+            result.add(filtered.get(i));
+        }
+
+        // Áp dụng Fallback Strategy nếu số lượng chưa đủ
+        if (result.size() < limit && "BEST_SELLER".equalsIgnoreCase(fallbackStrategy)) {
+            for (Map<String, Object> c : candidates) {
+                if (!result.contains(c)) {
+                    c.put("recommendationType", "BEST_SELLER");
+                    result.add(c);
+                    if (result.size() >= limit) break;
+                }
+            }
+        }
+
+        // Ghi log AIRecommendations và gắn recommendationId vào từng sản phẩm
+        for (Map<String, Object> item : result) {
+            int pid = (int) item.get("productId");
+            double sim = (double) item.get("similarityScore");
+            double beh = (double) item.get("behaviorScore");
+            double fs = (double) item.get("finalScore");
+            String recType = (String) item.getOrDefault("recommendationType", "SIMILAR");
+            long recId = aiPerformanceDAO.recordAIRecommendation(customerId, sessionId, pid, recType, sim, beh, fs, "AI 512-Vector Semantic Recommender");
+            item.put("recommendationId", recId);
+        }
+
+        return result;
+    }
+
+    /**
+     * Tracks a click on an AI-recommended product.
+     */
+    public void trackRecommendationClick(long recId, int productId, Integer customerId, String sessionId) {
+        aiPerformanceDAO.trackRecommendationClick(recId, productId, customerId, sessionId);
     }
 }

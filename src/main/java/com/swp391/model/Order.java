@@ -185,24 +185,4 @@ public class Order {
     public void setTotalQuantity(int totalQuantity) {
         this.totalQuantity = totalQuantity;
     }
-
-    public String getFormattedOrderDate() {
-        if (orderDate == null) return "N/A";
-        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-    }
-
-    public String getFormattedOrderTime() {
-        if (orderDate == null) return "";
-        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-    }
-
-    public String getFormattedOrderDateTime() {
-        if (orderDate == null) return "N/A";
-        return orderDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
-    }
-
-    public String getFormattedUpdatedAt() {
-        if (updatedAt == null) return "N/A";
-        return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
-    }
 }

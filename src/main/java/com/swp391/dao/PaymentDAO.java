@@ -24,7 +24,7 @@ public class PaymentDAO {
      */
     public boolean updateCODPaymentToPaid(int orderID) {
         String sql = "UPDATE Payments SET PaymentStatus = 'SUCCESS', PaymentDate = GETDATE() "
-                + "WHERE OrderID = ? AND (PaymentMethod = 'COD' OR PaymentMethod IS NULL)";
+                + "WHERE OrderID = ? AND (PaymentMethod = 'COD')";
         try (Connection connection = dbContext.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, orderID);

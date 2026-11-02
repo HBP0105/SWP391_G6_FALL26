@@ -1,12 +1,9 @@
 package com.swp391.controller;
 
-import com.swp391.model.Customer;
 import com.swp391.model.Staff;
 import com.swp391.service.AIPerformanceService;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.LocalDate;
 import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -51,13 +48,6 @@ public class AIPerformanceReport extends HttpServlet {
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
         String type = request.getParameter("type");
-        String action = request.getParameter("action");
-
-        // Action: Export CSV Report
-        if ("export".equals(action)) {
-            exportToCSV(response, startDate, endDate, type);
-            return;
-        }
 
         Map<String, Object> viewData = aiPerformanceService.getAIPerformanceBundle(startDate, endDate, type);
 
@@ -69,6 +59,7 @@ public class AIPerformanceReport extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
 
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
@@ -90,11 +81,11 @@ public class AIPerformanceReport extends HttpServlet {
                 if (err != null) {
                     request.getSession().setAttribute("msgError", err);
                 } else {
-                    request.getSession().setAttribute("msgSuccess", "Cấu hình AI Recommendation đã được cập nhật thành công và ghi nhận vào Audit Log!");
+                    request.getSession().setAttribute("msgSuccess", "AI Recommendation configuration updated successfully and recorded in Audit Log!");
                 }
 
             } catch (Exception e) {
-                request.getSession().setAttribute("msgError", "Tham số cấu hình AI không hợp lệ: " + e.getMessage());
+                request.getSession().setAttribute("msgError", "Invalid AI configuration parameters: " + e.getMessage());
             }
         }
 
@@ -103,36 +94,21 @@ public class AIPerformanceReport extends HttpServlet {
     }
 
     /**
-     * Helper to safely extract staff/admin ID from session without Java reflection.
+     * Helper to safely extract Admin/Staff ID from session without Java reflection.
      */
     private Integer extractStaffId(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) return null;
 
-        Object userObj = session.getAttribute("user");
+        Object userObj = session.getAttribute("staff");
         if (userObj == null) {
-            userObj = session.getAttribute("staff");
+            userObj = session.getAttribute("user");
         }
 
-        if (userObj instanceof Staff staff) {
-            return staff.getStaffID();
-        } else if (userObj instanceof Customer customer) {
-            return customer.getCustomerID();
+        if (userObj instanceof Staff) {
+            return ((Staff) userObj).getStaffID();
         }
         return null;
-    }
-
-    private void exportToCSV(HttpServletResponse response, String startDate, String endDate, String type)
-            throws IOException {
-        String filename = "AI_Performance_Report_" + LocalDate.now() + ".csv";
-        response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-
-        String csvContent = aiPerformanceService.generateCSVAIPerformanceReport(startDate, endDate, type);
-        try (PrintWriter writer = response.getWriter()) {
-            writer.write(csvContent);
-            writer.flush();
-        }
     }
 
     @Override

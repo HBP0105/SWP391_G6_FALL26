@@ -3,6 +3,11 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%
+  pageContext.setAttribute("dmyFmt", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+  pageContext.setAttribute("timeFmt", DateTimeFormatter.ofPattern("HH:mm:ss"));
+%>
 
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -15,21 +20,40 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- adminHMD Custom Style -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
+    .date-ddmmyyyy-wrapper {
+      position: relative;
+    }
+    .date-ddmmyyyy-display {
+      background-color: #fff !important;
+      cursor: pointer;
+    }
+    .date-native-picker {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 36px;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
     .price-badge {
       font-weight: 700;
       color: var(--admin-primary);
       font-size: 0.76rem;
     }
     .btn-action-sm {
-      padding: 0.12rem 0.32rem;
-      font-size: 0.68rem;
-      font-weight: 700;
+      padding: 0.14rem 0.35rem;
+      font-size: 0.67rem;
+      font-weight: 600;
       border-radius: 4px;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
     }
   </style>
 </head>
@@ -63,9 +87,9 @@
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/home">
-          <span class="nav-icon"><i class="bi bi-shop"></i></span>
-          <span class="nav-text">Customer Store</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/admin/audit-logs">
+          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
+          <span class="nav-text">Audit Logs</span>
         </a>
       </nav>
     </aside>
@@ -160,7 +184,7 @@
                   <span class="metric-icon"><i class="bi bi-check2-square"></i></span>
                 </div>
                 <div class="metric-value"><c:out value="${confirmedCount}" default="0"/></div>
-                <div class="metric-meta"><small class="text-muted">Confirmed & processing</small></div>
+                <div class="metric-meta"><small class="text-muted">Processing</small></div>
               </div>
             </div>
 
@@ -223,19 +247,32 @@
                 </div>
 
                 <div class="col-md-3">
-                  <label class="form-label fw-semibold fs-7 mb-1">From Date:</label>
-                  <input type="date" name="startDate" id="startDate" value="<c:out value='${selectedStartDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('startDate')">
+                  <label class="form-label fw-semibold fs-7 mb-1">From Date</label>
+                  <div class="date-ddmmyyyy-wrapper">
+                    <input type="text" id="startDateDisplay" placeholder="dd/mm/yyyy" class="form-control form-control-sm date-ddmmyyyy-display" readonly>
+                    <input type="date" class="date-native-picker" name="startDate" id="startDate" value="<c:out value='${selectedStartDate}'/>" max="<%= LocalDate.now() %>" title="Click to pick From Date">
+                  </div>
                 </div>
 
                 <div class="col-md-3">
-                  <label class="form-label fw-semibold fs-7 mb-1">To Date:</label>
-                  <input type="date" name="endDate" id="endDate" value="<c:out value='${selectedEndDate}'/>" max="<%= LocalDate.now() %>" class="form-control form-control-sm" onchange="validateAndSubmit('endDate')">
+                  <label class="form-label fw-semibold fs-7 mb-1">To Date</label>
+                  <div class="date-ddmmyyyy-wrapper">
+                    <input type="text" id="endDateDisplay" placeholder="dd/mm/yyyy" class="form-control form-control-sm date-ddmmyyyy-display" readonly>
+                    <input type="date" class="date-native-picker" name="endDate" id="endDate" value="<c:out value='${selectedEndDate}'/>" max="<%= LocalDate.now() %>" title="Click to pick To Date">
+                  </div>
                 </div>
 
                 <div class="col-md-3 text-end">
                   <a href="${pageContext.request.contextPath}/staff/orders" class="btn btn-outline-secondary btn-sm w-100">
                     <i class="bi bi-x-circle me-1"></i> Clear Filter
                   </a>
+                </div>
+
+                <div class="col-12 d-flex align-items-center gap-1 pt-1">
+                  <span class="text-muted small me-1" style="font-size: 0.75rem;"><i class="bi bi-lightning-charge-fill text-warning"></i> Quick select:</span>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('today')">Today</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('7days')">Last 7 days</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.72rem; border-radius: 20px;" onclick="setQuickDate('month')">This month</button>
                 </div>
               </div>
             </form>
@@ -266,13 +303,13 @@
                 <thead>
                   <tr>
                     <th class="text-center" style="width: 7%;">Order ID</th>
-                    <th style="width: 20%;">Customer</th>
-                    <th style="width: 18%;">Product Name</th>
-                    <th class="text-center" style="width: 6%;">Qty</th>
+                    <th style="width: 19%;">Customer</th>
+                    <th style="width: 17%;">Product Name</th>
+                    <th class="text-center" style="width: 5%;">Qty</th>
                     <th class="text-end" style="width: 12%;">Total</th>
                     <th class="text-center" style="width: 10%;">Order Date</th>
                     <th class="text-center" style="width: 9%;">Status</th>
-                    <th class="text-center" style="width: 18%;">Actions</th>
+                    <th class="text-center" style="width: 21%;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -290,11 +327,11 @@
                           <small class="text-muted ms-1">(<i class="bi bi-telephone me-0.5"></i><c:out value="${not empty addr && not empty addr.receiverPhone ? addr.receiverPhone : (not empty cust && not empty cust.phone ? cust.phone : 'N/A')}" />)</small>
                         </div>
                         <div class="address-cell text-muted text-truncate" style="font-size: 0.68rem;">
-                          <i class="bi bi-geo-alt text-danger me-1"></i><c:out value="${not empty addr && not empty addr.fullAddress ? addr.fullAddress : o.shippingAddress}" />
+                          <i class="bi bi-geo-alt text-danger me-1"></i><c:out value="${not empty o.shippingAddress ? o.shippingAddress : (not empty addr && not empty addr.addressLine ? addr.addressLine : 'N/A')}" />
                         </div>
                       </td>
                       <td>
-                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.75rem;">
+                        <div class="fw-bold text-dark" style="font-size: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; max-height: 2.7em; word-break: break-word;" title="<c:out value="${not empty o.productSummary ? o.productSummary : 'Headphone Product'}" />">
                           <i class="bi bi-headphones text-primary me-1"></i><c:out value="${not empty o.productSummary ? o.productSummary : 'Headphone Product'}" />
                         </div>
                         <c:if test="${(upperStatus == 'SHIPPING' || upperStatus == 'DELIVERED') && not empty o.shippingName}">
@@ -334,8 +371,8 @@
                       <td class="text-center">
                         <div class="lh-sm text-nowrap" style="font-size: 0.71rem;">
                           <c:if test="${not empty o.orderDate}">
-                            <div><i class="bi bi-calendar3 me-1 text-muted"></i><c:out value="${o.formattedOrderDate}"/></div>
-                            <small class="text-muted d-block" style="font-size: 0.67rem;"><c:out value="${o.formattedOrderTime}"/></small>
+                            <div><i class="bi bi-calendar3 me-1 text-muted"></i><c:out value="${o.orderDate.format(dmyFmt)}"/></div>
+                            <small class="text-muted d-block" style="font-size: 0.67rem;"><c:out value="${o.orderDate.format(timeFmt)}"/></small>
                           </c:if>
                         </div>
                       </td>
@@ -344,7 +381,7 @@
                           <c:when test="${upperStatus == 'PENDING'}">
                             <span class="badge text-bg-warning" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-clock me-1"></i>Pending</span>
                           </c:when>
-                          <c:when test="${upperStatus == 'CONFIRMED' || upperStatus == 'PROCESSING'}">
+                          <c:when test="${upperStatus == 'CONFIRMED'}">
                             <span class="badge text-bg-info" style="font-size: 0.68rem; padding: 0.22em 0.45em;"><i class="bi bi-check-lg me-1"></i>Confirmed</span>
                           </c:when>
                           <c:when test="${upperStatus == 'SHIPPING'}">
@@ -377,7 +414,7 @@
                                 <i class="bi bi-x-lg"></i> Cancel
                               </button>
                             </c:when>
-                            <c:when test="${upperStatus == 'CONFIRMED' || upperStatus == 'PROCESSING'}">
+                            <c:when test="${upperStatus == 'CONFIRMED'}">
                               <c:set var="rowAddr" value="${not empty addr && not empty addr.fullAddress ? addr.fullAddress : (not empty o.shippingAddress ? o.shippingAddress : '')}" />
                               <button type="button" class="btn btn-primary btn-action-sm" title="Start shipping" onclick="openShipModal(${o.orderID}, '${fn:escapeXml(o.shippingName)}', '${fn:escapeXml(o.shippingPhone)}', '${fn:escapeXml(rowAddr)}')">
                                 <i class="bi bi-truck"></i> Ship
@@ -395,6 +432,9 @@
                                   <i class="bi bi-check-circle"></i> Complete
                                 </button>
                               </form>
+                              <button type="button" class="btn btn-danger btn-action-sm" title="Cancel order" onclick="openCancelModal(${o.orderID})">
+                                <i class="bi bi-x-lg"></i> Cancel
+                              </button>
                             </c:when>
                           </c:choose>
 
@@ -536,7 +576,7 @@
   <div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow-lg border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/orders">
+        <form method="post" action="${pageContext.request.contextPath}/staff/orders" onsubmit="return validateShipModal()">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="orderId" id="shipModalOrderId">
           <input type="hidden" name="newStatus" value="SHIPPING">
@@ -646,8 +686,42 @@
       document.getElementById('shipModalShipperName').value = shipperName || '';
       document.getElementById('shipModalShipperPhone').value = shipperPhone || '';
 
+      var shipBtn = document.querySelector('#shipOrderModal button[type="submit"]');
+      if (shipBtn) {
+        shipBtn.disabled = false;
+        shipBtn.dataset.submitting = 'false';
+        shipBtn.innerHTML = '<i class="bi bi-truck me-1"></i> Confirm & Start Shipping';
+      }
+
       var modalEl = new bootstrap.Modal(document.getElementById('shipOrderModal'));
       modalEl.show();
+    }
+
+    // Validate Ship Modal Form (Shipper Phone Regex & Double-submit Protection)
+    function validateShipModal() {
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (phoneInput && phoneInput.value.trim() !== '') {
+        var phoneVal = phoneInput.value.trim();
+        var vnPhoneRegex = /^(0[35789])[0-9]{8}$/;
+        if (!vnPhoneRegex.test(phoneVal)) {
+          alert('Invalid shipper phone number! Please enter a valid 10-digit Vietnamese phone number (starting with 03, 05, 07, 08, 09).');
+          phoneInput.focus();
+          return false;
+        }
+      }
+
+      var submitBtn = document.querySelector('#shipOrderModal button[type="submit"]');
+      if (submitBtn) {
+        if (submitBtn.dataset.submitting === 'true') {
+          return false;
+        }
+        submitBtn.dataset.submitting = 'true';
+        setTimeout(function() {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        }, 10);
+      }
+      return true;
     }
 
     // Export ALL Matching Orders to Excel / CSV via Servlet Action
@@ -674,6 +748,14 @@
       document.getElementById('modalPresetReason').value = '';
       document.getElementById('modalCancelReason').value = '';
       document.getElementById('reasonAsterisk').classList.add('d-none');
+
+      var cancelBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.dataset.submitting = 'false';
+        cancelBtn.innerHTML = '<i class="bi bi-x-lg me-1"></i> Confirm Cancellation';
+      }
+
       var modalEl = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
       modalEl.show();
     }
@@ -697,13 +779,24 @@
       }
     }
 
-    // Validate Cancel Modal Before Submit
+    // Validate Cancel Modal Before Submit (Double-submit Protection)
     function validateCancelModal() {
       var preset = document.getElementById('modalPresetReason').value;
       var reason = document.getElementById('modalCancelReason').value.trim();
       if (!reason) {
         alert('Please enter or select a reason for cancelling the order!');
         return false;
+      }
+      var submitBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
+      if (submitBtn) {
+        if (submitBtn.dataset.submitting === 'true') {
+          return false;
+        }
+        submitBtn.dataset.submitting = 'true';
+        setTimeout(function() {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        }, 10);
       }
       return true;
     }
@@ -733,10 +826,65 @@
       }
     }
 
+    // Format Date object to local YYYY-MM-DD
+    function formatLocalDate(d) {
+      var year = d.getFullYear();
+      var month = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
+
+    // Quick Date Range Filter Handler
+    function setQuickDate(type) {
+      var now = new Date();
+      var todayStr = formatLocalDate(now);
+      var startStr = todayStr;
+      var endStr = todayStr;
+
+      if (type === 'today') {
+        startStr = todayStr;
+        endStr = todayStr;
+      } else if (type === '7days') {
+        var d7 = new Date();
+        d7.setDate(now.getDate() - 6);
+        startStr = formatLocalDate(d7);
+        endStr = todayStr;
+      } else if (type === 'month') {
+        var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        startStr = formatLocalDate(firstDay);
+        endStr = todayStr;
+      }
+
+      var startInput = document.getElementById('startDate');
+      var endInput = document.getElementById('endDate');
+      var startDisplay = document.getElementById('startDateDisplay');
+      var endDisplay = document.getElementById('endDateDisplay');
+
+      if (startInput) startInput.value = startStr;
+      if (endInput) endInput.value = endStr;
+      if (startDisplay) startDisplay.value = formatToDMY(startStr);
+      if (endDisplay) endDisplay.value = formatToDMY(endStr);
+
+      var form = document.getElementById('filterForm');
+      if (form) form.submit();
+    }
+
+    // Date formatting helper (yyyy-mm-dd -> dd/mm/yyyy)
+    function formatToDMY(isoDateStr) {
+      if (!isoDateStr) return '';
+      var parts = isoDateStr.split('-');
+      if (parts.length === 3) {
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+      return isoDateStr;
+    }
+
     // Date Validation and Submit Handler
     function validateAndSubmit(changedField) {
       var startDateInput = document.getElementById('startDate');
       var endDateInput = document.getElementById('endDate');
+      var startDisplay = document.getElementById('startDateDisplay');
+      var endDisplay = document.getElementById('endDateDisplay');
       var startVal = startDateInput ? startDateInput.value : '';
       var endVal = endDateInput ? endDateInput.value : '';
       var todayStr = new Date().toISOString().split('T')[0];
@@ -745,11 +893,13 @@
         if (startVal && startVal > todayStr) {
           alert('Validation Error: Cannot select future dates!');
           startDateInput.value = '';
+          if (startDisplay) startDisplay.value = '';
           return false;
         }
         if (startVal && endVal && startVal > endVal) {
           alert('Validation Error: "From Date" cannot be later than "To Date"!');
           startDateInput.value = '';
+          if (startDisplay) startDisplay.value = '';
           return false;
         }
       }
@@ -758,17 +908,63 @@
         if (endVal && endVal > todayStr) {
           alert('Validation Error: Cannot select future dates!');
           endDateInput.value = '';
+          if (endDisplay) endDisplay.value = '';
           return false;
         }
         if (startVal && endVal && endVal < startVal) {
           alert('Validation Error: "To Date" cannot be earlier than "From Date"!');
           endDateInput.value = '';
+          if (endDisplay) endDisplay.value = '';
           return false;
         }
       }
 
-      document.getElementById('filterForm').submit();
+      var form = document.getElementById('filterForm');
+      if (form) form.submit();
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var startInput = document.getElementById('startDate');
+      var endInput = document.getElementById('endDate');
+      var startDisplay = document.getElementById('startDateDisplay');
+      var endDisplay = document.getElementById('endDateDisplay');
+
+      if (startInput && startDisplay) {
+        startDisplay.value = formatToDMY(startInput.value);
+        startInput.addEventListener('input', function() {
+          startDisplay.value = formatToDMY(this.value);
+        });
+        startInput.addEventListener('change', function() {
+          startDisplay.value = formatToDMY(this.value);
+          validateAndSubmit('startDate');
+        });
+        startDisplay.addEventListener('click', function() {
+          if (startInput.showPicker) {
+            startInput.showPicker();
+          } else {
+            startInput.focus();
+          }
+        });
+      }
+
+      if (endInput && endDisplay) {
+        endDisplay.value = formatToDMY(endInput.value);
+        endInput.addEventListener('input', function() {
+          endDisplay.value = formatToDMY(this.value);
+        });
+        endInput.addEventListener('change', function() {
+          endDisplay.value = formatToDMY(this.value);
+          validateAndSubmit('endDate');
+        });
+        endDisplay.addEventListener('click', function() {
+          if (endInput.showPicker) {
+            endInput.showPicker();
+          } else {
+            endInput.focus();
+          }
+        });
+      }
+    });
 
     // Dark / Light Mode Toggle
     var themeToggleBtn = document.getElementById('themeToggleBtn');

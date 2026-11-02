@@ -175,23 +175,17 @@ public class OrderDAO {
             }
 
             Address a = new Address();
-            a.setAddressID(getColInt(rs, "AddressID"));
             a.setCustomerID(order.getCustomerID());
             a.setReceiverName(recName);
             a.setReceiverPhone(recPhone);
             a.setAddressLine(addrLine);
-            a.setWard(getCol(rs, "Ward"));
-            a.setDistrict(getCol(rs, "District"));
-            a.setProvince(getCol(rs, "Province"));
             order.setAddress(a);
         }
 
-        // 5. Product Summary & Quantity
-        order.setProductSummary(getCol(rs, "ProductSummary"));
+        // 5. Order Summary (TotalQuantity & ProductSummary)
         order.setTotalQuantity(getColInt(rs, "TotalQuantity"));
-        if (order.getProductSummary() == null || order.getProductSummary().trim().isEmpty()) {
-            order.setProductSummary("Don't Product Information!");
-        }
+        String pSummary = getCol(rs, "ProductSummary");
+        order.setProductSummary(pSummary != null && !pSummary.trim().isEmpty() ? pSummary : "Tai nghe");
 
         return order;
     }
@@ -204,7 +198,10 @@ public class OrderDAO {
                 SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.OrderDate, o.OrderStatus, o.UpdatedAt, o.CancelReason,
                        o.ShippingName, o.ShippingPhone, o.ShippingAddress,
                        c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       p.PaymentID, p.PaymentMethod, p.PaymentStatus
+                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
+                       (SELECT COALESCE(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalQuantity,
+                       (SELECT COALESCE(STRING_AGG(prod.ProductName, ', '), 'Tai nghe') FROM OrderItems oi 
+                JOIN Products prod ON oi.ProductID = prod.ProductID WHERE oi.OrderID = o.OrderID) AS ProductSummary
                 FROM Orders o
                 LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
                 LEFT JOIN Payments p ON o.OrderID = p.OrderID
@@ -227,7 +224,7 @@ public class OrderDAO {
 
         // 3. Loc den ngay
         if (endDate != null && !endDate.trim().isEmpty()) {
-            sql.append(" AND o.OrderDate <= ?");
+            sql.append(" AND o.OrderDate < ?");
             params.add(endDate.trim());
         }
 
@@ -317,25 +314,6 @@ public class OrderDAO {
                 }
             }
 
-            // Gan thong tin san pham cho cac don hang trong trang
-            for (Order order : orders) {
-                List<OrderItem> items = getOrderItems(order.getOrderID());
-                if (items != null && !items.isEmpty()) {
-                    int totalQty = 0;
-                    StringBuilder summary = new StringBuilder();
-                    for (int i = 0; i < items.size(); i++) {
-                        OrderItem it = items.get(i);
-                        totalQty += it.getQuantity();
-                        if (i > 0) summary.append(", ");
-                        summary.append(it.getProductName());
-                    }
-                    order.setTotalQuantity(totalQty);
-                    order.setProductSummary(summary.toString());
-                } else {
-                    order.setTotalQuantity(0);
-                    order.setProductSummary("Tai nghe");
-                }
-            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching filtered orders", e);
         }
@@ -350,307 +328,427 @@ public class OrderDAO {
                 SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, 
                        o.OrderStatus, o.CancelReason, o.OrderDate, o.UpdatedAt,
                        c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       a.ReceiverName AS AddrReceiverName, a.ReceiverPhone AS AddrReceiverPhone, 
-                       a.AddressLine, a.Ward, a.District, a.Province,
+                       a.ReceiverName AS AddrReceiverName, a.ReceiverPhone AS AddrReceiverPhone, a.AddressLine,
                        s.ShippingProvider, s.TrackingNumber, s.EstimatedDeliveryDate, s.ShippedAt, s.DeliveredAt,
-                       p.PaymentMethod, p.PaymentStatus
+                       p.PaymentMethod, p.PaymentStatus,
+                       oi.OrderItemID, oi.ProductID, oi.Quantity, oi.UnitPrice,
+                       prod.ProductName
                 FROM Orders o
                 LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
                 LEFT JOIN Addresses a ON o.CustomerID = a.CustomerID AND a.IsDefault = 1
                 LEFT JOIN Shipments s ON o.OrderID = s.OrderID
                 LEFT JOIN Payments p ON o.OrderID = p.OrderID
+                LEFT JOIN OrderItems oi ON o.OrderID = oi.OrderID
+                LEFT JOIN Products prod ON oi.ProductID = prod.ProductID
                 WHERE o.OrderID = ?
+                ORDER BY oi.OrderItemID ASC
                 """;
     }
 
-    public Order getOrderById(int orderID) {
+    public Map<String, Object> getOrderDetailWithJoin(int orderID) {
         if (orderID <= 0) {
             throw new IllegalArgumentException("Invalid orderID");
         }
+        Map<String, Object> map = new HashMap<>();
+        Order order = null;
+        List<OrderItem> items = new ArrayList<>();
+
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(getOrderDetailQuery())) {
             ps.setInt(1, orderID);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapOrder(rs, true);
+                while (rs.next()) {
+                    if (order == null) {
+                        order = mapOrder(rs, true);
+                    }
+                    int orderItemId = rs.getInt("OrderItemID");
+                    if (orderItemId > 0) {
+                        OrderItem item = new OrderItem();
+                        item.setOrderItemID(orderItemId);
+                        item.setOrderID(order.getOrderID());
+                        item.setProductID(rs.getInt("ProductID"));
+                        item.setQuantity(rs.getInt("Quantity"));
+                        item.setUnitPrice(rs.getBigDecimal("UnitPrice"));
+                        String pName = rs.getString("ProductName");
+                        item.setProductName(pName != null ? pName : "Product #" + item.getProductID());
+                        items.add(item);
+                    }
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching order detail #" + orderID, e);
         }
-        return null;
-    }
 
-    public Order getOrderDetailWithJoin(int orderID) {
-        return getOrderById(orderID);
-    }
-
-    public List<OrderItem> getOrderItems(int orderID) {
-
-        List<OrderItem> items = new ArrayList<>();
-        String sql = """
-                SELECT oi.OrderItemID, oi.OrderID, oi.ProductID, oi.Quantity, oi.UnitPrice,
-                       COALESCE(p.ProductName, CONCAT('Product #', oi.ProductID)) AS ProductName
-                FROM OrderItems oi
-                LEFT JOIN Products p ON oi.ProductID = p.ProductID
-                WHERE oi.OrderID = ?
-                ORDER BY oi.OrderItemID
-                """;
-
-        if (orderID <= 0) {
-            throw new IllegalArgumentException("Invalid orderID");
+        if (order == null) {
+            return null;
         }
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, orderID);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    OrderItem item = new OrderItem();
-                    item.setOrderItemID(rs.getInt("OrderItemID"));
-                    item.setOrderID(rs.getInt("OrderID"));
-                    item.setProductID(rs.getInt("ProductID"));
-                    item.setQuantity(rs.getInt("Quantity"));
-                    item.setUnitPrice(rs.getBigDecimal("UnitPrice"));
-                    item.setProductName(rs.getString("ProductName"));
-                    items.add(item);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching order items #" + orderID, e);
-        }
-        return items;
+        map.put("order", order);
+        map.put("items", items);
+        return map;
     }
 
     // =========================================================================
-    // 4. ATOMIC DATABASE TRANSACTIONS (STATUS UPDATES & STOCK RESTORATION)
+    // 4. ATOMIC DATABASE TRANSACTIONS (REFACTORED - TEACHER'S CRITERIA)
     // =========================================================================
-
-    public boolean updateOrderStatusWithShipmentAndPayment(int orderID, String newStatus, String cancelReason,
-            String shippingProvider, String trackingNumber, String shipperName, String shipperPhone) {
-        String updateOrderSql = """
-                UPDATE Orders SET OrderStatus = ?, CancelReason = ?,
-                       ShippingName = COALESCE(?, ShippingName), ShippingPhone = COALESCE(?, ShippingPhone),
-                       UpdatedAt = GETDATE() WHERE OrderID = ?
-                """;
-        String updateShipmentSql = """
-                UPDATE Shipments SET ShippingProvider = COALESCE(?, ShippingProvider),
-                       TrackingNumber = COALESCE(?, TrackingNumber), ShippingStatus = COALESCE(?, ShippingStatus),
-                       ShippedAt = CASE WHEN ? = 'SHIPPING' AND ShippedAt IS NULL THEN GETDATE() ELSE ShippedAt END,
-                       DeliveredAt = CASE WHEN ? = 'DELIVERED' THEN GETDATE() ELSE DeliveredAt END
-                WHERE OrderID = ?
-                """;
-        String insertShipmentSql = "INSERT INTO Shipments (OrderID, ShippingProvider, TrackingNumber, "
-                + "ShippingStatus, ShippedAt) VALUES (?, ?, ?, ?, GETDATE())";
-        String updatePaymentSql = "UPDATE Payments SET PaymentStatus = 'SUCCESS', PaymentDate = GETDATE() "
-                + "WHERE OrderID = ? AND (PaymentMethod = 'COD' OR PaymentMethod IS NULL)";
+    // -------------------------------------------------------------------------
+    // TRANSACTION 1: UPDATE ORDER + SHIPMENT + COD PAYMENT
+    // -------------------------------------------------------------------------
+    public boolean updateOrderStatusWithShipmentAndPayment(int orderID, String expectedCurrentStatus, String newStatus,
+            String cancelReason, String shippingProvider, String trackingNumber, String shipperName, String shipperPhone) {
 
         Connection conn = null;
+        boolean committed = false;
+
         try {
             conn = dbContext.getConnection();
-            conn.setAutoCommit(false); // Atomic Transaction
+            conn.setAutoCommit(false);
 
-            // 1. Update Orders
-            try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
-                ps.setString(1, newStatus);
-                ps.setString(2, cancelReason);
-                ps.setString(3, (shipperName != null && !shipperName.trim().isEmpty()) ? shipperName.trim() : null);
-                ps.setString(4, (shipperPhone != null && !shipperPhone.trim().isEmpty()) ? shipperPhone.trim() : null);
-                ps.setInt(5, orderID);
-                if (ps.executeUpdate() <= 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
+            String oldStatus = normalizeStatus(expectedCurrentStatus);
+            String targetStatus = normalizeStatus(newStatus);
 
-            // 2. Handle SHIPPING
-            if ("SHIPPING".equalsIgnoreCase(newStatus)) {
-                try (PreparedStatement ps = conn.prepareStatement(updateShipmentSql)) {
-                    ps.setString(1, shippingProvider);
-                    ps.setString(2, trackingNumber);
-                    ps.setString(3, "SHIPPING");
-                    ps.setString(4, "SHIPPING");
-                    ps.setString(5, "SHIPPING");
-                    ps.setInt(6, orderID);
-                    if (ps.executeUpdate() <= 0) {
-                        try (PreparedStatement psIns = conn.prepareStatement(insertShipmentSql)) {
-                            psIns.setInt(1, orderID);
-                            psIns.setString(2, shippingProvider != null ? shippingProvider : "Giao Hàng Nhanh (GHN)");
-                            psIns.setString(3, trackingNumber != null ? trackingNumber : "TRK" + System.currentTimeMillis());
-                            psIns.setString(4, "SHIPPING");
-                            psIns.executeUpdate();
-                        }
-                    }
-                }
-            }
+            updateOrderRecord(conn, orderID, oldStatus, targetStatus, shipperName, shipperPhone);
 
-            // 3. Handle DELIVERED (Update Shipment status + Auto COD Payment settlement)
-            if ("DELIVERED".equalsIgnoreCase(newStatus)) {
-                try (PreparedStatement ps = conn.prepareStatement(updateShipmentSql)) {
-                    ps.setNull(1, java.sql.Types.VARCHAR);
-                    ps.setNull(2, java.sql.Types.VARCHAR);
-                    ps.setString(3, "DELIVERED");
-                    ps.setString(4, "DELIVERED");
-                    ps.setString(5, "DELIVERED");
-                    ps.setInt(6, orderID);
-                    ps.executeUpdate();
-                }
-                try (PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {
-                    ps.setInt(1, orderID);
-                    ps.executeUpdate();
-                }
+            if ("SHIPPING".equals(targetStatus)) {
+                handleShippingTransition(conn, orderID, shippingProvider, trackingNumber);
+            } else if ("DELIVERED".equals(targetStatus)) {
+                handleDeliveryTransition(conn, orderID);
             }
 
             conn.commit();
+            committed = true;
             return true;
+
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Transaction error updating status #" + orderID, e);
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    LOGGER.log(Level.SEVERE, "Rollback failed for order #" + orderID, rollbackEx);
-                }
-            }
+            LOGGER.log(Level.SEVERE, "Transaction error updating order #" + orderID, e);
             return false;
         } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException closeEx) {
-                    LOGGER.log(Level.WARNING, "Failed to close connection for order #" + orderID, closeEx);
-                }
+            closeTransactionConnection(conn, committed);
+        }
+    }
+
+    private String normalizeStatus(String status) throws SQLException {
+        if (status == null || status.isBlank()) {
+            throw new SQLException("Order status must not be empty.");
+        }
+        return status.trim().toUpperCase(java.util.Locale.ROOT);
+    }
+
+    private void updateOrderRecord(Connection conn, int orderId, String expectedStatus, String newStatus,
+            String shipperName, String shipperPhone) throws SQLException {
+
+        if (expectedStatus == null || expectedStatus.isBlank()) {
+            throw new SQLException("Bắt buộc phải có trạng thái hiện tại (expectedStatus) để cập nhật đơn #" + orderId);
+        }
+
+        boolean hasShipper = shipperName != null && !shipperName.isBlank();
+
+        String sql = hasShipper
+                ? """
+                  UPDATE Orders 
+                  SET OrderStatus = ?, ShippingName = ?, ShippingPhone = ?, UpdatedAt = GETDATE() 
+                  WHERE OrderID = ? AND OrderStatus = ?
+                  """
+                : """
+                  UPDATE Orders 
+                  SET OrderStatus = ?, UpdatedAt = GETDATE() 
+                  WHERE OrderID = ? AND OrderStatus = ?
+                  """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            int i = 1;
+            ps.setString(i++, newStatus);
+
+            if (hasShipper) {
+                ps.setString(i++, shipperName.trim());
+                ps.setString(i++, shipperPhone == null || shipperPhone.isBlank() ? null : shipperPhone.trim());
+            }
+
+            ps.setInt(i++, orderId);
+            ps.setString(i++, expectedStatus);
+
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("Đơn hàng #" + orderId + " đã bị thay đổi trạng thái hoặc không tìm thấy!");
             }
         }
     }
 
-    /**
-     * Atomically cancels order, restores product stock quantity, and writes
-     * inventory audit logs.
-     */
-    public boolean cancelOrderWithStockRestoration(int orderID, String cancelReason) {
-        String checkSql = "SELECT OrderStatus FROM Orders WHERE OrderID = ?";
-        String updateOrderSql = "UPDATE Orders SET OrderStatus = 'CANCELLED', CancelReason = ?, "
-                + "UpdatedAt = GETDATE() WHERE OrderID = ? AND UPPER(OrderStatus) != 'CANCELLED'";
-        String fetchItemsSql = "SELECT oi.ProductID, oi.Quantity, p.StockQuantity "
-                + "FROM OrderItems oi LEFT JOIN Products p ON oi.ProductID = p.ProductID WHERE oi.OrderID = ?";
-        String updateStockSql = "UPDATE Products SET StockQuantity = StockQuantity + ? WHERE ProductID = ?";
-        String logInventorySql = "INSERT INTO InventoryTransactions (ProductID, TransactionType, "
-                + "Quantity, PreviousQuantity, NewQuantity, Reason, CreatedAt) VALUES (?, 'RETURN', ?, ?, ?, ?, GETDATE())";
+    private void handleShippingTransition(Connection conn, int orderId, String provider, String tracking) throws SQLException {
+
+        String shippingProviderValue = provider == null || provider.isBlank() ? "Giao Hàng Nhanh (GHN)" : provider.trim();
+
+        if (tracking == null || tracking.isBlank()) {
+            throw new SQLException("Tracking number must be generated by Service before shipping.");
+        }
+
+        String sql = """
+                IF EXISTS (
+                    SELECT 1 FROM Shipments WITH (UPDLOCK, HOLDLOCK) WHERE OrderID = ?
+                )
+                BEGIN
+                    UPDATE Shipments
+                    SET ShippingProvider = ?,
+                        TrackingNumber = ?,
+                        ShippingStatus = 'SHIPPING',
+                        ShippedAt = ISNULL(ShippedAt, GETDATE())
+                    WHERE OrderID = ?
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO Shipments (OrderID, ShippingProvider, TrackingNumber, ShippingStatus, ShippedAt)
+                    VALUES (?, ?, ?, 'SHIPPING', GETDATE())
+                END
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setString(2, shippingProviderValue);
+            ps.setString(3, tracking.trim());
+            ps.setInt(4, orderId);
+            ps.setInt(5, orderId);
+            ps.setString(6, shippingProviderValue);
+            ps.setString(7, tracking.trim());
+            ps.executeUpdate();
+        }
+    }
+
+    private void handleDeliveryTransition(Connection conn, int orderId) throws SQLException {
+
+        String shipmentSql = """
+                UPDATE Shipments
+                SET ShippingStatus = 'DELIVERED',
+                    DeliveredAt = ISNULL(DeliveredAt, GETDATE())
+                WHERE OrderID = ? AND ShippingStatus = 'SHIPPING'
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(shipmentSql)) {
+            ps.setInt(1, orderId);
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("Shipment not found or not in SHIPPING state for order #" + orderId);
+            }
+        }
+
+        String paymentSql = """
+                UPDATE Payments
+                SET PaymentStatus = 'SUCCESS',
+                    PaymentDate = ISNULL(PaymentDate, GETDATE())
+                WHERE OrderID = ?
+                  AND PaymentMethod = 'COD'
+                  AND (PaymentStatus IS NULL OR PaymentStatus <> 'SUCCESS')
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(paymentSql)) {
+            ps.setInt(1, orderId);
+            ps.executeUpdate();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // TRANSACTION 2: CANCEL ORDER + RESTORE STOCK + INVENTORY LOG
+    // -------------------------------------------------------------------------
+    public boolean cancelOrderWithStockRestoration(int orderID, String expectedCurrentStatus, String cancelReason,
+            List<OrderItem> items) {
+
+        if (items == null || items.isEmpty()) {
+            LOGGER.log(Level.WARNING, "No items provided to restore stock for order #" + orderID);
+            return false;
+        }
 
         Connection conn = null;
+        boolean committed = false;
+
         try {
             conn = dbContext.getConnection();
-            conn.setAutoCommit(false); // Atomic Transaction
+            conn.setAutoCommit(false);
 
-            // 1. Guard against duplicate cancellation
-            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-                ps.setInt(1, orderID);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (!rs.next() || "CANCELLED".equalsIgnoreCase(rs.getString("OrderStatus"))) {
-                        conn.rollback();
-                        return false;
-                    }
-                }
-            }
+            updateOrderAsCancelled(conn, orderID, expectedCurrentStatus, cancelReason);
 
-            // 2. Update Orders status
-            try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
-                ps.setString(1, cancelReason);
-                ps.setInt(2, orderID);
-                if (ps.executeUpdate() <= 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
-
-            // 3. Fetch items to restore
-            List<int[]> items = new ArrayList<>();
-            try (PreparedStatement ps = conn.prepareStatement(fetchItemsSql)) {
-                ps.setInt(1, orderID);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        items.add(new int[]{rs.getInt("ProductID"), rs.getInt("Quantity"), rs.getInt("StockQuantity")});
-                    }
-                }
-            }
-            if (items.isEmpty()) {
-                conn.rollback();
-                return false;
-            }
-
-            // 4. Restore stock and write inventory transaction log
-            try (PreparedStatement psStock = conn.prepareStatement(updateStockSql); PreparedStatement psLog = conn.prepareStatement(logInventorySql)) {
-                for (int[] item : items) {
-                    int pId = item[0], qty = item[1], prevStock = item[2];
-                    psStock.setInt(1, qty);
-                    psStock.setInt(2, pId);
-                    if (psStock.executeUpdate() <= 0) {
-                        conn.rollback();
-                        return false;
-                    }
-
-                    psLog.setInt(1, pId);
-                    psLog.setInt(2, qty);
-                    psLog.setInt(3, prevStock);
-                    psLog.setInt(4, prevStock + qty);
-                    psLog.setString(5, "Cancelled Order #ORD-" + orderID + " (" + cancelReason + ")");
-                    psLog.executeUpdate();
-                }
-            }
+            restoreStockAndLogFromItems(conn, orderID, cancelReason, items);
 
             conn.commit();
+            committed = true;
             return true;
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Transaction error cancelling order #" + orderID, e);
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    LOGGER.log(Level.SEVERE, "Rollback failed for order #" + orderID, rollbackEx);
-                }
-            }
             return false;
         } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException closeEx) {
-                    LOGGER.log(Level.WARNING, "Failed to close connection for order #" + orderID, closeEx);
-                }
+            closeTransactionConnection(conn, committed);
+        }
+    }
+
+    private void updateOrderAsCancelled(Connection conn, int orderId, String expectedCurrentStatus,
+            String cancelReason) throws SQLException {
+
+        String status = normalizeStatus(expectedCurrentStatus);
+
+        String sql = """
+                UPDATE Orders
+                SET OrderStatus = 'CANCELLED',
+                    CancelReason = ?,
+                    UpdatedAt = GETDATE()
+                WHERE OrderID = ?
+                  AND OrderStatus = ?
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cancelReason != null ? cancelReason.trim() : "");
+            ps.setInt(2, orderId);
+            ps.setString(3, status);
+
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("Không thể hủy đơn #" + orderId + ": Đã thay đổi trạng thái hoặc không tìm thấy.");
+            }
+        }
+
+        String updateShipmentSql = """
+                UPDATE Shipments
+                SET ShippingStatus = 'FAILED'
+                WHERE OrderID = ? AND (ShippingStatus IS NULL OR ShippingStatus <> 'DELIVERED')
+                """;
+        try (PreparedStatement psShip = conn.prepareStatement(updateShipmentSql)) {
+            psShip.setInt(1, orderId);
+            psShip.executeUpdate();
+        }
+
+        String updatePaymentSql = """
+                UPDATE Payments
+                SET PaymentStatus = 'CANCELLED'
+                WHERE OrderID = ? AND (PaymentStatus IS NULL OR PaymentStatus <> 'SUCCESS')
+                """;
+        try (PreparedStatement psPay = conn.prepareStatement(updatePaymentSql)) {
+            psPay.setInt(1, orderId);
+            psPay.executeUpdate();
+        }
+    }
+
+    private void restoreStockAndLogFromItems(Connection conn, int orderId, String cancelReason,
+            List<OrderItem> items) throws SQLException {
+
+        Map<Integer, Integer> aggregatedItems = new java.util.LinkedHashMap<>();
+        for (OrderItem item : items) {
+            aggregatedItems.merge(item.getProductID(), item.getQuantity(), Math::addExact);
+        }
+
+        String sql = """
+                DECLARE @StockChange TABLE (
+                    ProductID INT,
+                    PreviousQuantity INT,
+                    NewQuantity INT
+                );
+
+                UPDATE Products
+                SET StockQuantity = StockQuantity + ?
+                OUTPUT
+                    inserted.ProductID,
+                    deleted.StockQuantity,
+                    inserted.StockQuantity
+                INTO @StockChange (ProductID, PreviousQuantity, NewQuantity)
+                WHERE ProductID = ?;
+
+                IF @@ROWCOUNT <> 1
+                    THROW 50001, 'Product not found while restoring stock.', 1;
+
+                INSERT INTO InventoryTransactions (
+                    ProductID,
+                    TransactionType,
+                    Quantity,
+                    PreviousQuantity,
+                    NewQuantity,
+                    Reason,
+                    CreatedAt
+                )
+                SELECT
+                    ProductID,
+                    'RETURN',
+                    ?,
+                    PreviousQuantity,
+                    NewQuantity,
+                    ?,
+                    GETDATE()
+                FROM @StockChange;
+                """;
+
+        String reason = "Cancelled Order #ORD-" + orderId
+                + " (" + (cancelReason == null ? "" : cancelReason.trim()) + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Map.Entry<Integer, Integer> entry : aggregatedItems.entrySet()) {
+                int productId = entry.getKey();
+                int totalQuantity = entry.getValue();
+
+                ps.setInt(1, totalQuantity);
+                ps.setInt(2, productId);
+                ps.setInt(3, totalQuantity);
+                ps.setString(4, reason);
+                ps.execute();
             }
         }
     }
 
-    /**
-     * Retrieves AI 512-Vector recommendations for an order's customer. Matches
-     * the customer's personalized/similar recommendations from
-     * AIRecommendations. Falls back to top confidence recommendations if
-     * customer has no specific history.
-     */
+    // -------------------------------------------------------------------------
+    // SHARED HELPER: ĐÓNG KẾT NỐI VÀ QUẢN LÝ POOL AN TOÀN TUYỆT ĐỐI
+    // -------------------------------------------------------------------------
+    private void closeTransactionConnection(Connection conn, boolean committed) {
+        if (conn == null) {
+            return;
+        }
+        try {
+            if (!committed && !conn.isClosed()) {
+                conn.rollback();
+            }
+            if (!conn.isClosed()) {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Failed to restore connection state", e);
+        } finally {
+            try {
+                conn.close(); // Chắc chắn 100% trả kết nối về pool
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Failed to close database connection", e);
+            }
+        }
+    }
+
     public List<Map<String, Object>> getAIRecommendationsForOrder(int customerId, int orderId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sqlWithCustomer = "SELECT TOP 3 "
-                + "  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, "
-                + "  r.SimilarityScore, r.Reason, r.RecommendationType, "
-                + "  c.CategoryName, b.BrandName "
-                + "FROM AIRecommendations r "
-                + "JOIN Products p ON r.ProductID = p.ProductID "
-                + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
-                + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                + "LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 "
-                + "WHERE r.CustomerID = ? "
-                + "ORDER BY r.CreatedAt DESC, r.SimilarityScore DESC";
+        String sqlWithCustomer = """
+                SELECT TOP 3 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                  r.SimilarityScore, r.Reason, r.RecommendationType, 
+                  c.CategoryName, b.BrandName 
+                FROM AIRecommendations r 
+                LEFT JOIN (
+                    SELECT TOP 1 MinSimilarityThreshold 
+                    FROM AIConfigurations 
+                    ORDER BY ConfigID DESC
+                ) cfg ON 1=1 
+                JOIN Products p ON r.ProductID = p.ProductID 
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
+                WHERE r.CustomerID = ? 
+                  AND (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
+                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
+                """;
 
-        String fallbackSql = "SELECT TOP 3 "
-                + "  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, "
-                + "  r.SimilarityScore, r.Reason, r.RecommendationType, "
-                + "  c.CategoryName, b.BrandName "
-                + "FROM AIRecommendations r "
-                + "JOIN Products p ON r.ProductID = p.ProductID "
-                + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
-                + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                + "LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 "
-                + "ORDER BY r.SimilarityScore DESC, r.CreatedAt DESC";
+        String fallbackSql = """
+                SELECT TOP 3 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                  r.SimilarityScore, r.Reason, r.RecommendationType, 
+                  c.CategoryName, b.BrandName 
+                FROM AIRecommendations r 
+                LEFT JOIN (
+                    SELECT TOP 1 MinSimilarityThreshold 
+                    FROM AIConfigurations 
+                    ORDER BY ConfigID DESC
+                ) cfg ON 1=1 
+                JOIN Products p ON r.ProductID = p.ProductID 
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
+                WHERE (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
+                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
+                """;
 
         try (Connection conn = dbContext.getConnection()) {
             boolean hasCustomerRecs = false;
