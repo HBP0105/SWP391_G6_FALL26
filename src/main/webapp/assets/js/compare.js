@@ -12,6 +12,16 @@
         return Number(amount).toLocaleString('vi-VN') + ' ₫';
     }
 
+    // Format star rating rounded to 2 decimal places
+    function formatRating(prod) {
+        if (!prod || prod.rating == null || isNaN(prod.rating) || Number(prod.rating) <= 0) {
+            return 'No ratings yet';
+        }
+        var count = prod.reviewCount || 0;
+        var rounded = Number(prod.rating).toFixed(2);
+        return rounded + ' ★ (' + count + ')';
+    }
+
     // Update URL query parameters without reloading
     function updateUrl() {
         var params = new URLSearchParams(window.location.search);
@@ -40,18 +50,18 @@
             // Render Empty State
             container.innerHTML = 
                 '<div class="compare-product-box compare-empty-slot" onclick="focusSearch()">' +
-                    '<span class="compare-slot-badge ' + (slot === 'A' ? 'slot-a' : 'slot-b') + '">Sản phẩm ' + slot + '</span>' +
+                    '<span class="compare-slot-badge ' + (slot === 'A' ? 'slot-a' : 'slot-b') + '">Product ' + slot + '</span>' +
                     '<div class="compare-empty-icon"><i class="fa fa-plus-circle"></i></div>' +
-                    '<div class="compare-empty-text">Chưa chọn Sản phẩm ' + slot + '</div>' +
-                    '<div class="compare-empty-subtext">Chọn tai nghe từ danh sách bên dưới để so sánh</div>' +
+                    '<div class="compare-empty-text">Product ' + slot + ' not selected</div>' +
+                    '<div class="compare-empty-subtext">Select a headphone from the list below to compare</div>' +
                 '</div>';
         } else {
             // Render Active Product
             var imgSrc = product.imageUrl ? (product.imageUrl.startsWith('http') || product.imageUrl.startsWith('/') ? product.imageUrl : contextPath + '/' + product.imageUrl) : contextPath + '/assets/img/product01.png';
             container.innerHTML = 
                 '<div class="compare-product-box">' +
-                    '<span class="compare-slot-badge ' + (slot === 'A' ? 'slot-a' : 'slot-b') + '">Sản phẩm ' + slot + '</span>' +
-                    '<button type="button" class="compare-btn-remove-slot" title="Bỏ chọn" onclick="removeSlot(\'' + slot + '\')">' +
+                    '<span class="compare-slot-badge ' + (slot === 'A' ? 'slot-a' : 'slot-b') + '">Product ' + slot + '</span>' +
+                    '<button type="button" class="compare-btn-remove-slot" title="Remove" onclick="removeSlot(\'' + slot + '\')">' +
                         '<i class="fa fa-times"></i>' +
                     '</button>' +
                     '<div class="compare-img-wrap">' +
@@ -67,7 +77,7 @@
                             '<input type="hidden" name="action" value="add"/>' +
                             '<input type="hidden" name="productId" value="' + product.productId + '"/>' +
                             '<input type="hidden" name="quantity" value="1"/>' +
-                            '<button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Thêm giỏ hàng</button>' +
+                            '<button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Add to cart</button>' +
                         '</form>' +
                     '</div>' +
                 '</div>';
@@ -84,72 +94,72 @@
 
         var specs = [
             {
-                label: 'Giá bán',
+                label: 'Price',
                 valA: a ? formatVND(a.price) : '—',
                 valB: b ? formatVND(b.price) : '—',
                 betterA: a && b && (Number(a.price) < Number(b.price)),
                 betterB: a && b && (Number(b.price) < Number(a.price))
             },
             {
-                label: 'Danh mục',
+                label: 'Category',
                 valA: a && a.categoryName ? a.categoryName : '—',
                 valB: b && b.categoryName ? b.categoryName : '—'
             },
             {
-                label: 'Thương hiệu',
+                label: 'Brand',
                 valA: a && a.brandName ? a.brandName : '—',
                 valB: b && b.brandName ? b.brandName : '—'
             },
             {
-                label: 'Kiểu kết nối',
+                label: 'Connection Type',
                 valA: a && a.connectionType ? a.connectionType : '—',
                 valB: b && b.connectionType ? b.connectionType : '—'
             },
             {
-                label: 'Chống ồn (ANC)',
-                valA: a ? (a.noiseCancelling ? '<span class="spec-better">Có (ANC)</span>' : 'Không') : '—',
-                valB: b ? (b.noiseCancelling ? '<span class="spec-better">Có (ANC)</span>' : 'Không') : '—',
+                label: 'Noise Cancelling (ANC)',
+                valA: a ? (a.noiseCancelling ? '<span class="spec-better">Yes (ANC)</span>' : 'No') : '—',
+                valB: b ? (b.noiseCancelling ? '<span class="spec-better">Yes (ANC)</span>' : 'No') : '—',
                 betterA: a && a.noiseCancelling && b && !b.noiseCancelling,
                 betterB: b && b.noiseCancelling && a && !a.noiseCancelling
             },
             {
-                label: 'Thời lượng pin',
-                valA: a && a.batteryLife ? a.batteryLife + ' giờ' : '—',
-                valB: b && b.batteryLife ? b.batteryLife + ' giờ' : '—',
+                label: 'Battery Life',
+                valA: a && a.batteryLife ? a.batteryLife + ' hours' : '—',
+                valB: b && b.batteryLife ? b.batteryLife + ' hours' : '—',
                 betterA: a && b && (Number(a.batteryLife) > Number(b.batteryLife)),
                 betterB: a && b && (Number(b.batteryLife) > Number(a.batteryLife))
             },
             {
                 label: 'Microphone',
-                valA: a ? (a.microphone ? 'Tích hợp' : 'Không') : '—',
-                valB: b ? (b.microphone ? 'Tích hợp' : 'Không') : '—'
+                valA: a ? (a.microphone ? 'Built-in' : 'No') : '—',
+                valB: b ? (b.microphone ? 'Built-in' : 'No') : '—'
             },
             {
-                label: 'Màng loa (Driver)',
+                label: 'Driver Size',
                 valA: a && a.driverSize ? a.driverSize + ' mm' : '—',
                 valB: b && b.driverSize ? b.driverSize + ' mm' : '—'
             },
             {
-                label: 'Kháng nước',
-                valA: a && a.waterResistance ? a.waterResistance : 'Không',
-                valB: b && b.waterResistance ? b.waterResistance : 'Không'
+                label: 'Water Resistance',
+                valA: a && a.waterResistance ? a.waterResistance : 'None',
+                valB: b && b.waterResistance ? b.waterResistance : 'None'
             },
             {
-                label: 'Trọng lượng',
+                label: 'Weight',
                 valA: a && a.weight ? a.weight + ' g' : '—',
                 valB: b && b.weight ? b.weight + ' g' : '—'
             },
             {
-                label: 'Đánh giá sao',
-                valA: a && a.rating ? a.rating + ' ★ (' + (a.reviewCount || 0) + ')' : 'Chưa có',
-                valB: b && b.rating ? b.rating + ' ★ (' + (b.reviewCount || 0) + ')' : 'Chưa có',
+                label: 'Customer Rating',
+                valA: formatRating(a),
+                valB: formatRating(b),
                 betterA: a && b && (Number(a.rating) > Number(b.rating)),
                 betterB: a && b && (Number(b.rating) > Number(a.rating))
             },
             {
-                label: 'Tình trạng kho',
-                valA: a ? (a.stockQuantity > 0 ? '<span class="spec-better">Còn hàng</span>' : '<span style="color:#C62828;">Hết hàng</span>') : '—',
-                valB: b ? (b.stockQuantity > 0 ? '<span class="spec-better">Còn hàng</span>' : '<span style="color:#C62828;">Hết hàng</span>') : '—'
+                label: 'Availability',
+                valA: a ? (a.stockQuantity > 0 ? '<span class="spec-better">In Stock</span>' : '<span style="color:#C62828;">Out of Stock</span>') : '—',
+                valB: b ? (b.stockQuantity > 0 ? '<span class="spec-better">In Stock</span>' : '<span style="color:#C62828;">Out of Stock</span>') : '—'
             }
         ];
 
@@ -183,13 +193,13 @@
                 el.classList.add('selected-as-a');
                 var bA = document.createElement('span');
                 bA.className = 'selected-badge-flag flag-a';
-                bA.innerText = 'Đang là SP A';
+                bA.innerText = 'Selected as Prod A';
                 el.appendChild(bA);
             } else if (pid === idB) {
                 el.classList.add('selected-as-b');
                 var bB = document.createElement('span');
                 bB.className = 'selected-badge-flag flag-b';
-                bB.innerText = 'Đang là SP B';
+                bB.innerText = 'Selected as Prod B';
                 el.appendChild(bB);
             }
         });
@@ -207,7 +217,7 @@
         updateUrl();
 
         if (typeof showSiteWishlistToast === 'function') {
-            showSiteWishlistToast('Đã đổi vị trí giữa Sản phẩm A và B!', false);
+            showSiteWishlistToast('Swapped Product A and Product B positions!', false);
         }
     };
 
@@ -243,7 +253,7 @@
                     updateUrl();
 
                     if (typeof showSiteWishlistToast === 'function') {
-                        showSiteWishlistToast('Đã chọn ' + data.product.productName + ' vào Sản phẩm ' + slot + '!', false);
+                        showSiteWishlistToast('Selected ' + data.product.productName + ' for Product ' + slot + '!', false);
                     }
 
                     // Smooth scroll up to compare section
@@ -297,7 +307,7 @@
                         renderSearchResults(data.products || []);
                     }
                     if (countContainer) {
-                        countContainer.innerText = '(' + (data.totalCount || 0) + ' sản phẩm)';
+                        countContainer.innerText = '(' + (data.totalCount || 0) + ' products)';
                     }
                     renderPagination(data);
                     updateSearchGridBadges();
@@ -334,7 +344,7 @@
 
         var html = '<div class="store-filter clearfix">';
         html += '<span class="store-qty">';
-        html += 'Hiển thị <strong>' + fromIndex + '-' + toIndex + '</strong> trên <strong>' + totalCount + '</strong> sản phẩm';
+        html += 'Showing <strong>' + fromIndex + '-' + toIndex + '</strong> of <strong>' + totalCount + '</strong> products';
         html += '</span>';
 
         if (totalPages > 1) {
@@ -367,7 +377,7 @@
         if (!products || products.length === 0) {
             grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #8D99AE; font-size: 14px;">' +
                              '<i class="fa fa-search" style="font-size: 32px; margin-bottom: 10px; display: block; opacity: 0.5;"></i>' +
-                             'Không tìm thấy sản phẩm nào phù hợp tiêu chí tìm kiếm.</div>';
+                             'No products found matching your search criteria.</div>';
             return;
         }
 
@@ -382,8 +392,8 @@
             html += '<h4 class="compare-grid-name"><a href="' + contextPath + '/productDetail?id=' + p.productId + '">' + escapeHtml(p.productName) + '</a></h4>';
             html += '<div class="compare-grid-price">' + formatVND(p.price) + '</div>';
             html += '<div class="compare-grid-actions">';
-            html += '<button type="button" class="btn-select-compare btn-select-a" onclick="selectProductForSlot(\'A\', ' + p.productId + ')"><i class="fa fa-plus"></i> Chọn vào A</button>';
-            html += '<button type="button" class="btn-select-compare btn-select-b" onclick="selectProductForSlot(\'B\', ' + p.productId + ')"><i class="fa fa-plus"></i> Chọn vào B</button>';
+            html += '<button type="button" class="btn-select-compare btn-select-a" onclick="selectProductForSlot(\'A\', ' + p.productId + ')"><i class="fa fa-plus"></i> Select for A</button>';
+            html += '<button type="button" class="btn-select-compare btn-select-b" onclick="selectProductForSlot(\'B\', ' + p.productId + ')"><i class="fa fa-plus"></i> Select for B</button>';
             html += '</div>';
             html += '</div>';
         });

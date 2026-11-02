@@ -1,11 +1,14 @@
 package com.swp391.controller;
 
+import com.swp391.dao.AIRecommendationDAO;
 import com.swp391.dao.ProductDAO;
 import com.swp391.dao.ReviewDAO;
 import com.swp391.dao.ReviewDAO.ReviewSummary;
+import com.swp391.model.AIRecommendationItem;
 import com.swp391.model.Customer;
 import com.swp391.model.Product;
 import com.swp391.model.Review;
+import com.swp391.util.GeminiService;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.*;
@@ -27,6 +30,7 @@ public class ProductDetailServlet extends HttpServlet {
                 int productId = Integer.parseInt(idParam.trim());
                 ProductDAO productDAO = new ProductDAO();
                 ReviewDAO reviewDAO = new ReviewDAO();
+                AIRecommendationDAO aiDAO = new AIRecommendationDAO();
 
                 product = productDAO.getProductById(productId);
 
@@ -46,6 +50,12 @@ public class ProductDetailServlet extends HttpServlet {
                             request.setAttribute("userReview", userReview);
                         }
                     }
+
+                    // AI Similar Products recommendation (4 items)
+                    List<Product> catalog = productDAO.getAllProducts();
+                    List<AIRecommendationItem> rawSimilar = GeminiService.recommendSimilarProducts(product, catalog, 4);
+                    List<AIRecommendationItem> aiSimilarProducts = aiDAO.populateProducts(rawSimilar);
+                    request.setAttribute("aiSimilarProducts", aiSimilarProducts);
                 }
             } catch (NumberFormatException e) {
                 // Invalid ID
@@ -62,7 +72,7 @@ public class ProductDetailServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
-        Customer customer = (Customer) session.getAttribute("customer");
+        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
 
         String idParam = request.getParameter("productId");
         int productId = 0;
@@ -102,7 +112,7 @@ public class ProductDetailServlet extends HttpServlet {
         if (success) {
             response.sendRedirect(request.getContextPath() + "/productDetail?id=" + productId + "&reviewSuccess=true#tab3");
         } else {
-            response.sendRedirect(request.getContextPath() + "/productDetail?id=" + productId + "&reviewError=failed#tab3");
+            response.sendRedirect(request.getContextPath() + "/productDetail?id=" + productId + "&reviewError=server#tab3");
         }
     }
 }

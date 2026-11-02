@@ -10,7 +10,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>So Sánh Sản Phẩm - Electro</title>
+    <title>Compare Products - Electro</title>
 
     <!-- Google font -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
@@ -36,19 +36,19 @@
     <jsp:include page="/assets/components/header.jsp" />
 
     <!-- BREADCRUMB -->
-    <div id="breadcrumb" class="section" style="padding: 15px 0; background: #FBFBFC; border-bottom: 1px solid #E4E7ED; margin-bottom: 25px;">
+<!--    <div id="breadcrumb" class="section" style="padding: 15px 0; background: #FBFBFC; border-bottom: 1px solid #E4E7ED; margin-bottom: 25px;">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
                     <ul class="breadcrumb-tree" style="list-style: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8D99AE;">
                         <li><a href="${pageContext.request.contextPath}/home" style="color: #333; text-decoration: none;">Home</a></li>
                         <li style="color: #E4E7ED;">/</li>
-                        <li class="active" style="color: #D10024; font-weight: 600;">So Sánh Sản Phẩm</li>
+                        <li class="active" style="color: #D10024; font-weight: 600;">Compare Products</li>
                     </ul>
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
     <!-- /BREADCRUMB -->
 
     <!-- MAIN COMPARE CONTAINER -->
@@ -56,8 +56,8 @@
 
         <!-- Title Section -->
         <div class="compare-title-section">
-            <h1>So Sánh Sản Phẩm Tai Nghe</h1>
-            <p>Đối chiếu trực quan thông số kỹ thuật, tính năng và giá cả giữa 2 mẫu tai nghe để chọn ra thiết bị phù hợp nhất</p>
+            <h1>Compare Headphone Products</h1>
+            <p>Compare technical specifications, features, and prices between 2 headphones side-by-side to choose the best device</p>
         </div>
 
         <!-- 1. TOP COMPARISON ROW: Product A - Swap - Product B - Specs List -->
@@ -68,8 +68,8 @@
                 <c:choose>
                     <c:when test="${not empty productA}">
                         <div class="compare-product-box">
-                            <span class="compare-slot-badge slot-a">Sản phẩm A</span>
-                            <button type="button" class="compare-btn-remove-slot" title="Bỏ chọn" onclick="removeSlot('A')">
+                            <span class="compare-slot-badge slot-a">Product A</span>
+                            <button type="button" class="compare-btn-remove-slot" title="Remove" onclick="removeSlot('A')">
                                 <i class="fa fa-times"></i>
                             </button>
                             <div class="compare-img-wrap">
@@ -96,17 +96,17 @@
                                     <input type="hidden" name="action" value="add"/>
                                     <input type="hidden" name="productId" value="${productA.productId}"/>
                                     <input type="hidden" name="quantity" value="1"/>
-                                    <button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Thêm giỏ hàng</button>
+                                    <button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Add to cart</button>
                                 </form>
                             </div>
                         </div>
                     </c:when>
                     <c:otherwise>
                         <div class="compare-product-box compare-empty-slot" onclick="focusSearch()">
-                            <span class="compare-slot-badge slot-a">Sản phẩm A</span>
+                            <span class="compare-slot-badge slot-a">Product A</span>
                             <div class="compare-empty-icon"><i class="fa fa-plus-circle"></i></div>
-                            <div class="compare-empty-text">Chưa chọn Sản phẩm A</div>
-                            <div class="compare-empty-subtext">Chọn tai nghe từ danh sách bên dưới để so sánh</div>
+                            <div class="compare-empty-text">Product A not selected</div>
+                            <div class="compare-empty-subtext">Select a headphone from the list below to compare</div>
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -114,7 +114,7 @@
 
             <!-- CENTER SWAP BUTTON -->
             <div class="compare-swap-column">
-                <button type="button" class="btn-swap-products" onclick="swapProducts()" title="Đổi vị trí A ⇄ B">
+                <button type="button" class="btn-swap-products" onclick="swapProducts()" title="Swap Product A ⇄ B">
                     <i class="fa fa-arrows-h"></i>
                 </button>
             </div>
@@ -124,8 +124,8 @@
                 <c:choose>
                     <c:when test="${not empty productB}">
                         <div class="compare-product-box">
-                            <span class="compare-slot-badge slot-b">Sản phẩm B</span>
-                            <button type="button" class="compare-btn-remove-slot" title="Bỏ chọn" onclick="removeSlot('B')">
+                            <span class="compare-slot-badge slot-b">Product B</span>
+                            <button type="button" class="compare-btn-remove-slot" title="Remove" onclick="removeSlot('B')">
                                 <i class="fa fa-times"></i>
                             </button>
                             <div class="compare-img-wrap">
@@ -152,17 +152,17 @@
                                     <input type="hidden" name="action" value="add"/>
                                     <input type="hidden" name="productId" value="${productB.productId}"/>
                                     <input type="hidden" name="quantity" value="1"/>
-                                    <button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Thêm giỏ hàng</button>
+                                    <button type="submit" class="compare-btn-cart"><i class="fa fa-shopping-cart"></i> Add to cart</button>
                                 </form>
                             </div>
                         </div>
                     </c:when>
                     <c:otherwise>
                         <div class="compare-product-box compare-empty-slot" onclick="focusSearch()">
-                            <span class="compare-slot-badge slot-b">Sản phẩm B</span>
+                            <span class="compare-slot-badge slot-b">Product B</span>
                             <div class="compare-empty-icon"><i class="fa fa-plus-circle"></i></div>
-                            <div class="compare-empty-text">Chưa chọn Sản phẩm B</div>
-                            <div class="compare-empty-subtext">Chọn tai nghe từ danh sách bên dưới để so sánh</div>
+                            <div class="compare-empty-text">Product B not selected</div>
+                            <div class="compare-empty-subtext">Select a headphone from the list below to compare</div>
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -171,10 +171,10 @@
             <!-- RIGHT SPECS COMPARISON CARD -->
             <div class="compare-specs-card">
                 <div class="compare-specs-header">
-                    <h3><i class="fa fa-sliders" style="color: #D10024;"></i> Bảng So Sánh Thông Số</h3>
+                    <h3><i class="fa fa-sliders" style="color: #D10024;"></i> Specifications Comparison</h3>
                     <div class="compare-specs-legend">
-                        <span class="tag-a"><i class="fa fa-circle"></i> SP A</span>
-                        <span class="tag-b"><i class="fa fa-circle"></i> SP B</span>
+                        <span class="tag-a"><i class="fa fa-circle"></i> Prod A</span>
+                        <span class="tag-b"><i class="fa fa-circle"></i> Prod B</span>
                     </div>
                 </div>
 
@@ -191,7 +191,7 @@
             <!-- Categories Options -->
             <div class="compare-filter-item">
                 <select id="compareCategorySelect" class="compare-select">
-                    <option value="0">Tất cả danh mục (Categories)</option>
+                    <option value="0">All Categories</option>
                     <c:forEach var="cat" items="${categories}">
                         <option value="${cat.categoryId}" ${selectedCatId == cat.categoryId ? 'selected' : ''}>
                             ${cat.categoryName} (${cat.productCount})
@@ -203,7 +203,7 @@
             <!-- Brands Options -->
             <div class="compare-filter-item">
                 <select id="compareBrandSelect" class="compare-select">
-                    <option value="0">Tất cả thương hiệu (Brands)</option>
+                    <option value="0">All Brands</option>
                     <c:forEach var="br" items="${brands}">
                         <option value="${br.brandId}" ${selectedBrandId == br.brandId ? 'selected' : ''}>
                             ${br.brandName} (${br.productCount})
@@ -215,10 +215,10 @@
             <!-- Search Bar -->
             <div class="compare-search-wrapper">
                 <input type="text" id="compareKeywordInput" class="compare-search-input"
-                       placeholder="Tìm kiếm theo tên tai nghe để so sánh..."
+                       placeholder="Search headphones by name to compare..."
                        value="${fn:escapeXml(searchKeyword)}"/>
                 <button type="button" id="btnCompareSearch" class="compare-search-btn">
-                    <i class="fa fa-search"></i> Tìm kiếm
+                    <i class="fa fa-search"></i> Search
                 </button>
             </div>
         </div>
@@ -229,10 +229,10 @@
             <div class="compare-results-header">
                 <h2>
                     <i class="fa fa-th-large" style="color:#D10024; margin-right:6px;"></i>
-                    Danh Sách Sản Phẩm (Search Results)
+                    Search Results
                 </h2>
                 <span class="compare-results-count" id="compareResultsCount">
-                    (${totalCount} sản phẩm)
+                    (${totalCount} products)
                 </span>
             </div>
 
@@ -244,10 +244,10 @@
                                  data-product-id="${p.productId}">
 
                                 <c:if test="${productA != null && productA.productId == p.productId}">
-                                    <span class="selected-badge-flag flag-a">Đang là SP A</span>
+                                    <span class="selected-badge-flag flag-a">Selected as Prod A</span>
                                 </c:if>
                                 <c:if test="${productB != null && productB.productId == p.productId}">
-                                    <span class="selected-badge-flag flag-b">Đang là SP B</span>
+                                    <span class="selected-badge-flag flag-b">Selected as Prod B</span>
                                 </c:if>
 
                                 <div class="compare-grid-img-wrap">
@@ -272,11 +272,11 @@
                                 <div class="compare-grid-actions">
                                     <button type="button" class="btn-select-compare btn-select-a"
                                             onclick="selectProductForSlot('A', ${p.productId})">
-                                        <i class="fa fa-plus"></i> Chọn vào A
+                                        <i class="fa fa-plus"></i> Select for A
                                     </button>
                                     <button type="button" class="btn-select-compare btn-select-b"
                                             onclick="selectProductForSlot('B', ${p.productId})">
-                                        <i class="fa fa-plus"></i> Chọn vào B
+                                        <i class="fa fa-plus"></i> Select for B
                                     </button>
                                 </div>
                             </div>
@@ -285,7 +285,7 @@
                     <c:otherwise>
                         <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #8D99AE; font-size: 14px;">
                             <i class="fa fa-search" style="font-size: 32px; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
-                            Không tìm thấy sản phẩm nào phù hợp tiêu chí tìm kiếm.
+                            No products found matching your search criteria.
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -296,7 +296,7 @@
                 <c:if test="${totalCount > 0}">
                     <div class="store-filter clearfix">
                         <span class="store-qty">
-                            Hiển thị <strong>${fromIndex}-${toIndex}</strong> trên <strong>${totalCount}</strong> sản phẩm
+                            Showing <strong>${fromIndex}-${toIndex}</strong> of <strong>${totalCount}</strong> products
                         </span>
                         <c:if test="${totalPages > 1}">
                             <ul class="store-pagination">
@@ -346,6 +346,6 @@
         window.__initialFromIndex = ${fromIndex != null ? fromIndex : 0};
         window.__initialToIndex = ${toIndex != null ? toIndex : 0};
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=1.1"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=1.2"></script>
 </body>
 </html>

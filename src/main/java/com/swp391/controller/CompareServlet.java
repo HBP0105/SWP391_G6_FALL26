@@ -77,15 +77,15 @@ public class CompareServlet extends HttpServlet {
         }
 
         // Nếu cả A và B đều chưa được truyền tham số, chọn mặc định 2 sản phẩm bán chạy nhất
-        if (productA == null && productB == null && idAParam == null && idBParam == null) {
-            List<Product> topSelling = productDAO.getTopSellingProducts(2);
-            if (topSelling != null && topSelling.size() >= 2) {
-                productA = topSelling.get(0);
-                productB = topSelling.get(1);
-            } else if (topSelling != null && !topSelling.isEmpty()) {
-                productA = topSelling.get(0);
-            }
-        }
+//        if (productA == null && productB == null && idAParam == null && idBParam == null) {
+//            List<Product> topSelling = productDAO.getTopSellingProducts(2);
+//            if (topSelling != null && topSelling.size() >= 2) {
+//                productA = topSelling.get(0);
+//                productB = topSelling.get(1);
+//            } else if (topSelling != null && !topSelling.isEmpty()) {
+//                productA = topSelling.get(0);
+//            }
+//        }
 
         // 2. Load danh mục và thương hiệu cho bộ lọc tìm kiếm
         List<Category> categories = categoryDAO.getAllActiveCategories();
@@ -192,7 +192,7 @@ public class CompareServlet extends HttpServlet {
             if (p != null) {
                 out.print("{\"success\":true,\"product\":" + productToJson(p) + "}");
             } else {
-                out.print("{\"success\":false,\"message\":\"Không tìm thấy sản phẩm.\"}");
+                out.print("{\"success\":false,\"message\":\"Product not found.\"}");
             }
             out.flush();
         }
@@ -218,7 +218,8 @@ public class CompareServlet extends HttpServlet {
         sb.append("\"driverSize\":").append(p.getDriverSize() != null ? p.getDriverSize() : 0).append(",");
         sb.append("\"weight\":").append(p.getWeight() != null ? p.getWeight() : 0).append(",");
         sb.append("\"status\":\"").append(escapeJson(p.getStatus())).append("\",");
-        sb.append("\"rating\":").append(p.getRating()).append(",");
+        double roundedRating = Math.round(p.getRating() * 100.0) / 100.0;
+        sb.append("\"rating\":").append(roundedRating).append(",");
         sb.append("\"reviewCount\":").append(p.getReviewCount());
         sb.append("}");
         return sb.toString();

@@ -1,6 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -89,6 +90,98 @@
         </div>
         <!-- /SECTION -->
 
+        <!-- SECTION: AI Recommendations -->
+        <c:if test="${not empty aiRecommendations}">
+            <div class="section" id="ai-recommendations-section">
+                <!-- container -->
+                <div class="container">
+                    <!-- row -->
+                    <div class="row">
+
+                        <!-- section title -->
+                        <div class="col-md-12">
+                            <div class="section-title">
+                                <h3 class="title" style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fa fa-magic" style="color: #D10024;"></i> AI Recommendations
+                                </h3>
+                                <div class="section-nav">
+                                    <span style="font-size: 13px; color: #8D99AE; margin-right: 15px;">
+                                        <c:choose>
+                                            <c:when test="${not empty sessionScope.customer}">
+                                                Personalized based on your audio preferences & wishlist
+                                            </c:when>
+                                            <c:otherwise>
+                                                Curated audio gear picks by Gemini AI
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /section title -->
+
+                        <!-- Products tab & slick -->
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="products-tabs">
+                                    <div id="tab-ai-all" class="tab-pane fade in active">
+                                        <div class="products-slick" data-nav="#slick-nav-ai-all">
+                                            <c:forEach var="item" items="${aiRecommendations}">
+                                                <c:set var="product" value="${item.product}" />
+                                                <!-- product -->
+                                                <div class="product">
+                                                    <div class="product-img">
+                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}" alt="${product.productName}">
+                                                        <div class="product-label">
+                                                            <span class="new" style="background-color: #D10024; border-color: #D10024;">AI PICK</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="product-body">
+                                                        <p class="product-category">${product.categoryName} <c:if test="${product.noiseCancelling}"><span style="color: #0088cc; font-size: 11px; font-weight: 600;">• ANC</span></c:if></p>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a></h3>
+                                                        <h4 class="product-price"><fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> &#8363;</h4>
+                                                        
+                                                        <!-- AI Reason Banner -->
+                                                        <div style="background: #fbfbfb; border-left: 3px solid #D10024; padding: 6px 8px; margin: 8px 0; font-size: 11px; color: #555; text-align: left; line-height: 1.35; border-radius: 0 4px 4px 0; min-height: 42px;" title="${fn:escapeXml(item.reason)}">
+                                                            <strong style="color: #D10024;"><i class="fa fa-lightbulb-o"></i> Why:</strong> ${fn:escapeXml(item.reason)}
+                                                        </div>
+
+                                                        <div class="product-rating">
+                                                            <c:forEach var="i" begin="1" end="5">
+                                                                <c:choose>
+                                                                    <c:when test="${product.rating >= i}"><i class="fa fa-star"></i></c:when>
+                                                                    <c:otherwise><i class="fa fa-star-o"></i></c:otherwise>
+                                                                </c:choose>
+                                                            </c:forEach>
+                                                        </div>
+                                                        <div class="product-btns">
+                                                            <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
+                                                            <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                            <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                            <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${product.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="add-to-cart">
+                                                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                                    </div>
+                                                </div>
+                                                <!-- /product -->
+                                            </c:forEach>
+                                        </div>
+                                        <div id="slick-nav-ai-all" class="products-slick-nav"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Products tab & slick -->
+                    </div>
+                    <!-- /row -->
+                </div>
+                <!-- /container -->
+            </div>
+        </c:if>
+        <!-- /SECTION: AI Recommendations -->
+
         <!-- SECTION -->
         <div class="section">
             <!-- container -->
@@ -143,7 +236,7 @@
                                                         <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
                                                         <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                         <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                                                        <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                        <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${product.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                     </div>
                                                 </div>
                                                 <div class="add-to-cart">
@@ -187,7 +280,7 @@
                                                                     <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
                                                                     <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                     <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                                                                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                                    <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${product.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                                 </div>
                                                             </div>
                                                             <div class="add-to-cart">
@@ -315,7 +408,7 @@
                                                         <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
                                                         <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                         <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                                                        <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                        <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${product.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                     </div>
                                                 </div>
                                                 <div class="add-to-cart">
@@ -356,7 +449,7 @@
                                                                     <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(product.productId)}" />
                                                                     <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${product.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                     <button type="button" class="add-to-compare" data-product-id="${product.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                                                                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                                    <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${product.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
                                                                 </div>
                                                             </div>
                                                             <div class="add-to-cart">

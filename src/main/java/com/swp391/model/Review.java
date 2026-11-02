@@ -5,6 +5,8 @@
 package com.swp391.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -24,6 +26,7 @@ public class Review {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String customerName;
+    private List<ReviewImage> images = new ArrayList<>();
 
     public Review() {
     }
@@ -109,6 +112,23 @@ public class Review {
 
     public void setCustomerName(String customerName) {
         this.customerName = customerName;
+    }
+
+    public List<ReviewImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ReviewImage> images) {
+        this.images = (images != null) ? images : new ArrayList<>();
+    }
+
+    public void addImage(ReviewImage image) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        if (image != null) {
+            this.images.add(image);
+        }
     }
 
     public String getFormattedDate() {

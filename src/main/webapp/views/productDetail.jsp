@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -24,7 +24,7 @@
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nouislider.min.css" />
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/font-awesome.min.css">
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
-        <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/productDetail.css" />
+        <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/productDetail.css?v=1.2" />
     </head>
 
     <body>
@@ -32,24 +32,24 @@
         <jsp:include page="/assets/components/header.jsp" />
 
         <!-- BREADCRUMB -->
-        <div id="breadcrumb" class="section">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <ul class="breadcrumb-tree">
-                            <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
-                                <c:if test="${not empty product}">
-                                <li><a href="#">${product.categoryName}</a></li>
-                                <li class="active">${product.productName}</li>
-                                </c:if>
-                                <c:if test="${empty product}">
-                                <li class="active">Product Not Found</li>
-                                </c:if>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!--        <div id="breadcrumb" class="section">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul class="breadcrumb-tree">
+                                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
+        <c:if test="${not empty product}">
+        <li><a href="#">${product.categoryName}</a></li>
+        <li class="active">${product.productName}</li>
+        </c:if>
+        <c:if test="${empty product}">
+        <li class="active">Product Not Found</li>
+        </c:if>
+</ul>
+</div>
+</div>
+</div>
+</div>-->
         <!-- /BREADCRUMB -->
 
         <!-- SECTION -->
@@ -138,8 +138,8 @@
                                     <h2 class="product-name">${product.productName}</h2>
 
                                     <%-- Rating (dynamic from DB) --%>
-                                    <div>
-                                        <div class="product-rating">
+                                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+                                        <div class="product-rating" style="margin-right: 0;">
                                             <c:forEach var="i" begin="1" end="5">
                                                 <c:choose>
                                                     <c:when test="${product.rating >= i}"><i class="fa fa-star"></i></c:when>
@@ -148,16 +148,36 @@
                                                 </c:choose>
                                             </c:forEach>
                                         </div>
-                                        <a class="review-link" href="#tab3">
+                                        <a class="review-link" href="#tab3" onclick="switchToReviewsTab(event)" style="color: #8D99AE; font-size: 13px; text-decoration: none;">
                                             <c:choose>
                                                 <c:when test="${product.reviewCount > 0}">
-                                                    <fmt:formatNumber value="${product.rating}" maxFractionDigits="1" minFractionDigits="1"/> (${product.reviewCount} Review<c:if test="${product.reviewCount > 1}">s</c:if>) | Add your review
+                                                    <fmt:formatNumber value="${product.rating}" maxFractionDigits="1" minFractionDigits="1"/> (${product.reviewCount} Reviews)
                                                 </c:when>
                                                 <c:otherwise>
-                                                    0 Review(s) | Add your review
+                                                    0 Reviews
                                                 </c:otherwise>
                                             </c:choose>
                                         </a>
+
+                                        <%-- Top Quick Action: Write a Review or Log In --%>
+                                        
+                                        <c:choose>
+                                            <c:when test="${not empty sessionScope.customer || not empty sessionScope.user}">
+                                                <a href="${pageContext.request.contextPath}/productReviews?id=${product.productId}"
+                                                   class="primary-btn"
+                                                   style="padding: 5px 14px; font-size: 12px; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; color: #FFFFFF !important; background-color: #D10024; text-decoration: none;">
+                                                    <i class="fa fa-pencil-square-o"></i> ${userReview != null ? 'Edit Your Review' : 'Write a Review'}
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/login"
+                                                   class="primary-btn"
+                                                   style="padding: 5px 14px; font-size: 12px; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; color: #FFFFFF !important; background-color: #2B2D42; text-decoration: none;">
+                                                    <i class="fa fa-sign-in"></i> Log In to Review
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        
                                     </div>
 
                                     <%-- Price & Stock --%>
@@ -257,7 +277,7 @@
                                         <!-- Tab 2: Specifications -->
                                         <div id="tab2" class="tab-pane fade in">
                                             <div class="row">
-                                                <div class="col-md-8">
+                                                <div class="col-md-12">
                                                     <table class="specs-table">
                                                         <tbody>
                                                             <c:if test="${not empty product.brandName}">
@@ -341,8 +361,8 @@
                                         <!-- Tab 3: Reviews -->
                                         <div id="tab3" class="tab-pane fade in">
                                             <div class="row">
-                                                <!-- Rating summary -->
-                                                <div class="col-md-3">
+                                                <!-- Rating summary & Review Action (Left Column) -->
+                                                <div class="col-md-4 pd-review-sidebar">
                                                     <div id="rating">
                                                         <div class="rating-avg">
                                                             <span><fmt:formatNumber value="${reviewSummary != null ? reviewSummary.avgRating : 0}" maxFractionDigits="1" minFractionDigits="1"/></span>
@@ -385,9 +405,72 @@
                                                             </li>
                                                         </ul>
                                                     </div>
+
+                                                    <!-- Review Action Box (Left column) -->
+                                                    <div class="pd-review-action-box" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #E4E7ED;">
+                                                        <c:choose>
+                                                            <c:when test="${not empty sessionScope.customer || not empty sessionScope.user}">
+                                                                <c:set var="loggedInName" value="${not empty sessionScope.customer ? sessionScope.customer.fullName : (not empty sessionScope.user ? sessionScope.user.fullName : '')}" />
+                                                                <p style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                                                                    Reviewing as: <strong style="color: #2B2D42;">${fn:escapeXml(loggedInName)}</strong>
+                                                                </p>
+                                                                <a href="${pageContext.request.contextPath}/productReviews?id=${product.productId}"
+                                                                   class="primary-btn pd-btn-write-review"
+                                                                   style="display: block; width: 100%; text-align: center; border-radius: 4px; padding: 12px 18px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; color: #FFFFFF !important; background-color: #D10024; border: 1px solid #D10024; text-decoration: none;">
+                                                                    <i class="fa fa-pencil-square-o" style="margin-right: 5px;"></i> ${userReview != null ? 'Edit Your Review' : 'Write a Review'}
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="pd-login-prompt-box" style="background: #FBFBFC; border: 1px dashed #DCDFE6; border-radius: 6px; padding: 20px 16px; text-align: center;">
+                                                                    <i class="fa fa-lock" style="font-size: 26px; color: #D10024; margin-bottom: 8px; display: block;"></i>
+                                                                    <h5 style="margin-bottom: 6px; color: #333; font-weight: 700;">Login Required</h5>
+                                                                    <p style="font-size: 12px; color: #666; margin-bottom: 14px; line-height: 1.5;">
+                                                                        You must be logged in to leave a review for this product.
+                                                                    </p>
+                                                                    <a href="${pageContext.request.contextPath}/login"
+                                                                       class="primary-btn pd-btn-login-review"
+                                                                       style="display: block; width: 100%; padding: 10px 0; text-align: center; text-transform: uppercase; font-size: 12px; font-weight: 700; border-radius: 4px; color: #FFFFFF !important; background-color: #2B2D42; text-decoration: none;">
+                                                                        <i class="fa fa-sign-in"></i> Log In to Review
+                                                                    </a>
+                                                                </div>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
                                                 </div>
-                                                <!-- Reviews list -->
-                                                <div class="col-md-6">
+
+                                                <!-- Reviews list (Right Column - Expanded col-md-8) -->
+                                                <div class="col-md-8 pd-reviews-container">
+                                                    <!-- Reviews Header Bar with Action Button -->
+                                                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #E4E7ED; padding-bottom: 14px; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
+                                                        <h4 style="margin: 0; font-size: 18px; font-weight: 700; color: #2B2D42; text-transform: uppercase;">
+                                                            Customer Reviews (${reviewSummary != null ? reviewSummary.totalReviews : (product != null ? product.reviewCount : 0)})
+                                                        </h4>
+                                                        <%-- 
+                                                        <c:choose>
+                                                            <c:when test="${not empty sessionScope.customer || not empty sessionScope.user}">
+                                                                <a href="${pageContext.request.contextPath}/productReviews?id=${product.productId}"
+                                                                   class="primary-btn"
+                                                                   style="padding: 8px 18px; border-radius: 4px; font-size: 12.5px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; color: #fff !important; background-color: #D10024; text-decoration: none;">
+                                                                    <i class="fa fa-pencil-square-o"></i> ${userReview != null ? 'Edit Your Review' : 'Write a Review'}
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="${pageContext.request.contextPath}/login"
+                                                                   class="primary-btn"
+                                                                   style="padding: 8px 18px; border-radius: 4px; font-size: 12.5px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; color: #fff !important; background-color: #2B2D42; text-decoration: none;">
+                                                                    <i class="fa fa-sign-in"></i> Log In to Review
+                                                                </a>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        --%>
+                                                    </div>
+
+                                                    <c:if test="${param.reviewSuccess == 'true'}">
+                                                        <div class="alert alert-success" style="padding: 12px 16px; font-size: 13.5px; margin-bottom: 20px; border-radius: 4px;">
+                                                            <i class="fa fa-check-circle"></i> Thank you! Your review has been saved successfully.
+                                                        </div>
+                                                    </c:if>
+
                                                     <div id="reviews">
                                                         <ul class="reviews">
                                                             <c:choose>
@@ -407,82 +490,29 @@
                                                                                 </div>
                                                                             </div>
                                                                             <div class="review-body">
-                                                                                <p>${fn:escapeXml(rev.comment)}</p>
+                                                                                <p style="white-space: pre-line; color: #333; font-size: 13.5px; line-height: 1.6; margin-bottom: 8px;">${fn:escapeXml(rev.comment)}</p>
+                                                                                <c:if test="${not empty rev.images}">
+                                                                                    <div class="review-images-gallery" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                                                                        <c:forEach var="img" items="${rev.images}">
+                                                                                            <a href="${img.imageUrl}" class="review-photo-link" onclick="openReviewPhotoModal(event, '${img.imageUrl}')" style="display: block; width: 72px; height: 72px; border-radius: 6px; overflow: hidden; border: 1px solid #e4e7ed; box-shadow: 0 1px 3px rgba(0,0,0,0.08); background-color: #f7f7f7; text-decoration: none;">
+                                                                                                <img src="${img.imageUrl}" alt="Review photo" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" />
+                                                                                            </a>
+                                                                                        </c:forEach>
+                                                                                    </div>
+                                                                                </c:if>
                                                                             </div>
                                                                         </li>
                                                                     </c:forEach>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <li style="text-align: center; padding: 40px 15px; color: #888;">
-                                                                        <i class="fa fa-comment-o" style="font-size: 38px; color: #ccc; margin-bottom: 12px; display: block;"></i>
-                                                                        <p style="font-size: 14px; font-weight: 600; color: #555; margin-bottom: 4px;">No reviews yet</p>
+                                                                    <li style="text-align: center; padding: 45px 15px; color: #888;">
+                                                                        <i class="fa fa-comment-o" style="font-size: 42px; color: #ccc; margin-bottom: 12px; display: block;"></i>
+                                                                        <p style="font-size: 15px; font-weight: 600; color: #555; margin-bottom: 6px;">No reviews yet</p>
                                                                         <p style="font-size: 13px; color: #999;">Be the first to review this product!</p>
                                                                     </li>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </ul>
-                                                    </div>
-                                                </div>
-                                                <!-- Review Form / Login prompt -->
-                                                <div class="col-md-3">
-                                                    <div id="review-form">
-                                                        <c:if test="${param.reviewSuccess == 'true'}">
-                                                            <div class="alert alert-success" style="padding: 10px; font-size: 13px; margin-bottom: 15px; border-radius: 4px;">
-                                                                <i class="fa fa-check-circle"></i> Thank you! Your review has been saved.
-                                                            </div>
-                                                        </c:if>
-                                                        <c:if test="${param.reviewError == 'invalid'}">
-                                                            <div class="alert alert-danger" style="padding: 10px; font-size: 13px; margin-bottom: 15px; border-radius: 4px;">
-                                                                <i class="fa fa-exclamation-circle"></i> Please select a rating (1-5 stars) and enter your comment.
-                                                            </div>
-                                                        </c:if>
-                                                        <c:if test="${param.reviewError == 'failed'}">
-                                                            <div class="alert alert-danger" style="padding: 10px; font-size: 13px; margin-bottom: 15px; border-radius: 4px;">
-                                                                <i class="fa fa-exclamation-circle"></i> Failed to submit review. Please try again.
-                                                            </div>
-                                                        </c:if>
-
-                                                        <c:choose>
-                                                            <c:when test="${not empty sessionScope.customer}">
-                                                                <!-- Đã đăng nhập: Form viết / cập nhật đánh giá -->
-                                                                <form class="review-form" action="${pageContext.request.contextPath}/productDetail" method="post">
-                                                                    <input type="hidden" name="productId" value="${product.productId}">
-
-                                                                    <div style="margin-bottom: 10px; font-size: 13px; color: #555;">
-                                                                        Reviewing as: <strong style="color: #D10024;">${sessionScope.customer.fullName}</strong>
-                                                                    </div>
-
-                                                                    <textarea class="input" name="comment" placeholder="Write your review here..." required style="height: 110px; resize: vertical;">${userReview != null ? userReview.comment : ''}</textarea>
-
-                                                                    <div class="input-rating" style="margin-top: 10px;">
-                                                                        <span>Your Rating: </span>
-                                                                        <div class="stars">
-                                                                            <input id="star5" name="rating" value="5" type="radio" ${userReview != null && userReview.rating == 5 ? 'checked' : ''} required><label for="star5"></label>
-                                                                            <input id="star4" name="rating" value="4" type="radio" ${userReview != null && userReview.rating == 4 ? 'checked' : ''}><label for="star4"></label>
-                                                                            <input id="star3" name="rating" value="3" type="radio" ${userReview != null && userReview.rating == 3 ? 'checked' : ''}><label for="star3"></label>
-                                                                            <input id="star2" name="rating" value="2" type="radio" ${userReview != null && userReview.rating == 2 ? 'checked' : ''}><label for="star2"></label>
-                                                                            <input id="star1" name="rating" value="1" type="radio" ${userReview != null && userReview.rating == 1 ? 'checked' : ''}><label for="star1"></label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <button type="submit" class="primary-btn" style="margin-top: 12px; width: 100%; border-radius: 4px;">
-                                                                        ${userReview != null ? 'Update Review' : 'Submit Review'}
-                                                                    </button>
-                                                                </form>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <!-- Chưa đăng nhập: Khóa chức năng tạo review -->
-                                                                <div style="background: #fbfbfb; border: 1px dashed #dcdcdc; border-radius: 6px; padding: 22px 16px; text-align: center;">
-                                                                    <i class="fa fa-lock" style="font-size: 32px; color: #D10024; margin-bottom: 12px; display: block;"></i>
-                                                                    <h5 style="margin-bottom: 8px; color: #333; font-weight: 700;">Login Required</h5>
-                                                                    <p style="font-size: 12px; color: #666; margin-bottom: 16px; line-height: 1.5;">
-                                                                        You must be logged in to leave a review for this product.
-                                                                    </p>
-                                                                    <a href="${pageContext.request.contextPath}/login" class="primary-btn" style="display: block; width: 100%; padding: 9px 0; text-align: center; text-transform: uppercase; font-size: 12px; font-weight: 700; border-radius: 4px;">
-                                                                        <i class="fa fa-sign-in"></i> Log In to Review
-                                                                    </a>
-                                                                </div>
-                                                            </c:otherwise>
-                                                        </c:choose>
                                                     </div>
                                                 </div>
                                             </div>
@@ -498,6 +528,72 @@
             </div>
         </div>
         <!-- /SECTION -->
+
+        <!-- SECTION: AI Similar Recommendations -->
+        <c:if test="${not empty aiSimilarProducts}">
+            <div class="section" style="padding-top: 30px; border-top: 1px solid #E4E7ED; margin-top: 20px;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="section-title text-center">
+                                <h3 class="title" style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fa fa-magic" style="color: #D10024;"></i> AI Recommended Similar Products
+                                </h3>
+                                <p style="font-size: 13px; color: #8D99AE; margin-top: 4px;">Smart audio suggestions matching driver size, noise cancellation & acoustic profile</p>
+                            </div>
+                        </div>
+
+                        <!-- 4 Products Column Layout -->
+                        <div class="col-md-12">
+                            <div class="row">
+                                <c:forEach var="item" items="${aiSimilarProducts}">
+                                    <c:set var="similarProd" value="${item.product}" />
+                                    <div class="col-md-3 col-sm-6 col-xs-6">
+                                        <div class="product" style="margin-bottom: 30px;">
+                                            <div class="product-img">
+                                                <img src="${pageContext.request.contextPath}/${similarProd.imageUrl}" alt="${similarProd.productName}">
+                                                <div class="product-label">
+                                                    <span class="new" style="background-color: #D10024; border-color: #D10024;">SIMILAR</span>
+                                                </div>
+                                            </div>
+                                            <div class="product-body">
+                                                <p class="product-category">${similarProd.categoryName} <c:if test="${similarProd.noiseCancelling}"><span style="color: #0088cc; font-size: 11px; font-weight: 600;">• ANC</span></c:if></p>
+                                                <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${similarProd.productId}">${similarProd.productName}</a></h3>
+                                                <h4 class="product-price"><fmt:formatNumber value="${similarProd.price}" type="number" groupingUsed="true"/> &#8363;</h4>
+
+                                                <!-- AI Reason -->
+                                                <div style="background: #fbfbfb; border-left: 3px solid #D10024; padding: 6px 8px; margin: 8px 0; font-size: 11px; color: #555; text-align: left; line-height: 1.35; border-radius: 0 4px 4px 0; min-height: 42px;" title="${fn:escapeXml(item.reason)}">
+                                                    <strong style="color: #D10024;"><i class="fa fa-lightbulb-o"></i> Match:</strong> ${fn:escapeXml(item.reason)}
+                                                </div>
+
+                                                <div class="product-rating">
+                                                    <c:forEach var="i" begin="1" end="5">
+                                                        <c:choose>
+                                                            <c:when test="${similarProd.rating >= i}"><i class="fa fa-star"></i></c:when>
+                                                            <c:otherwise><i class="fa fa-star-o"></i></c:otherwise>
+                                                        </c:choose>
+                                                    </c:forEach>
+                                                </div>
+                                                <div class="product-btns">
+                                                    <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(similarProd.productId)}" />
+                                                    <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${similarProd.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
+                                                    <button type="button" class="add-to-compare" data-product-id="${similarProd.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+                                                    <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${similarProd.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
+                                                </div>
+                                            </div>
+                                            <div class="add-to-cart">
+                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </c:if>
+        <!-- /SECTION: AI Similar Recommendations -->
 
         <!-- NEWSLETTER -->
         <div id="newsletter" class="section">
@@ -608,5 +704,59 @@
         <script>window.__contextPath = '${pageContext.request.contextPath}';</script>
         <script src="${pageContext.request.contextPath}/assets/js/productDetail.js"></script>
 
+        <script>
+            function switchToReviewsTab(e) {
+                if (e) e.preventDefault();
+                var tabLink = document.querySelector('#product-tab .tab-nav a[href="#tab3"]');
+                if (tabLink) {
+                    $(tabLink).tab('show');
+                    var tabEl = document.getElementById('product-tab');
+                    if (tabEl) {
+                        tabEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.location.hash === '#tab3' || window.location.search.indexOf('reviewSuccess') !== -1) {
+                    var tabLink = document.querySelector('#product-tab .tab-nav a[href="#tab3"]');
+                    if (tabLink) {
+                        $(tabLink).tab('show');
+                        var tabEl = document.getElementById('product-tab');
+                        if (tabEl) {
+                            tabEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }
+            });
+        </script>
+
+        <!-- Review Photo Modal Lightbox -->
+        <div id="reviewPhotoModal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; backdrop-filter: blur(2px);" onclick="closeReviewPhotoModal()">
+            <span style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 36px; font-weight: bold; cursor: pointer; line-height: 1;" onclick="closeReviewPhotoModal()">&times;</span>
+            <img id="reviewModalImg" src="" alt="Full Review Photo" style="max-width: 90%; max-height: 85vh; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); object-fit: contain;" onclick="event.stopPropagation();" />
+        </div>
+        <script>
+            function openReviewPhotoModal(e, url) {
+                if (e) e.preventDefault();
+                var modal = document.getElementById('reviewPhotoModal');
+                var img = document.getElementById('reviewModalImg');
+                if (modal && img) {
+                    img.src = url;
+                    modal.style.display = 'flex';
+                }
+            }
+            function closeReviewPhotoModal() {
+                var modal = document.getElementById('reviewPhotoModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    var img = document.getElementById('reviewModalImg');
+                    if (img) img.src = '';
+                }
+            }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeReviewPhotoModal();
+            });
+        </script>
     </body>
 </html>

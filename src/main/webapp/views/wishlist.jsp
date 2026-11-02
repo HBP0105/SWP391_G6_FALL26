@@ -446,7 +446,7 @@
     <jsp:include page="/assets/components/header.jsp" />
 
     <!-- BREADCRUMB -->
-    <div id="breadcrumb" class="section" style="padding: 15px 0; background: #FBFBFC; border-bottom: 1px solid #E4E7ED; margin-bottom: 20px;">
+<!--    <div id="breadcrumb" class="section" style="padding: 15px 0; background: #FBFBFC; border-bottom: 1px solid #E4E7ED; margin-bottom: 20px;">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -458,7 +458,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
     <!-- /BREADCRUMB -->
 
     <!-- MAIN CONTENT CONTAINER (STEAM LAYOUT) -->
@@ -654,7 +654,7 @@
                 There are no items currently in this wishlist.<br/>
                 Explore our catalog to find headphones and audio equipment you love and add them to your wishlist!
             </p>
-            <a href="${pageContext.request.contextPath}/search"
+            <a href="${pageContext.request.contextPath}/productList"
                style="background: #D10024; color: #fff; border: 2px solid #D10024; border-radius: 40px; padding: 9px 24px; font-size: 13px; font-weight: 700; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="fa fa-shopping-bag"></i> Browse Products
             </a>

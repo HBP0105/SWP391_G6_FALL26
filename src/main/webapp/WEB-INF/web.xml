@@ -10,6 +10,16 @@
         <url-pattern>/compare</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>ProductReviewsController</servlet-name>
+        <servlet-class>com.swp391.controller.ProductReviewsController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductReviewsController</servlet-name>
+        <url-pattern>/productReviews</url-pattern>
+        <url-pattern>/ProductReviews</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

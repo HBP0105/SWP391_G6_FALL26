@@ -164,7 +164,7 @@
                 <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
                 <li><a href="${pageContext.request.contextPath}/search?category=1">Headphones</a></li>
                 <li><a href="${pageContext.request.contextPath}/search?category=2">Earbuds</a></li>
-                <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare"><i class="fa fa-exchange" style="margin-right: 4px;"></i> Compare</a></li>
+                <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
             </ul>
             <!-- /NAV -->
         </div>

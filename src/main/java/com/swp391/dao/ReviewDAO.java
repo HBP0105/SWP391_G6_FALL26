@@ -1,6 +1,7 @@
 package com.swp391.dao;
 
 import com.swp391.model.Review;
+import com.swp391.model.ReviewImage;
 import com.swp391.util.DBContext;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -107,7 +108,7 @@ public class ReviewDAO {
     }
 
     /**
-     * Get all visible reviews for a product, sorted newest first.
+     * Get all visible reviews for a product, sorted newest first, including images.
      */
     public List<Review> getReviewsByProductId(int productId) {
         List<Review> list = new ArrayList<>();
@@ -142,10 +143,110 @@ public class ReviewDAO {
                     list.add(r);
                 }
             }
+
+            // Fetch attached images for each review
+            for (Review r : list) {
+                r.setImages(getImagesByReviewId(r.getReviewId()));
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in getReviewsByProductId (productId=" + productId + ")", e);
         }
         return list;
+    }
+
+    /**
+     * Get images for a specific review.
+     */
+    public List<ReviewImage> getImagesByReviewId(int reviewId) {
+        List<ReviewImage> images = new ArrayList<>();
+        String sql = "SELECT * FROM ReviewImages WHERE ReviewID = ? ORDER BY ImageID ASC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reviewId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ReviewImage img = new ReviewImage();
+                    img.setImageId(rs.getInt("ImageID"));
+                    img.setReviewId(rs.getInt("ReviewID"));
+                    img.setImageUrl(rs.getString("ImageURL"));
+                    img.setPublicId(rs.getString("PublicID"));
+                    img.setIsPrimary(rs.getBoolean("IsPrimary"));
+
+                    Timestamp createdTs = rs.getTimestamp("CreatedAt");
+                    if (createdTs != null) {
+                        img.setCreatedAt(createdTs.toLocalDateTime());
+                    }
+                    images.add(img);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in getImagesByReviewId (reviewId=" + reviewId + ")", e);
+        }
+        return images;
+    }
+
+    /**
+     * Add a single review image.
+     */
+    public boolean addReviewImage(int reviewId, String imageUrl, String publicId, boolean isPrimary) {
+        String sql = "INSERT INTO ReviewImages (ReviewID, ImageURL, PublicID, IsPrimary, CreatedAt) VALUES (?, ?, ?, ?, GETDATE())";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reviewId);
+            ps.setString(2, imageUrl);
+            ps.setString(3, publicId);
+            ps.setBoolean(4, isPrimary);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in addReviewImage", e);
+            return false;
+        }
+    }
+
+    /**
+     * Get a review image by its ImageID.
+     */
+    public ReviewImage getReviewImageById(int imageId) {
+        String sql = "SELECT * FROM ReviewImages WHERE ImageID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, imageId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ReviewImage img = new ReviewImage();
+                    img.setImageId(rs.getInt("ImageID"));
+                    img.setReviewId(rs.getInt("ReviewID"));
+                    img.setImageUrl(rs.getString("ImageURL"));
+                    img.setPublicId(rs.getString("PublicID"));
+                    img.setIsPrimary(rs.getBoolean("IsPrimary"));
+                    Timestamp ts = rs.getTimestamp("CreatedAt");
+                    if (ts != null) {
+                        img.setCreatedAt(ts.toLocalDateTime());
+                    }
+                    return img;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in getReviewImageById (imageId=" + imageId + ")", e);
+        }
+        return null;
+    }
+
+    /**
+     * Delete a review image by its ImageID and ReviewID.
+     */
+    public boolean deleteReviewImage(int imageId, int reviewId) {
+        String sql = "DELETE FROM ReviewImages WHERE ImageID = ? AND ReviewID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, imageId);
+            ps.setInt(2, reviewId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error in deleteReviewImage (imageId=" + imageId + ", reviewId=" + reviewId + ")", e);
+            return false;
+        }
     }
 
     /**
@@ -216,6 +317,8 @@ public class ReviewDAO {
                     if (updatedTs != null) {
                         r.setUpdatedAt(updatedTs.toLocalDateTime());
                     }
+
+                    r.setImages(getImagesByReviewId(r.getReviewId()));
                     return r;
                 }
             }
@@ -226,32 +329,32 @@ public class ReviewDAO {
     }
 
     /**
-     * Add or update review in database.
+     * Add or update review in database and return the ReviewID.
      */
-    public boolean addOrUpdateReview(int customerId, int productId, int rating, String comment) {
+    public int saveOrUpdateReviewAndGetId(int customerId, int productId, int rating, String comment) {
         String checkSql = "SELECT ReviewID FROM Reviews WHERE CustomerID = ? AND ProductID = ?";
-        String updateSql = "UPDATE Reviews SET Rating = ?, Comment = ?, Status = 'VISIBLE', UpdatedAt = GETDATE() WHERE CustomerID = ? AND ProductID = ?";
-        String insertSql = "INSERT INTO Reviews (CustomerID, ProductID, Rating, Comment, Status, CreatedAt) VALUES (?, ?, ?, ?, 'VISIBLE', GETDATE())";
+        String updateSql = "UPDATE Reviews SET Rating = ?, Comment = ?, Status = 'VISIBLE', UpdatedAt = GETDATE() WHERE ReviewID = ?";
+        String insertSql = "INSERT INTO Reviews (CustomerID, ProductID, Rating, Comment, Status, CreatedAt) OUTPUT INSERTED.ReviewID VALUES (?, ?, ?, ?, 'VISIBLE', GETDATE())";
 
         try (Connection conn = dbContext.getConnection()) {
-            boolean exists = false;
+            int existingId = -1;
             try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
                 checkPs.setInt(1, customerId);
                 checkPs.setInt(2, productId);
                 try (ResultSet rs = checkPs.executeQuery()) {
                     if (rs.next()) {
-                        exists = true;
+                        existingId = rs.getInt("ReviewID");
                     }
                 }
             }
 
-            if (exists) {
+            if (existingId > 0) {
                 try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
                     updatePs.setInt(1, rating);
                     updatePs.setString(2, comment);
-                    updatePs.setInt(3, customerId);
-                    updatePs.setInt(4, productId);
-                    return updatePs.executeUpdate() > 0;
+                    updatePs.setInt(3, existingId);
+                    updatePs.executeUpdate();
+                    return existingId;
                 }
             } else {
                 try (PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
@@ -259,12 +362,23 @@ public class ReviewDAO {
                     insertPs.setInt(2, productId);
                     insertPs.setInt(3, rating);
                     insertPs.setString(4, comment);
-                    return insertPs.executeUpdate() > 0;
+                    try (ResultSet rs = insertPs.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getInt(1);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in addOrUpdateReview", e);
-            return false;
+            LOGGER.log(Level.SEVERE, "Error in saveOrUpdateReviewAndGetId", e);
         }
+        return -1;
+    }
+
+    /**
+     * Add or update review in database (boolean wrapper).
+     */
+    public boolean addOrUpdateReview(int customerId, int productId, int rating, String comment) {
+        return saveOrUpdateReviewAndGetId(customerId, productId, rating, comment) > 0;
     }
 }
