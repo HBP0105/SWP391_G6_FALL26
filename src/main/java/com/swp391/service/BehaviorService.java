@@ -1,7 +1,6 @@
 package com.swp391.service;
 
 import com.swp391.dao.BehaviorDAO;
-import com.swp391.model.UserBehavior;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

@@ -4,8 +4,6 @@ import com.swp391.dao.AIPerformanceDAO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;

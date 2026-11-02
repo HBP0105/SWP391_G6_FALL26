@@ -5,14 +5,10 @@ import com.swp391.model.Address;
 import com.swp391.model.Customer;
 import com.swp391.model.Order;
 import com.swp391.model.OrderItem;
-import com.swp391.model.Payment;
-import com.swp391.model.Shipment;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
