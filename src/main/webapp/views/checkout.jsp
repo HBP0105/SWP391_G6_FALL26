@@ -41,45 +41,50 @@
         <!-- TOP HEADER -->
         <div id="top-header">
             <div class="container">
+                <%@ page import="com.swp391.model.Customer" %>
+                <%@ page import="com.swp391.model.Staff" %>
+                <%
+                    Object currentUser = session.getAttribute("customer");
+                    if (currentUser == null) {
+                        currentUser = session.getAttribute("user");
+                    }
+                    String displayPhone = "";
+                    String displayEmail = "";
+                    String displayName = "";
+                    if (currentUser instanceof Customer) {
+                        Customer c = (Customer) currentUser;
+                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
+                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
+                        displayName = c.getFullName() != null ? c.getFullName() : "";
+                    } else if (currentUser instanceof Staff) {
+                        Staff s = (Staff) currentUser;
+                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
+                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
+                        displayName = s.getFullName() != null ? s.getFullName() : "";
+                    }
+                %>
                 <ul class="header-links pull-left">
-                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
+                    <% if (!displayPhone.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <% } %>
+                    <% if (!displayEmail.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <% } %>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-                    <%@ page import="com.swp391.model.Customer" %>
-                    <%@ page import="com.swp391.model.Staff" %>
-                    <%
-                        Object currentUser = session.getAttribute("customer");
-                        if (currentUser == null) {
-                            currentUser = session.getAttribute("user");
-                        }
-                        if (currentUser == null) {
-                    %>
-                    <!-- Chưa đăng nhập -->
+                    <% if (currentUser == null) { %>
                     <li>
                         <a href="${pageContext.request.contextPath}/login">
                             <i class="fa fa-user-o"></i> My Account
                         </a>
                     </li>
-                    <%
-                        } else {
-                            String displayName = "";
-                            if (currentUser instanceof Customer) {
-                                displayName = ((Customer) currentUser).getFullName();
-                            } else if (currentUser instanceof Staff) {
-                                displayName = ((Staff) currentUser).getFullName();
-                            }
-                    %>
-                    <!-- Đã đăng nhập -->
+                    <% } else { %>
                     <li>
                         <a href="${pageContext.request.contextPath}/profile">
                             <i class="fa fa-user"></i> <%= displayName %>
                         </a>
                     </li>
-                    <%
-                        }
-                    %>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -110,8 +115,9 @@
         <div class="container">
             <div id="responsive-nav">
                 <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
+                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
                     <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
+                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
                     <li class="active"><a href="#">Checkout</a></li>
                 </ul>
             </div>
@@ -142,6 +148,38 @@
                             <div class="form-group">
                                 <label>Email Address</label>
                                 <input type="email" class="form-control" value="${sessionScope.customer.email}" readonly style="background-color: #f5f5f5;">
+                            </div>
+
+                            <!-- CHỌN ĐỊA CHỈ TỪ ADDRESS REPOSITORY HOẶC TỰ NHẬP MỚI -->
+                            <div class="form-group" style="background: #f9f9f9; border: 1px solid #E4E7ED; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Select from Address Repository:</label>
+                                    <a href="${pageContext.request.contextPath}/addresses" class="btn btn-default btn-xs">
+                                        Manage Address Repository
+                                    </a>
+                                </div>
+                                <c:choose>
+                                    <c:when test="${not empty requestScope.savedAddresses}">
+                                        <select id="savedAddressSelect" class="form-control" onchange="applySavedAddress(this)" style="height: 38px; cursor: pointer;">
+                                            <option value="">-- Enter a new address manually below --</option>
+                                            <c:forEach items="${requestScope.savedAddresses}" var="addr">
+                                                <option value="${addr.addressId}"
+                                                        data-province="${addr.province}"
+                                                        data-district="${addr.district}"
+                                                        data-ward="${addr.ward}"
+                                                        data-line="${addr.addressLine}"
+                                                        ${addr.isDefault ? 'selected' : ''}>
+                                                    ${addr.receiverName} (${addr.receiverPhone}) - ${addr.addressLine}, ${addr.ward}, ${addr.district}, ${addr.province} ${addr.isDefault ? '[Default]' : ''}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="text-muted" style="margin: 0; font-size: 13px;">
+                                            No saved addresses yet. <a href="${pageContext.request.contextPath}/addresses" style="color: #D10024;">Add to Address Repository</a> or enter your address below.
+                                        </p>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
 
                             <div class="row">
@@ -227,7 +265,6 @@
                                     <select class="form-control" name="paymentMethod" id="paymentMethod" style="height: 40px; cursor: pointer;">
                                         <option value="COD">Cash on Delivery (COD)</option>
                                         <option value="VNPAY">VNPay</option>
-                                        <option value="BANK_TRANSFER">Bank Transfer</option>
                                     </select>
                                 </div>
                             </div>
@@ -261,5 +298,28 @@
     <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/bootstrap.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+    <script>
+        function applySavedAddress(selectElem) {
+            var opt = selectElem.options[selectElem.selectedIndex];
+            if (!opt || !opt.value) {
+                document.getElementById('province').value = '';
+                document.getElementById('district').value = '';
+                document.getElementById('ward').value = '';
+                document.getElementById('addressLine').value = '';
+                return;
+            }
+            document.getElementById('province').value = opt.getAttribute('data-province') || '';
+            document.getElementById('district').value = opt.getAttribute('data-district') || '';
+            document.getElementById('ward').value = opt.getAttribute('data-ward') || '';
+            document.getElementById('addressLine').value = opt.getAttribute('data-line') || '';
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            var selectElem = document.getElementById('savedAddressSelect');
+            if (selectElem && selectElem.value) {
+                applySavedAddress(selectElem);
+            }
+        });
+    </script>
 </body>
 </html>
