@@ -6,6 +6,7 @@ public class Staff {
 
     private int staffID;
     private Role role;
+    private int roleID;
     private String fullName;
     private String email;
     private String passwordHash;
@@ -17,10 +18,13 @@ public class Staff {
     public Staff() {
     }
 
-    public Staff(int staffID, Role role, String fullName, String email, 
-                 String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Staff(int staffID, Role role, String fullName, String email,
+            String passwordHash, String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.staffID = staffID;
         this.role = role;
+        if (role != null) {
+            this.roleID = role.getRoleId();
+        }
         this.fullName = fullName;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -38,16 +42,42 @@ public class Staff {
         this.staffID = staffID;
     }
 
+    public int getStaffId() {
+        return staffID;
+    }
+
+    public void setStaffId(int staffId) {
+        this.staffID = staffId;
+    }
+
     public Role getRole() {
         return role;
     }
 
     public void setRole(Role role) {
         this.role = role;
+        if (role != null) {
+            this.roleID = role.getRoleId();
+        }
     }
 
-    public String getRoleName() {
-        return (role != null) ? role.getRoleName() : null;
+    public int getRoleID() {
+        if (role != null) {
+            return role.getRoleId();
+        }
+        return roleID;
+    }
+
+    public void setRoleID(int roleID) {
+        this.roleID = roleID;
+    }
+
+    public int getRoleId() {
+        return getRoleID();
+    }
+
+    public void setRoleId(int roleId) {
+        setRoleID(roleId);
     }
 
     public String getFullName() {
@@ -58,6 +88,9 @@ public class Staff {
         this.fullName = fullName;
     }
 
+    public String getRoleName(){
+        return (role!=null) ? role.getRoleName() : null;
+    }
     public String getEmail() {
         return email;
     }

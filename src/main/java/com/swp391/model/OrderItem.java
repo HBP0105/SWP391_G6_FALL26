@@ -1,26 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.math.BigDecimal;
 
-/**
- *
- * @author ADMIN
- */
 public class OrderItem {
 
     private int orderItemId;
     private int orderId;
     private int productId;
-
     private int quantity;
     private BigDecimal unitPrice;
     private BigDecimal subtotal;
+    private String productName;
 
     public OrderItem() {
+    }
+
+    public OrderItem(int orderItemId, int orderId, int productId, int quantity, BigDecimal unitPrice) {
+        this.orderItemId = orderItemId;
+        this.orderId = orderId;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
     }
 
     public OrderItem(int orderItemId, int orderId, int productId, int quantity, BigDecimal unitPrice, BigDecimal subtotal) {
@@ -40,6 +40,14 @@ public class OrderItem {
         this.orderItemId = orderItemId;
     }
 
+    public int getOrderItemID() {
+        return orderItemId;
+    }
+
+    public void setOrderItemID(int orderItemID) {
+        this.orderItemId = orderItemID;
+    }
+
     public int getOrderId() {
         return orderId;
     }
@@ -48,12 +56,28 @@ public class OrderItem {
         this.orderId = orderId;
     }
 
+    public int getOrderID() {
+        return orderId;
+    }
+
+    public void setOrderID(int orderID) {
+        this.orderId = orderID;
+    }
+
     public int getProductId() {
         return productId;
     }
 
     public void setProductId(int productId) {
         this.productId = productId;
+    }
+
+    public int getProductID() {
+        return productId;
+    }
+
+    public void setProductID(int productID) {
+        this.productId = productID;
     }
 
     public int getQuantity() {
@@ -72,12 +96,25 @@ public class OrderItem {
         this.unitPrice = unitPrice;
     }
 
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
     public BigDecimal getSubtotal() {
-        return subtotal;
+        if (subtotal != null) {
+            return subtotal;
+        }
+        if (unitPrice == null) {
+            return BigDecimal.ZERO;
+        }
+        return unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
     }
-
 }

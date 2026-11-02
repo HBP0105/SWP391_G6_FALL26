@@ -59,14 +59,14 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("role", staff.getRoleName());
 
             if ("ADMIN".equalsIgnoreCase(staff.getRoleName())) {
-                response.sendRedirect(request.getContextPath() + "/views/admin.jsp");
+                response.sendRedirect(request.getContextPath() + "/admin/revenue-report");
             } else if ("MANAGER".equalsIgnoreCase(staff.getRoleName())) {
-                response.sendRedirect(request.getContextPath() + "/views/manager.jsp");
+                response.sendRedirect(request.getContextPath() + "/staff/orders");
             } else {
                 response.sendRedirect(request.getContextPath() + "/views/home.jsp");
             }
             return;
-        }
+     }
 
         // Dang nhap that bai
         request.setAttribute("error", "Email or password incorrect");

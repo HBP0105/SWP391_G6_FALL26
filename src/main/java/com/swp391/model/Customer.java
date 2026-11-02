@@ -1,23 +1,24 @@
+
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
 public class Customer {
-
-    private int customerID;
-    private String fullName;
-    private String email;
-    private String passwordHash;
-    private String phone;
-    private String status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    public int customerID;
+    public String fullName;
+    public String email;
+    public String passwordHash;
+    public String phone;
+    public String status;
+    public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
 
     public Customer() {
     }
 
-    public Customer(int customerID, String fullName, String email, String passwordHash, 
-                    String phone, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Customer(int customerID, String fullName, String email,
+                    String passwordHash, String phone, String status,
+                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.customerID = customerID;
         this.fullName = fullName;
         this.email = email;
