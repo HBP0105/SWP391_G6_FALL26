@@ -11,6 +11,13 @@ public class OrderDTO {
     private String shippingAddress;
     private String orderStatus;
     private String orderDate;
+    private String paymentMethod;
+    private String paymentStatus;
+    private String transactionId;
+    private String paymentDate;
+    private String shippingProvider;
+    private String trackingNumber;
+    private String estimatedDeliveryDate;
     private List<CartItemDTO> items;
 
     public OrderDTO() {
@@ -92,11 +99,67 @@ public class OrderDTO {
         this.orderDate = orderDate;
     }
 
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
     public List<CartItemDTO> getItems() {
         return items;
     }
 
     public void setItems(List<CartItemDTO> items) {
         this.items = items;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(String paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public String getShippingProvider() {
+        return shippingProvider;
+    }
+
+    public void setShippingProvider(String shippingProvider) {
+        this.shippingProvider = shippingProvider;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public String getEstimatedDeliveryDate() {
+        return estimatedDeliveryDate;
+    }
+
+    public void setEstimatedDeliveryDate(String estimatedDeliveryDate) {
+        this.estimatedDeliveryDate = estimatedDeliveryDate;
     }
 }

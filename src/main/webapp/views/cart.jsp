@@ -31,44 +31,50 @@
         <!-- TOP HEADER -->
         <div id="top-header">
             <div class="container">
+                <%@ page import="com.swp391.model.Customer" %>
+                <%@ page import="com.swp391.model.Staff" %>
+                <%
+                    Object currentUser = session.getAttribute("customer");
+                    if (currentUser == null) {
+                        currentUser = session.getAttribute("user");
+                    }
+                    String displayPhone = "";
+                    String displayEmail = "";
+                    String displayName = "";
+                    if (currentUser instanceof Customer) {
+                        Customer c = (Customer) currentUser;
+                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
+                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
+                        displayName = c.getFullName() != null ? c.getFullName() : "";
+                    } else if (currentUser instanceof Staff) {
+                        Staff s = (Staff) currentUser;
+                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
+                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
+                        displayName = s.getFullName() != null ? s.getFullName() : "";
+                    }
+                %>
                 <ul class="header-links pull-left">
-                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
+                    <% if (!displayPhone.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <% } %>
+                    <% if (!displayEmail.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <% } %>
                 </ul>
                 <ul class="header-links pull-right">
-                    <%@ page import="com.swp391.model.Customer" %>
-                    <%@ page import="com.swp391.model.Staff" %>
-                    <%
-                        Object currentUser = session.getAttribute("customer");
-                        if (currentUser == null) {
-                            currentUser = session.getAttribute("user");
-                        }
-                        if (currentUser == null) {
-                    %>
-                    <!-- Chua dang nhap -->
+                    <% if (currentUser == null) { %>
                     <li>
                         <a href="${pageContext.request.contextPath}/login">
                             <i class="fa fa-user-o"></i> My Account
                         </a>
                     </li>
-                    <%
-                        } else {
-                            String displayName = "";
-                            if (currentUser instanceof Customer) {
-                                displayName = ((Customer) currentUser).getFullName();
-                            } else if (currentUser instanceof Staff) {
-                                displayName = ((Staff) currentUser).getFullName();
-                            }
-                    %>
-                    <!-- Da dang nhap -->
+                    <% } else { %>
                     <li>
                         <a href="${pageContext.request.contextPath}/profile">
                             <i class="fa fa-user"></i> <%= displayName %>
                         </a>
                     </li>
-                    <%
-                        }
-                    %>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -101,7 +107,8 @@
                 <ul class="main-nav nav navbar-nav">
                     <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
                     <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
-                    <li class="active"><a href="#">Cart</a></li>
+                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
+                    <li class="active"><a href="${pageContext.request.contextPath}/cart">Cart</a></li>
                 </ul>
             </div>
         </div>
@@ -196,7 +203,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12 text-center">
-                        <p class="text-muted">Â© 2026 Headphone Store. All rights reserved.</p>
+                        <p class="text-muted">© 2026 Headphone Store. All rights reserved.</p>
                     </div>
                 </div>
             </div>
