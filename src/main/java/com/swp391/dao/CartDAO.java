@@ -78,7 +78,7 @@ public class CartDAO extends DBContext{
             ResultSet rs = ptmCheck.executeQuery();
             
             if (rs.next()) {
-                // S?n ph?m ?ã t?n t?i -> C?p nh?t c?ng thêm s? l??ng
+                // San pham da ton tai -> Cap nhat cong them so luong
                 int oldQty = rs.getInt("Quantity");
                 String updateSql = "UPDATE CartItems SET Quantity = ? WHERE CartID = ? AND ProductID = ?";
                 PreparedStatement ptmUpdate = connection.prepareStatement(updateSql);
@@ -87,7 +87,7 @@ public class CartDAO extends DBContext{
                 ptmUpdate.setInt(3, productId);
                 ptmUpdate.executeUpdate();
             } else {
-                // S?n ph?m m?i tinh -> Insert dòng m?i
+                // San pham da ton tai -> Cap nhat cong them so luong
                 String insertSql = "INSERT INTO CartItems (CartID, ProductID, Quantity) VALUES (?, ?, ?)";
                 PreparedStatement ptmInsert = connection.prepareStatement(insertSql);
                 ptmInsert.setInt(1, cartId);
@@ -102,14 +102,14 @@ public class CartDAO extends DBContext{
     }
 
     public void updateCartItemQuantity(int cartId, int productId, int newQuantity) {
-        // String sql = "UPDATE CartItems SET Quantity = ? WHERE CartID = ? AND ProductID = ?";
+        // San pham da ton tai -> Cap nhat cong them so luong
     }
 
     public void removeCartItem(int cartId, int productId) {
-        // String sql = "DELETE FROM CartItems WHERE CartID = ? AND ProductID = ?";
+        // San pham da ton tai -> Cap nhat cong them so luong
     }
 
     public void clearCart(int cartId) {
-        // String sql = "DELETE FROM CartItems WHERE CartID = ?";
+        // San pham da ton tai -> Cap nhat cong them so luong
     }
 }

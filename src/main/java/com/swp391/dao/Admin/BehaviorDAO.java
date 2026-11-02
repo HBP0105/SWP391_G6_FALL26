@@ -1,4 +1,4 @@
-package com.swp391.dao;
+package com.swp391.dao.Admin;
 
 import com.swp391.model.UserBehavior;
 import com.swp391.util.DBContext;

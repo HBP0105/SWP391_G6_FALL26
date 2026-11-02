@@ -1,6 +1,6 @@
-package com.swp391.controller;
+package com.swp391.controller.Admin;
 
-import com.swp391.service.RevenueService;
+import com.swp391.service.Admin.RevenueService;
 
 import java.io.IOException;
 import java.io.PrintWriter;

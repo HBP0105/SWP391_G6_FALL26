@@ -1,6 +1,6 @@
-package com.swp391.controller;
+package com.swp391.controller.Manager;
 
-import com.swp391.service.OrderService;
+import com.swp391.service.Manager.OrderService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;

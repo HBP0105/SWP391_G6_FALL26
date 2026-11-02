@@ -1,6 +1,6 @@
-package com.swp391.controller;
+package com.swp391.controller.Admin;
 
-import com.swp391.service.AuditLogService;
+import com.swp391.service.Admin.AuditLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

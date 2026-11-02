@@ -1,6 +1,8 @@
-package com.swp391.service;
+package com.swp391.service.Manager;
 
-import com.swp391.dao.OrderDAO;
+import com.swp391.dao.Manager.OrderDAO;
+import com.swp391.dao.Admin.AuditLogDAO;
+import com.swp391.service.Admin.AIPerformanceService;
 import com.swp391.model.Address;
 import com.swp391.model.Customer;
 import com.swp391.model.Order;
@@ -17,19 +19,19 @@ public class OrderService {
 
     private final OrderDAO orderDAO;
     private final AIPerformanceService aiPerformanceService;
-    private final com.swp391.dao.AuditLogDAO auditLogDAO;
+    private final AuditLogDAO auditLogDAO;
     private static final int MAX_EXPORT_LIMIT = 5000;
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
         this.aiPerformanceService = new AIPerformanceService();
-        this.auditLogDAO = new com.swp391.dao.AuditLogDAO();
+        this.auditLogDAO = new AuditLogDAO();
     }
 
     public OrderService(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
         this.aiPerformanceService = new AIPerformanceService();
-        this.auditLogDAO = new com.swp391.dao.AuditLogDAO();
+        this.auditLogDAO = new AuditLogDAO();
     }
 
     /**

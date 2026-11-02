@@ -1,6 +1,6 @@
-package com.swp391.service;
+package com.swp391.service.Admin;
 
-import com.swp391.dao.RevenueReportDAO;
+import com.swp391.dao.Admin.RevenueReportDAO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

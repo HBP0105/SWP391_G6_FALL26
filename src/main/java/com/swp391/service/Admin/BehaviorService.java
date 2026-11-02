@@ -1,6 +1,6 @@
-package com.swp391.service;
+package com.swp391.service.Admin;
 
-import com.swp391.dao.BehaviorDAO;
+import com.swp391.dao.Admin.BehaviorDAO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

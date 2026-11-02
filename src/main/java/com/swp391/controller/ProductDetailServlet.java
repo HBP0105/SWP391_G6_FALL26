@@ -3,7 +3,7 @@ package com.swp391.controller;
 import com.swp391.dao.ProductDAO;
 import com.swp391.model.Customer;
 import com.swp391.model.Product;
-import com.swp391.service.AIPerformanceService;
+import com.swp391.service.Admin.AIPerformanceService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;

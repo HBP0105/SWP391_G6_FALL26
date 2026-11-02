@@ -1,6 +1,6 @@
-package com.swp391.service;
+package com.swp391.service.Admin;
 
-import com.swp391.dao.AuditLogDAO;
+import com.swp391.dao.Admin.AuditLogDAO;
 import com.swp391.model.AuditLog;
 
 import java.time.LocalDate;

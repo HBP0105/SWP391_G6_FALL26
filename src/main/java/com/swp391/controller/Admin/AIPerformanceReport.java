@@ -1,7 +1,7 @@
-package com.swp391.controller;
+package com.swp391.controller.Admin;
 
 import com.swp391.model.Staff;
-import com.swp391.service.AIPerformanceService;
+import com.swp391.service.Admin.AIPerformanceService;
 
 import java.io.IOException;
 import java.util.Map;

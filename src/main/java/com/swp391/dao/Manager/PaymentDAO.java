@@ -1,4 +1,4 @@
-package com.swp391.dao;
+package com.swp391.dao.Manager;
 
 import com.swp391.util.DBContext;
 
