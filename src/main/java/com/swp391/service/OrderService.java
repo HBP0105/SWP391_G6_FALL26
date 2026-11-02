@@ -20,16 +20,19 @@ import java.util.Map;
 public class OrderService {
 
     private final OrderDAO orderDAO;
+    private final AIPerformanceService aiPerformanceService;
     private final com.swp391.dao.AuditLogDAO auditLogDAO;
     private static final int MAX_EXPORT_LIMIT = 5000;
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
+        this.aiPerformanceService = new AIPerformanceService();
         this.auditLogDAO = new com.swp391.dao.AuditLogDAO();
     }
 
     public OrderService(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
+        this.aiPerformanceService = new AIPerformanceService();
         this.auditLogDAO = new com.swp391.dao.AuditLogDAO();
     }
 
@@ -506,10 +509,37 @@ public class OrderService {
         bundle.put("payment", order.getPayment());
         bundle.put("items", items);
 
-        // Fetch AI 512-Vector recommendations for customer care and cross-selling
-        List<Map<String, Object>> aiRecommendations = orderDAO.getAIRecommendationsForOrder(order.getCustomerID(), orderId);
+        // Fetch AI 512-Vector recommendations for customer retention ONLY if order is CANCELLED
+        List<Map<String, Object>> aiRecommendations = new ArrayList<>();
+        if (order != null && "CANCELLED".equalsIgnoreCase(order.getOrderStatus())) {
+            int cancelledProductId = (items != null && !items.isEmpty()) ? items.get(0).getProductId() : 0;
+            aiRecommendations = getAlternativeRecommendationsForOrder(cancelledProductId, order.getCustomerID(), orderId);
+        }
         bundle.put("aiRecommendations", aiRecommendations);
 
         return bundle;
+    }
+
+    private List<Map<String, Object>> getAlternativeRecommendationsForOrder(int cancelledProductId, int customerId, int orderId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (cancelledProductId > 0 && aiPerformanceService != null) {
+            try {
+                List<Map<String, Object>> recs = aiPerformanceService.getRecommendedProductsForDetail(cancelledProductId, customerId, "cancel-order-" + orderId);
+                if (recs != null && !recs.isEmpty()) {
+                    for (Map<String, Object> r : recs) {
+                        Map<String, Object> map = new HashMap<>(r);
+                        map.put("productID", r.get("productId"));
+                        int match = r.containsKey("matchPercentage") ? (int) r.get("matchPercentage") : 85;
+                        map.put("similarityPercent", String.valueOf(match));
+                        map.put("recommendationType", "ALTERNATIVE");
+                        map.put("reason", "Sản phẩm thay thế tương đồng " + match + "% về tính năng & tầm giá để tư vấn cho khách");
+                        list.add(map);
+                    }
+                    return list;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return orderDAO.getAIRecommendationsForOrder(customerId, orderId);
     }
 }

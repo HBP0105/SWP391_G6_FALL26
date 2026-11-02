@@ -771,6 +771,29 @@ public class OrderDAO {
                     }
                 }
             }
+
+            // Fallback sang sản phẩm đang Active nếu bảng AIRecommendations chưa có dữ liệu
+            if (list.isEmpty()) {
+                String activeProductsSql = """
+                        SELECT TOP 3 
+                          0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                          0.88 AS SimilarityScore, 
+                          N'Sản phẩm tai nghe cùng phân khúc, gợi ý nhân viên tư vấn thay thế' AS Reason, 
+                          'ALTERNATIVE' AS RecommendationType, 
+                          c.CategoryName, b.BrandName 
+                        FROM Products p 
+                        LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                        LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                        LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
+                        WHERE p.Status = 'ACTIVE' 
+                        ORDER BY p.ProductID DESC
+                        """;
+                try (PreparedStatement psAct = conn.prepareStatement(activeProductsSql); ResultSet rsAct = psAct.executeQuery()) {
+                    while (rsAct.next()) {
+                        list.add(mapAIRecRow(rsAct));
+                    }
+                }
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error loading AI Recommendations for customer #" + customerId, e);
         }

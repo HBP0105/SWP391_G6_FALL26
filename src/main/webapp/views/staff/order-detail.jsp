@@ -625,69 +625,86 @@
             </div>
           </section>
 
-          <!-- AI 512-VECTOR RECOMMENDATION & CROSS-SELL SECTION -->
-          <section class="panel panel-compact bg-white mb-3 shadow-sm" style="border-left: 4px solid #6366f1; background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
-            <div class="d-flex align-items-center justify-content-between mb-1.5 border-bottom pb-1">
-              <div class="d-flex align-items-center gap-1.5">
-                <span class="badge" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 0.68rem;">
-                  <i class="bi bi-stars me-1"></i>AI 512 Vector
+          <!-- AI 512-VECTOR ALTERNATIVE RECOMMENDATIONS FOR CANCELLED ORDER (CUSTOMER RETENTION CALL) -->
+          <c:if test="${order.orderStatus == 'CANCELLED'}">
+            <section class="panel panel-compact bg-white mb-3 shadow-sm" style="border-left: 4px solid #ef4444; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 border-bottom pb-1">
+                <div class="d-flex align-items-center gap-1.5">
+                  <span class="badge" style="background: linear-gradient(135deg, #ef4444, #f97316); color: white; font-size: 0.68rem;">
+                    <i class="bi bi-telephone-outbound-fill me-1"></i>AI Retention Call
+                  </span>
+                  <h2 class="h6 mb-0 section-title fw-bold text-dark" style="font-size: 0.8rem;">
+                    Sản phẩm thay thế tương đồng (Tư vấn giữ chân khách hủy đơn)
+                  </h2>
+                  <small class="text-muted d-none d-md-inline" style="font-size: 0.68rem;">(512-D Semantic Similarity Matching)</small>
+                </div>
+                <span class="badge text-bg-light border text-danger" style="font-size: 0.65rem;">
+                  <i class="bi bi-cpu-fill text-danger me-1"></i>Model: 512-D Semantic Transformer
                 </span>
-                <h2 class="h6 mb-0 section-title fw-bold text-dark" style="font-size: 0.8rem;">
-                  Smart Cross-Sell & Upsell Recommendations
-                </h2>
-                <small class="text-muted d-none d-md-inline" style="font-size: 0.68rem;">(Cosine Similarity on 512-D Semantic Embeddings)</small>
               </div>
-              <span class="badge text-bg-light border text-primary" style="font-size: 0.65rem;">
-                <i class="bi bi-cpu-fill text-primary me-1"></i>Model: CLIP-ViT-B-32
-              </span>
-            </div>
 
-            <!-- List of AI Recommended Products -->
-            <c:choose>
-              <c:when test="${not empty aiRecommendations}">
-                <div class="row g-2">
-                  <c:forEach var="rec" items="${aiRecommendations}">
-                    <div class="col-md-4">
-                      <div class="p-2 border rounded bg-white h-100 shadow-sm d-flex flex-column justify-content-between" style="font-size: 0.72rem; transition: transform 0.2s;">
-                        <div class="d-flex gap-2 align-items-start">
-                          <img src="${not empty rec.imageUrl ? rec.imageUrl : 'https://placehold.co/100x100?text=Headphone'}" 
-                               alt="${rec.productName}" 
-                               class="rounded border p-1 bg-light flex-shrink-0" 
-                               style="width: 50px; height: 50px; object-fit: contain;">
-                          <div class="flex-grow-1 overflow-hidden">
-                            <div class="d-flex align-items-center justify-content-between mb-0.5">
-                              <span class="badge text-bg-success" style="font-size: 0.62rem;">
-                                <i class="bi bi-bullseye me-1"></i>${rec.similarityPercent}% Match
-                              </span>
-                              <span class="badge text-bg-light text-secondary border" style="font-size: 0.6rem;">
-                                <c:out value="${rec.recommendationType}" />
-                              </span>
-                            </div>
-                            <div class="fw-bold text-dark text-truncate" title="${rec.productName}" style="font-size: 0.75rem;">
-                              <c:out value="${rec.productName}" />
-                            </div>
-                            <div class="text-primary fw-bold" style="font-size: 0.74rem;">
-                              <fmt:formatNumber value="${rec.price}" pattern="#,###"/> VND
+              <!-- Call Script & Guidance Banner for Staff -->
+              <div class="p-2 mb-2 rounded border d-flex align-items-center gap-2" style="font-size: 0.7rem; border-color: #fed7aa !important; background-color: #fffbeb !important;">
+                <i class="bi bi-headset text-warning fs-6 flex-shrink-0"></i>
+                <div class="text-secondary">
+                  <strong class="text-dark">💡 Kịch bản gợi ý cho nhân viên tư vấn:</strong> Đơn hàng đã bị hủy. Nhân viên liên hệ hotline khách hàng, dựa vào độ tương đồng AI bên dưới để tư vấn các mẫu tai nghe thay thế tương đồng về tính năng, chất âm hoặc tầm giá phù hợp hơn.
+                </div>
+              </div>
+
+              <!-- List of AI Recommended Alternative Products -->
+              <c:choose>
+                <c:when test="${not empty aiRecommendations}">
+                  <div class="row g-2">
+                    <c:forEach var="rec" items="${aiRecommendations}">
+                      <div class="col-md-4">
+                        <div class="p-2 border rounded bg-white h-100 shadow-sm d-flex flex-column justify-content-between" style="font-size: 0.72rem; transition: transform 0.2s;">
+                          <div class="d-flex gap-2 align-items-start">
+                            <c:set var="recImgUrl" value="${not empty rec.imageUrl ? rec.imageUrl : 'https://placehold.co/100x100?text=Headphone'}" />
+                            <c:if test="${not empty rec.imageUrl && !rec.imageUrl.startsWith('http')}">
+                              <c:set var="recImgUrl" value="${pageContext.request.contextPath}/${rec.imageUrl}" />
+                            </c:if>
+                            <img src="${recImgUrl}" 
+                                 alt="${rec.productName}" 
+                                 class="rounded border p-1 bg-light flex-shrink-0" 
+                                 style="width: 50px; height: 50px; object-fit: contain;">
+                            <div class="flex-grow-1 overflow-hidden">
+                              <div class="d-flex align-items-center justify-content-between mb-0.5">
+                                <span class="badge text-bg-success" style="font-size: 0.62rem;">
+                                  <i class="bi bi-bullseye me-1"></i>${not empty rec.similarityPercent ? rec.similarityPercent : rec.matchPercentage}% Match
+                                </span>
+                                <span class="badge text-bg-warning text-dark border" style="font-size: 0.6rem;">
+                                  <i class="bi bi-arrow-repeat me-1"></i>THAY THẾ
+                                </span>
+                              </div>
+                              <div class="fw-bold text-dark text-truncate" title="${rec.productName}" style="font-size: 0.75rem;">
+                                <a href="${pageContext.request.contextPath}/productDetail?id=${not empty rec.productID ? rec.productID : rec.productId}" target="_blank" class="text-dark text-decoration-none">
+                                  <c:out value="${rec.productName}" />
+                                  <i class="bi bi-box-arrow-up-right text-muted ms-1" style="font-size: 0.6rem;"></i>
+                                </a>
+                              </div>
+                              <div class="text-primary fw-bold" style="font-size: 0.74rem;">
+                                <fmt:formatNumber value="${rec.price}" pattern="#,###"/> VND
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div class="mt-1 pt-1 border-top text-muted" style="font-size: 0.66rem; line-height: 1.25;">
-                          <i class="bi bi-lightbulb-fill text-warning me-1"></i>
-                          <span><c:out value="${rec.reason}" /></span>
+                          <div class="mt-1 pt-1 border-top text-muted" style="font-size: 0.66rem; line-height: 1.25;">
+                            <i class="bi bi-telephone-forward-fill text-danger me-1"></i>
+                            <span><c:out value="${rec.reason}" /></span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </c:forEach>
-                </div>
-              </c:when>
-              <c:otherwise>
-                <div class="text-center py-2 text-muted" style="font-size: 0.72rem;">
-                  <i class="bi bi-info-circle me-1"></i>No recommendations generated yet. Run AI analysis to compute 512-D embeddings.
-                </div>
-              </c:otherwise>
-            </c:choose>
-          </section>
+                    </c:forEach>
+                  </div>
+                </c:when>
+                <c:otherwise>
+                  <div class="text-center py-2 text-muted" style="font-size: 0.72rem;">
+                    <i class="bi bi-info-circle me-1"></i>Chưa tìm thấy sản phẩm thay thế phù hợp trong kho.
+                  </div>
+                </c:otherwise>
+              </c:choose>
+            </section>
+          </c:if>
 
         </div>
       </main>
