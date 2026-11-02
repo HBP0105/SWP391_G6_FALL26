@@ -532,7 +532,7 @@ public class OrderService {
                         int match = r.containsKey("matchPercentage") ? (int) r.get("matchPercentage") : 85;
                         map.put("similarityPercent", String.valueOf(match));
                         map.put("recommendationType", "ALTERNATIVE");
-                        map.put("reason", "Sản phẩm thay thế tương đồng " + match + "% về tính năng & tầm giá để tư vấn cho khách");
+                        map.put("reason", "Alternative product: " + match + "% match in sound profile, specs & price point for customer retention");
                         list.add(map);
                     }
                     return list;

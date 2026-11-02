@@ -634,9 +634,9 @@
                     <i class="bi bi-telephone-outbound-fill me-1"></i>AI Retention Call
                   </span>
                   <h2 class="h6 mb-0 section-title fw-bold text-dark" style="font-size: 0.8rem;">
-                    Sản phẩm thay thế tương đồng (Tư vấn giữ chân khách hủy đơn)
+                    AI Customer Retention: Similar Alternative Recommendations
                   </h2>
-                  <small class="text-muted d-none d-md-inline" style="font-size: 0.68rem;">(512-D Semantic Similarity Matching)</small>
+                  <small class="text-muted d-none d-md-inline" style="font-size: 0.68rem;">(512-D Semantic Cosine Matching)</small>
                 </div>
                 <span class="badge text-bg-light border text-danger" style="font-size: 0.65rem;">
                   <i class="bi bi-cpu-fill text-danger me-1"></i>Model: 512-D Semantic Transformer
@@ -647,7 +647,7 @@
               <div class="p-2 mb-2 rounded border d-flex align-items-center gap-2" style="font-size: 0.7rem; border-color: #fed7aa !important; background-color: #fffbeb !important;">
                 <i class="bi bi-headset text-warning fs-6 flex-shrink-0"></i>
                 <div class="text-secondary">
-                  <strong class="text-dark">💡 Kịch bản gợi ý cho nhân viên tư vấn:</strong> Đơn hàng đã bị hủy. Nhân viên liên hệ hotline khách hàng, dựa vào độ tương đồng AI bên dưới để tư vấn các mẫu tai nghe thay thế tương đồng về tính năng, chất âm hoặc tầm giá phù hợp hơn.
+                  <strong class="text-dark">💡 Staff Retention Call Guidance:</strong> This order was cancelled. Staff should contact the customer via phone to inquire about the cancellation reason and recommend the top similar alternative models below (matching sound profile, noise cancellation, or better price point).
                 </div>
               </div>
 
@@ -673,7 +673,7 @@
                                   <i class="bi bi-bullseye me-1"></i>${not empty rec.similarityPercent ? rec.similarityPercent : rec.matchPercentage}% Match
                                 </span>
                                 <span class="badge text-bg-warning text-dark border" style="font-size: 0.6rem;">
-                                  <i class="bi bi-arrow-repeat me-1"></i>THAY THẾ
+                                  <i class="bi bi-arrow-repeat me-1"></i>ALTERNATIVE
                                 </span>
                               </div>
                               <div class="fw-bold text-dark text-truncate" title="${rec.productName}" style="font-size: 0.75rem;">
@@ -699,7 +699,7 @@
                 </c:when>
                 <c:otherwise>
                   <div class="text-center py-2 text-muted" style="font-size: 0.72rem;">
-                    <i class="bi bi-info-circle me-1"></i>Chưa tìm thấy sản phẩm thay thế phù hợp trong kho.
+                    <i class="bi bi-info-circle me-1"></i>No suitable alternative products found in stock.
                   </div>
                 </c:otherwise>
               </c:choose>

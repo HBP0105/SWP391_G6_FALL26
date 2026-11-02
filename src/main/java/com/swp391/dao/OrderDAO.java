@@ -778,7 +778,7 @@ public class OrderDAO {
                         SELECT TOP 3 
                           0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, pi.ImageURL, 
                           0.88 AS SimilarityScore, 
-                          N'Sản phẩm tai nghe cùng phân khúc, gợi ý nhân viên tư vấn thay thế' AS Reason, 
+                          N'Similar headphone model recommended for customer retention call' AS Reason, 
                           'ALTERNATIVE' AS RecommendationType, 
                           c.CategoryName, b.BrandName 
                         FROM Products p 
