@@ -132,6 +132,7 @@ public class AuditLogService {
         bundle.put("selectedKeyword", cleanKeyword != null ? cleanKeyword : "");
 
         bundle.put("currentPage", page);
+        bundle.put("page", page);
         bundle.put("pageSize", validPageSize);
         bundle.put("totalPages", totalPages);
         bundle.put("totalCount", totalCount);
