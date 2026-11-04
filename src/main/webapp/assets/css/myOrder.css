@@ -1,0 +1,350 @@
+/* myOrder.css - Custom styling for the My Orders page */
+
+.orders-section {
+    padding-top: 30px;
+    padding-bottom: 60px;
+}
+
+/* Shopee-style Horizontal Status Tabs */
+.order-tabs {
+    display: flex;
+    background: #fff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    overflow-x: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.order-tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 15px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    text-decoration: none !important;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.order-tab-item:hover {
+    color: #D10024;
+    background-color: #fafafa;
+}
+
+.order-tab-item.active {
+    color: #D10024;
+    border-bottom: 3px solid #D10024;
+    background-color: #fffafa;
+}
+
+.tab-count {
+    display: inline-block;
+    background: #eee;
+    color: #555;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+.order-tab-item.active .tab-count {
+    background: #D10024;
+    color: #fff;
+}
+
+/* Search Bar */
+.order-search-form {
+    margin-bottom: 20px;
+}
+
+.btn-search-order,
+.btn-search-order:hover,
+.btn-search-order:focus {
+    background-color: #D10024;
+    border-color: #D10024;
+    color: #fff;
+}
+
+/* Order Card */
+.order-card {
+    background: #fff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.order-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.order-card-header {
+    background: #fbfbfb;
+    padding: 15px 20px;
+    border-bottom: 1px solid #E4E7ED;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px 6px 0 0;
+}
+
+.order-id-title {
+    font-size: 16px;
+    color: #2B2D42;
+}
+
+.order-date-text {
+    margin-left: 15px;
+    font-size: 13px;
+}
+
+.order-card-body {
+    padding: 20px;
+}
+
+.order-card-footer {
+    background: #fbfbfb;
+    padding: 15px 20px;
+    border-top: 1px solid #E4E7ED;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 0 6px 6px;
+}
+
+/* Status Badges */
+.order-status-badge {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-confirmed {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-shipping {
+    background-color: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
+
+.badge-delivered {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Shipping & Shipper Info Pill */
+.info-pill {
+    background-color: #f8f9fa;
+    border-left: 3px solid #D10024;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 0 4px 4px 0;
+}
+
+.info-pill-text {
+    margin: 0;
+    font-size: 14px;
+}
+
+.icon-brand {
+    color: #D10024;
+}
+
+.shipper-name {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Order Items Table */
+.order-items-wrap {
+    margin-top: 15px;
+}
+
+.order-items-table {
+    margin-bottom: 0;
+}
+
+.order-items-table thead tr {
+    border-top: none;
+    color: #8D99AE;
+    font-size: 13px;
+}
+
+.order-items-table > thead > tr > th {
+    border-top: none;
+}
+
+.order-items-table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.product-img-thumb {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #E4E7ED;
+    background: #f8f9fa;
+}
+
+.product-name-link {
+    color: #2B2D42;
+    text-decoration: none;
+}
+
+.product-name-link:hover,
+.product-name-link:focus {
+    color: #D10024;
+    text-decoration: none;
+}
+
+.price-highlight {
+    color: #D10024;
+    font-weight: bold;
+}
+
+/* Footer Payment & Actions */
+.payment-info-text {
+    font-size: 13px;
+}
+
+.payment-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.payment-paid {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.payment-unpaid {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.payment-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.order-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-total-label {
+    font-size: 15px;
+    margin-right: 10px;
+}
+
+.order-total-amount {
+    font-size: 20px;
+    color: #D10024;
+}
+
+/* Pagination */
+.order-pagination-wrap {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.order-pagination {
+    margin: 0;
+}
+
+.order-pagination > li.active > a,
+.order-pagination > li.active > a:hover,
+.order-pagination > li.active > a:focus {
+    background-color: #D10024;
+    border-color: #D10024;
+    color: #fff;
+}
+
+/* Empty Orders Box */
+.empty-orders-box {
+    padding: 60px 20px;
+    background: #fff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+}
+
+.empty-orders-icon {
+    font-size: 60px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.empty-orders-title {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.empty-orders-desc {
+    color: #999;
+    margin-bottom: 25px;
+}
+
+.empty-orders-btn {
+    border-radius: 4px;
+    padding: 10px 25px;
+}
+
+/* Modals */
+.modal-prod-top {
+    margin-bottom: 15px;
+}
+
+.modal-prod-img {
+    max-width: 100%;
+    height: 140px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+.modal-prod-desc {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.modal-specs-table {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.modal-form-clean {
+    margin: 0;
+}
+
+.modal-confirm-text {
+    margin: 0;
+}

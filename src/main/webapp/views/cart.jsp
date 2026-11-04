@@ -156,16 +156,16 @@
                                         <td class="cart-item-title">${item.productName}</td>
                                         <td>$${item.price}</td>
                                         <td>
-                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="display: flex; align-items: center; gap: 5px; margin: 0;">
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="cart-qty-form">
                                                 <input type="hidden" name="action" value="update">
                                                 <input type="hidden" name="productId" value="${item.productId}">
                                                 
-                                                <input type="number" name="quantity" class="qty-input" value="${item.quantity}" min="1" style="width: 60px;" onchange="this.form.submit()">
+                                                <input type="number" name="quantity" class="qty-input" value="${item.quantity}" min="1" onchange="this.form.submit()">
                                             </form>
                                         </td>
                                         <td>$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></td>
                                         <td>
-                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="cart-remove-form">
                                                 <input type="hidden" name="action" value="remove">
                                                 <input type="hidden" name="productId" value="${item.productId}">
                                                 <button type="submit" class="remove-btn"><i class="fa fa-trash"></i></button>
@@ -184,7 +184,7 @@
                 <div class="col-md-4">
                     <div class="cart-summary">
                         <h3>Order Summary</h3>
-                        <div class="summary-item summary-total" style="border-top: none; padding-top: 0;">
+                        <div class="summary-item summary-total">
                             <span>Total:</span>
                             <span>$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></span>
                         </div>
