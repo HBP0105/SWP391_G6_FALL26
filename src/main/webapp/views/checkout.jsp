@@ -137,30 +137,30 @@
                             
                             <div class="form-group">
                                 <label>Customer Name</label>
-                                <input type="text" class="form-control" value="${sessionScope.customer.fullName}" readonly style="background-color: #f5f5f5;">
+                                <input type="text" class="form-control" value="${sessionScope.customer.fullName}" readonly>
                             </div>
                             
                             <div class="form-group">
                                 <label>Customer Phone</label>
-                                <input type="tel" class="form-control" value="${sessionScope.customer.phone}" readonly style="background-color: #f5f5f5;">
+                                <input type="tel" class="form-control" value="${sessionScope.customer.phone}" readonly>
                             </div>
                             
                             <div class="form-group">
                                 <label>Email Address</label>
-                                <input type="email" class="form-control" value="${sessionScope.customer.email}" readonly style="background-color: #f5f5f5;">
+                                <input type="email" class="form-control" value="${sessionScope.customer.email}" readonly>
                             </div>
 
                             <!-- CHỌN ĐỊA CHỈ TỪ ADDRESS REPOSITORY HOẶC TỰ NHẬP MỚI -->
-                            <div class="form-group" style="background: #f9f9f9; border: 1px solid #E4E7ED; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <label style="margin: 0;">Select from Address Repository:</label>
+                            <div class="form-group saved-address-box">
+                                <div class="saved-address-header">
+                                    <label>Select from Address Repository:</label>
                                     <a href="${pageContext.request.contextPath}/addresses" class="btn btn-default btn-xs">
                                         Manage Address Repository
                                     </a>
                                 </div>
                                 <c:choose>
                                     <c:when test="${not empty requestScope.savedAddresses}">
-                                        <select id="savedAddressSelect" class="form-control" onchange="applySavedAddress(this)" style="height: 38px; cursor: pointer;">
+                                        <select id="savedAddressSelect" class="form-control saved-address-select" onchange="applySavedAddress(this)">
                                             <option value="">-- Enter a new address manually below --</option>
                                             <c:forEach items="${requestScope.savedAddresses}" var="addr">
                                                 <option value="${addr.addressId}"
@@ -175,8 +175,8 @@
                                         </select>
                                     </c:when>
                                     <c:otherwise>
-                                        <p class="text-muted" style="margin: 0; font-size: 13px;">
-                                            No saved addresses yet. <a href="${pageContext.request.contextPath}/addresses" style="color: #D10024;">Add to Address Repository</a> or enter your address below.
+                                        <p class="text-muted saved-address-empty">
+                                            No saved addresses yet. <a href="${pageContext.request.contextPath}/addresses" class="brand-link">Add to Address Repository</a> or enter your address below.
                                         </p>
                                     </c:otherwise>
                                 </c:choose>
@@ -246,10 +246,10 @@
                             </div>
 
                             <!-- Discount Voucher in Order Summary -->
-                            <div class="form-group" style="margin-top: 15px; margin-bottom: 5px;">
-                                <div style="display: flex;">
-                                    <input type="text" class="form-control" id="voucherCode" name="voucherCode" placeholder="Discount voucher" style="border-radius: 4px 0 0 4px; border: 1px solid #E4E7ED; padding: 10px;">
-                                    <button class="primary-btn" type="button" style="border-radius: 0 4px 4px 0; border: none; padding: 0 15px;">Apply</button>
+                            <div class="form-group voucher-group">
+                                <div class="voucher-input-wrap">
+                                    <input type="text" class="form-control voucher-input" id="voucherCode" name="voucherCode" placeholder="Discount voucher">
+                                    <button class="primary-btn voucher-btn" type="button">Apply</button>
                                 </div>
                             </div>
                             
@@ -262,7 +262,7 @@
                             <div class="payment-method">
                                 <h4>Payment Method</h4>
                                 <div class="form-group">
-                                    <select class="form-control" name="paymentMethod" id="paymentMethod" style="height: 40px; cursor: pointer;">
+                                    <select class="form-control payment-method-select" name="paymentMethod" id="paymentMethod">
                                         <option value="COD">Cash on Delivery (COD)</option>
                                         <option value="VNPAY">VNPay</option>
                                     </select>
