@@ -36,7 +36,7 @@ public class Review {
         this.customerId = customerId;
         this.productId = productId;
         this.rating = rating;
-        this.comment = comment;
+        setComment(comment);
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -75,11 +75,18 @@ public class Review {
     }
 
     public String getComment() {
+        if (comment != null && (comment.contains("\\n") || comment.contains("\\r"))) {
+            return comment.replace("\\r\\n", "\n").replace("\\n", "\n");
+        }
         return comment;
     }
 
     public void setComment(String comment) {
-        this.comment = comment;
+        if (comment != null) {
+            this.comment = comment.replace("\\r\\n", "\n").replace("\\n", "\n");
+        } else {
+            this.comment = null;
+        }
     }
 
     public String getStatus() {

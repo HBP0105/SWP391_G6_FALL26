@@ -1,4 +1,4 @@
-IF DB_ID('HeadphoneSalesDB') IS NULL
+﻿IF DB_ID('HeadphoneSalesDB') IS NULL
 BEGIN
     CREATE DATABASE HeadphoneSalesDB;
 END
@@ -718,7 +718,42 @@ CREATE TABLE AuditLogs (
 );
 GO
 
-
+CREATE TABLE AIConfigurations (
+    ConfigID                INT IDENTITY(1,1) PRIMARY KEY,
+    
+    -- Trọng số tương đồng đặc tính/sản phẩm (Content-based: Category, ANC, Driver, Price) [0.00 -> 1.00]
+    SimilarityWeight        DECIMAL(3, 2) NOT NULL DEFAULT 0.60,
+    
+    -- Trọng số hành vi người dùng (Lịch sử mua, yêu thích - Behavior/Collaborative) [0.00 -> 1.00]
+    BehaviorWeight          DECIMAL(3, 2) NOT NULL DEFAULT 0.40,
+    
+    -- Ngưỡng tương đồng tối thiểu để đưa ra gợi ý (ví dụ: >= 0.50) [0.00 -> 1.00]
+    MinSimilarityThreshold  DECIMAL(3, 2) NOT NULL DEFAULT 0.50,
+    
+    -- Số lượng sản phẩm gợi ý tối đa cho một lượt (Top-K, ví dụ: 4 cho Product Detail, 8 cho Home)
+    TopKLimit               INT NOT NULL DEFAULT 8,
+    
+    -- Chiến lược dự phòng khi Gemini AI timeout / lỗi quota (ví dụ: 'HEURISTIC', 'POPULAR', 'CATEGORY_ANC')
+    FallbackStrategy        VARCHAR(50) NOT NULL DEFAULT 'HEURISTIC',
+    
+    -- Trạng thái thuật toán: 'ACTIVE', 'INACTIVE', 'MAINTENANCE'
+    AlgorithmStatus         VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    
+    -- Thời điểm cập nhật cấu hình
+    UpdatedAt               DATETIME2 NOT NULL DEFAULT GETDATE(),
+    
+    -- ID nhân viên/quản trị viên thực hiện cập nhật (Liên kết tới bảng Staff)
+    UpdatedBy               INT NULL,
+    -- Ràng buộc giá trị hợp lệ (0.00 đến 1.00) và TopK > 0
+    CONSTRAINT CK_AIConfigurations_SimilarityWeight CHECK (SimilarityWeight >= 0.0 AND SimilarityWeight <= 1.0),
+    CONSTRAINT CK_AIConfigurations_BehaviorWeight   CHECK (BehaviorWeight >= 0.0 AND BehaviorWeight <= 1.0),
+    CONSTRAINT CK_AIConfigurations_MinThreshold     CHECK (MinSimilarityThreshold >= 0.0 AND MinSimilarityThreshold <= 1.0),
+    CONSTRAINT CK_AIConfigurations_TopKLimit        CHECK (TopKLimit > 0),
+    
+    -- Khóa ngoại liên kết với bảng nhân viên quản trị Staff
+    CONSTRAINT FK_AIConfigurations_Staff FOREIGN KEY (UpdatedBy) REFERENCES Staff(StaffID) ON DELETE SET NULL
+);
+GO
 
 CREATE INDEX IX_UserBehaviors_CustomerID
 ON UserBehaviors(CustomerID);

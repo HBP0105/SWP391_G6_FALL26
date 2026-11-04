@@ -264,7 +264,7 @@
                                                 <div class="col-md-12">
                                                     <c:choose>
                                                         <c:when test="${not empty product.description}">
-                                                            <p>${product.description}</p>
+                                                            <p style="white-space: pre-line; line-height: 1.6;">${product.description}</p>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <p>No description available for this product.</p>

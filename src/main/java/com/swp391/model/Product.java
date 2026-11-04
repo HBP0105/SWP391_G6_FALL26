@@ -124,11 +124,18 @@ public class Product {
     }
 
     public String getDescription() {
+        if (description != null && (description.contains("\\n") || description.contains("\\r"))) {
+            return description.replace("\\r\\n", "\n").replace("\\n", "\n");
+        }
         return description;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        if (description != null) {
+            this.description = description.replace("\\r\\n", "\n").replace("\\n", "\n");
+        } else {
+            this.description = null;
+        }
     }
 
     public BigDecimal getPrice() {

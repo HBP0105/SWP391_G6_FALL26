@@ -53,7 +53,8 @@ public class ProductReviewsController extends HttpServlet {
             return result;
         }
 
-        String[] lines = rawComment.split("\\r?\\n");
+        String normalized = rawComment.replace("\\r\\n", "\n").replace("\\n", "\n");
+        String[] lines = normalized.split("\\r?\\n");
         StringBuilder general = new StringBuilder();
 
         for (String line : lines) {
