@@ -15,9 +15,6 @@ public class ProfileService {
         return staffDAO.getStaffById(staffId);
     }
 
-    public Staff getOrCreateDefaultManager() {
-        return staffDAO.getOrCreateDefaultManager();
-    }
 
     /**
      * Updates staff profile. Returns null on success or error message string.

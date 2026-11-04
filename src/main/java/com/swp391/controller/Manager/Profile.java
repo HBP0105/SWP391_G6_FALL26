@@ -27,7 +27,7 @@ public class Profile extends HttpServlet {
 
         request.setAttribute("activePage", "profile");
 
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         Staff staff = getCurrentStaff(session);
 
         if (staff == null) {
@@ -59,7 +59,7 @@ public class Profile extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
         Staff staff = getCurrentStaff(session);
 
         if (staff == null) {
@@ -113,20 +113,22 @@ public class Profile extends HttpServlet {
     }
 
     private Staff getCurrentStaff(HttpSession session) {
-        Staff staff = (Staff) session.getAttribute("staff");
-
-        if (staff == null) {
-            staff = (Staff) session.getAttribute("user");
+        if (session == null) {
+            return null;
         }
 
-        if (staff == null) {
-            staff = profileService.getOrCreateDefaultManager();
-            if (staff != null) {
-                session.setAttribute("staff", staff);
-            }
+        Object roleObject = session.getAttribute("role");
+        if (roleObject == null
+                || !"MANAGER".equalsIgnoreCase(roleObject.toString())) {
+            return null;
         }
 
-        return staff;
+        Object staffObject = session.getAttribute("staff");
+        if (staffObject instanceof Staff) {
+            return (Staff) staffObject;
+        }
+
+        return null;
     }
 
     private void loadFlashMessages(HttpServletRequest request, HttpSession session) {
