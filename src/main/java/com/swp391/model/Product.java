@@ -74,7 +74,6 @@ public class Product {
         this.brandName = brandName;
     }
 
-
     public String getCategoryName() {
         return categoryName;
     }
@@ -234,7 +233,6 @@ public class Product {
         this.updatedAt = updatedAt;
     }
 
-
     public String getImageUrl() {
         if (imageUrl != null && !imageUrl.trim().isEmpty()) {
             return imageUrl;
@@ -261,6 +259,7 @@ public class Product {
 
     public void setBrand(Brand brand) {
         this.brand = brand;
+
     }
 
     public double getRating() {

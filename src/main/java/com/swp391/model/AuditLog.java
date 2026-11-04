@@ -1,35 +1,32 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class AuditLog {
 
     private long auditLogId;
     private Integer staffId;
-
+    private Integer customerId;
     private String action;
     private String entityName;
     private String entityId;
-
     private String oldData;
     private String newData;
-
     private LocalDateTime createdAt;
+
+    // Joined Staff details for Display
+    private String staffName;
+    private String staffEmail;
+    private String roleName;
 
     public AuditLog() {
     }
 
-    public AuditLog(long auditLogId, Integer staffId, String action, String entityName, String entityId, String oldData, String newData, LocalDateTime createdAt) {
+    public AuditLog(long auditLogId, Integer staffId, String action, String entityName,
+                    String entityId, String oldData, String newData, LocalDateTime createdAt) {
         this.auditLogId = auditLogId;
         this.staffId = staffId;
+        this.customerId = staffId;
         this.action = action;
         this.entityName = entityName;
         this.entityId = entityId;
@@ -47,11 +44,45 @@ public class AuditLog {
     }
 
     public Integer getStaffId() {
-        return staffId;
+        return staffId != null ? staffId : customerId;
     }
 
     public void setStaffId(Integer staffId) {
         this.staffId = staffId;
+        this.customerId = staffId;
+    }
+
+    // Aliases
+    public long getAuditLogID() {
+        return auditLogId;
+    }
+
+    public void setAuditLogID(long auditLogID) {
+        this.auditLogId = auditLogID;
+    }
+
+    public Integer getStaffID() {
+        return getStaffId();
+    }
+
+    public void setStaffID(Integer staffID) {
+        setStaffId(staffID);
+    }
+
+    public Integer getcustomerID() {
+        return getStaffId();
+    }
+
+    public void setcustomerID(Integer customerID) {
+        setStaffId(customerID);
+    }
+
+    public Integer getCustomerId() {
+        return customerId != null ? customerId : staffId;
+    }
+
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
     }
 
     public String getAction() {
@@ -78,6 +109,14 @@ public class AuditLog {
         this.entityId = entityId;
     }
 
+    public String getEntityID() {
+        return entityId;
+    }
+
+    public void setEntityID(String entityID) {
+        this.entityId = entityID;
+    }
+
     public String getOldData() {
         return oldData;
     }
@@ -101,6 +140,39 @@ public class AuditLog {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    
-    
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
+    }
+
+    public String getStaffEmail() {
+        return staffEmail;
+    }
+
+    public void setStaffEmail(String staffEmail) {
+        this.staffEmail = staffEmail;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getDetails() {
+        if (oldData != null && !oldData.isBlank() && newData != null && !newData.isBlank()) {
+            return oldData + " -> " + newData;
+        } else if (newData != null && !newData.isBlank()) {
+            return newData;
+        } else if (oldData != null && !oldData.isBlank()) {
+            return oldData;
+        }
+        return "No details";
+    }
 }

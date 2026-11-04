@@ -1,31 +1,22 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class UserBehavior {
 
     private long behaviorId;
     private Integer customerId;
     private Integer productId;
-
     private String behaviorType;
     private String searchKeyword;
     private String sessionId;
-
     private LocalDateTime createdAt;
 
     public UserBehavior() {
     }
 
-    public UserBehavior(long behaviorId, Integer customerId, Integer productId, String behaviorType, String searchKeyword, String sessionId, LocalDateTime createdAt) {
+    public UserBehavior(long behaviorId, Integer customerId, Integer productId,
+            String behaviorType, String searchKeyword, String sessionId, LocalDateTime createdAt) {
         this.behaviorId = behaviorId;
         this.customerId = customerId;
         this.productId = productId;
@@ -43,6 +34,14 @@ public class UserBehavior {
         this.behaviorId = behaviorId;
     }
 
+    public long getBehaviorID() {
+        return behaviorId;
+    }
+
+    public void setBehaviorID(long behaviorID) {
+        this.behaviorId = behaviorID;
+    }
+
     public Integer getCustomerId() {
         return customerId;
     }
@@ -51,12 +50,28 @@ public class UserBehavior {
         this.customerId = customerId;
     }
 
+    public Integer getCustomerID() {
+        return customerId;
+    }
+
+    public void setCustomerID(Integer customerID) {
+        this.customerId = customerID;
+    }
+
     public Integer getProductId() {
         return productId;
     }
 
     public void setProductId(Integer productId) {
         this.productId = productId;
+    }
+
+    public Integer getProductID() {
+        return productId;
+    }
+
+    public void setProductID(Integer productID) {
+        this.productId = productID;
     }
 
     public String getBehaviorType() {
@@ -83,6 +98,14 @@ public class UserBehavior {
         this.sessionId = sessionId;
     }
 
+    public String getSessionID() {
+        return sessionId;
+    }
+
+    public void setSessionID(String sessionID) {
+        this.sessionId = sessionID;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -90,5 +113,4 @@ public class UserBehavior {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
 }

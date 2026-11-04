@@ -4,7 +4,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -529,71 +528,70 @@
         </div>
         <!-- /SECTION -->
 
-        <!-- SECTION: AI Similar Recommendations -->
-        <c:if test="${not empty aiSimilarProducts}">
-            <div class="section" style="padding-top: 30px; border-top: 1px solid #E4E7ED; margin-top: 20px;">
+        <!-- AI RECOMMENDATIONS SECTION -->
+        <c:if test="${not empty aiRecommendations}">
+            <div class="section" style="background-color: #fbfbfb; border-top: 1px solid #eaeaea; padding-top: 40px; padding-bottom: 40px;">
                 <div class="container">
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="section-title text-center">
-                                <h3 class="title" style="display: inline-flex; align-items: center; gap: 8px;">
-                                    <i class="fa fa-magic" style="color: #D10024;"></i> AI Recommended Similar Products
+                            <div class="section-title">
+                                <h3 class="title" style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px;">
+                                        <i class="fa fa-magic"></i>
+                                    </span>
+                                    <span>Gợi ý tương đồng bằng AI <small style="font-size: 14px; color: #6b7280; font-weight: normal;">(512-Vector Semantic Recommender)</small></span>
                                 </h3>
-                                <p style="font-size: 13px; color: #8D99AE; margin-top: 4px;">Smart audio suggestions matching driver size, noise cancellation & acoustic profile</p>
                             </div>
                         </div>
-
-                        <!-- 4 Products Column Layout -->
-                        <div class="col-md-12">
-                            <div class="row">
-                                <c:forEach var="item" items="${aiSimilarProducts}">
-                                    <c:set var="similarProd" value="${item.product}" />
-                                    <div class="col-md-3 col-sm-6 col-xs-6">
-                                        <div class="product" style="margin-bottom: 30px;">
-                                            <div class="product-img">
-                                                <img src="${pageContext.request.contextPath}/${similarProd.imageUrl}" alt="${similarProd.productName}">
-                                                <div class="product-label">
-                                                    <span class="new" style="background-color: #D10024; border-color: #D10024;">SIMILAR</span>
-                                                </div>
-                                            </div>
-                                            <div class="product-body">
-                                                <p class="product-category">${similarProd.categoryName} <c:if test="${similarProd.noiseCancelling}"><span style="color: #0088cc; font-size: 11px; font-weight: 600;">• ANC</span></c:if></p>
-                                                <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${similarProd.productId}">${similarProd.productName}</a></h3>
-                                                <h4 class="product-price"><fmt:formatNumber value="${similarProd.price}" type="number" groupingUsed="true"/> &#8363;</h4>
-
-                                                <!-- AI Reason -->
-                                                <div style="background: #fbfbfb; border-left: 3px solid #D10024; padding: 6px 8px; margin: 8px 0; font-size: 11px; color: #555; text-align: left; line-height: 1.35; border-radius: 0 4px 4px 0; min-height: 42px;" title="${fn:escapeXml(item.reason)}">
-                                                    <strong style="color: #D10024;"><i class="fa fa-lightbulb-o"></i> Match:</strong> ${fn:escapeXml(item.reason)}
-                                                </div>
-
-                                                <div class="product-rating">
-                                                    <c:forEach var="i" begin="1" end="5">
-                                                        <c:choose>
-                                                            <c:when test="${similarProd.rating >= i}"><i class="fa fa-star"></i></c:when>
-                                                            <c:otherwise><i class="fa fa-star-o"></i></c:otherwise>
-                                                        </c:choose>
-                                                    </c:forEach>
-                                                </div>
-                                                <div class="product-btns">
-                                                    <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(similarProd.productId)}" />
-                                                    <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${similarProd.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i><span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
-                                                    <button type="button" class="add-to-compare" data-product-id="${similarProd.productId}"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
-                                                    <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${similarProd.productId}'"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
-                                                </div>
-                                            </div>
-                                            <div class="add-to-cart">
-                                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                                            </div>
+                    </div>
+                    <div class="row">
+                        <c:forEach var="item" items="${aiRecommendations}">
+                            <div class="col-md-3 col-sm-6 col-xs-6" style="margin-bottom: 20px;">
+                                <div class="product" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                    <div class="product-img" style="position: relative; height: 190px; display: flex; align-items: center; justify-content: center; padding: 15px; background: #fff;">
+                                        <c:set var="itemImg" value="${item.imageUrl}"/>
+                                        <c:choose>
+                                            <c:when test="${itemImg.startsWith('http')}">
+                                                <img src="${itemImg}" alt="${item.productName}" style="max-height: 160px; max-width: 100%; object-fit: contain;">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}/${itemImg}" alt="${item.productName}" style="max-height: 160px; max-width: 100%; object-fit: contain;">
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <div class="product-label" style="position: absolute; top: 10px; right: 10px;">
+                                            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: 700;">
+                                                <i class="fa fa-bolt"></i> Match ${item.matchPercentage}%
+                                            </span>
                                         </div>
                                     </div>
-                                </c:forEach>
+                                    <div class="product-body" style="padding: 15px; text-align: left;">
+                                        <p class="product-category" style="font-size: 11px; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">${item.brandName} • ${item.categoryName}</p>
+                                        <h3 class="product-name" style="font-size: 14px; font-weight: 700; height: 38px; overflow: hidden; margin-bottom: 8px;">
+                                            <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}" title="${item.productName}">
+                                                ${item.productName}
+                                            </a>
+                                        </h3>
+                                        <h4 class="product-price" style="font-size: 15px; color: #D10024; font-weight: 700; margin-bottom: 8px;">
+                                            <fmt:formatNumber value="${item.price}" pattern="#,###"/> &#8363;
+                                        </h4>
+                                        <div style="font-size: 11px; color: #6b7280; display: flex; justify-content: space-between; border-top: 1px dashed #e5e7eb; padding-top: 6px;">
+                                            <span><i class="fa fa-check-circle text-success"></i> ANC: ${item.noiseCancelling ? 'Có' : 'Không'}</span>
+                                            <span><i class="fa fa-battery-three-quarters text-primary"></i> ${item.batteryLife}h pin</span>
+                                        </div>
+                                    </div>
+                                    <div class="add-to-cart" style="padding: 10px 15px; background: #fafafa; border-top: 1px solid #f3f4f6; text-align: center;">
+                                        <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}" class="btn btn-sm btn-outline-danger" style="width: 100%; border: 1px solid #D10024; color: #D10024; border-radius: 4px; font-weight: 600; padding: 6px 12px; display: inline-block;">
+                                            <i class="fa fa-eye"></i> Xem tai nghe này
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </c:forEach>
                     </div>
                 </div>
             </div>
         </c:if>
-        <!-- /SECTION: AI Similar Recommendations -->
+        <!-- /AI RECOMMENDATIONS SECTION -->
 
         <!-- NEWSLETTER -->
         <div id="newsletter" class="section">

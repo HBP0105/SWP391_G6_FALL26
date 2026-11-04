@@ -1,33 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Shipment {
 
     private long shipmentId;
     private int orderId;
-
     private String shippingProvider;
     private String trackingNumber;
     private String shippingAddress;
-
     private String shippingStatus;
-
+    private LocalDate estimatedDeliveryDate;
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
 
     public Shipment() {
     }
 
-    public Shipment(long shipmentId, int orderId, String shippingProvider, String trackingNumber, String shippingAddress, String shippingStatus, LocalDateTime shippedAt, LocalDateTime deliveredAt) {
+    public Shipment(long shipmentId, int orderId, String shippingProvider,
+            String trackingNumber, String shippingAddress, String shippingStatus,
+            LocalDateTime shippedAt, LocalDateTime deliveredAt) {
         this.shipmentId = shipmentId;
         this.orderId = orderId;
         this.shippingProvider = shippingProvider;
@@ -38,6 +31,13 @@ public class Shipment {
         this.deliveredAt = deliveredAt;
     }
 
+    public Shipment(long shipmentId, int orderId, String shippingProvider,
+            String trackingNumber, String shippingAddress, String shippingStatus,
+            LocalDate estimatedDeliveryDate, LocalDateTime shippedAt, LocalDateTime deliveredAt) {
+        this(shipmentId, orderId, shippingProvider, trackingNumber, shippingAddress, shippingStatus, shippedAt, deliveredAt);
+        this.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
     public long getShipmentId() {
         return shipmentId;
     }
@@ -46,12 +46,28 @@ public class Shipment {
         this.shipmentId = shipmentId;
     }
 
+    public long getShipmentID() {
+        return shipmentId;
+    }
+
+    public void setShipmentID(long shipmentID) {
+        this.shipmentId = shipmentID;
+    }
+
     public int getOrderId() {
         return orderId;
     }
 
     public void setOrderId(int orderId) {
         this.orderId = orderId;
+    }
+
+    public int getOrderID() {
+        return orderId;
+    }
+
+    public void setOrderID(int orderID) {
+        this.orderId = orderID;
     }
 
     public String getShippingProvider() {
@@ -86,6 +102,14 @@ public class Shipment {
         this.shippingStatus = shippingStatus;
     }
 
+    public LocalDate getEstimatedDeliveryDate() {
+        return estimatedDeliveryDate;
+    }
+
+    public void setEstimatedDeliveryDate(LocalDate estimatedDeliveryDate) {
+        this.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
     public LocalDateTime getShippedAt() {
         return shippedAt;
     }
@@ -101,5 +125,4 @@ public class Shipment {
     public void setDeliveredAt(LocalDateTime deliveredAt) {
         this.deliveredAt = deliveredAt;
     }
-
 }

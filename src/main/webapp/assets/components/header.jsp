@@ -17,13 +17,13 @@
             </ul>
             <ul class="header-links pull-right">
                 <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-                <%
-                    Object currentUser = session.getAttribute("customer");
-                    if (currentUser == null) {
-                        currentUser = session.getAttribute("user");
-                    }
-                    if (currentUser == null) {
-                %>
+                    <%
+                        Object currentUser = session.getAttribute("customer");
+                        if (currentUser == null) {
+                            currentUser = session.getAttribute("user");
+                        }
+                        if (currentUser == null) {
+                    %>
                 <!-- Chua dang nhap -->
                 <li>
                     <a href="${pageContext.request.contextPath}/login">
@@ -79,20 +79,20 @@
                         </form>
                         <!-- Autocomplete dropdown -->
                         <div id="search-suggestions" style="
-                            display: none;
-                            position: absolute;
-                            top: 100%;
-                            left: 0;
-                            right: 0;
-                            background: #fff;
-                            border: 1px solid #d4d4d4;
-                            border-top: none;
-                            z-index: 9999;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                            border-radius: 0 0 4px 4px;
-                            max-height: 320px;
-                            overflow-y: auto;
-                        "></div>
+                             display: none;
+                             position: absolute;
+                             top: 100%;
+                             left: 0;
+                             right: 0;
+                             background: #fff;
+                             border: 1px solid #d4d4d4;
+                             border-top: none;
+                             z-index: 9999;
+                             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                             border-radius: 0 0 4px 4px;
+                             max-height: 320px;
+                             overflow-y: auto;
+                             "></div>
                     </div>
                 </div>
                 <!-- /SEARCH BAR -->
@@ -115,14 +115,35 @@
                             <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                                 <i class="fa fa-shopping-cart"></i>
                                 <span>Your Cart</span>
-                                <div class="qty">0</div>
+                                <div class="qty">3</div>
                             </a>
                             <div class="cart-dropdown">
                                 <div class="cart-list">
+                                    <div class="product-widget">
+                                        <div class="product-img">
+                                            <img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="">
+                                        </div>
+                                        <div class="product-body">
+                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                                            <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
+                                        </div>
+                                        <button class="delete"><i class="fa fa-close"></i></button>
+                                    </div>
+
+                                    <div class="product-widget">
+                                        <div class="product-img">
+                                            <img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="">
+                                        </div>
+                                        <div class="product-body">
+                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                                            <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
+                                        </div>
+                                        <button class="delete"><i class="fa fa-close"></i></button>
+                                    </div>
                                 </div>
                                 <div class="cart-summary">
-                                    <small>0 Item(s) selected</small>
-                                    <h5>SUBTOTAL: $0.00</h5>
+                                    <small>3 Item(s) selected</small>
+                                    <h5>SUBTOTAL: $2940.00</h5>
                                 </div>
                                 <div class="cart-btns">
                                     <a href="${pageContext.request.contextPath}/cart">View Cart</a>
@@ -240,21 +261,22 @@
 </div>
 
 <script>
-    (function() {
+    (function () {
         window.__contextPath = '${pageContext.request.contextPath}';
 
         // Khởi tạo Set các ID sản phẩm đã có trong wishlist từ Session
         window.__wishlistProductIds = new Set([
-            <c:if test="${not empty sessionScope.wishlistProductIds}">
-                <c:forEach var="pid" items="${sessionScope.wishlistProductIds}" varStatus="loop">
-                    ${pid}${not loop.last ? ',' : ''}
-                </c:forEach>
-            </c:if>
+    <c:if test="${not empty sessionScope.wishlistProductIds}">
+        <c:forEach var="pid" items="${sessionScope.wishlistProductIds}" varStatus="loop">
+            ${pid}${not loop.last ? ',' : ''}
+        </c:forEach>
+    </c:if>
         ]);
 
         function showSiteWishlistToast(msg, isError, loginUrl) {
             var toast = document.getElementById('siteWishlistToast');
-            if (!toast) return;
+            if (!toast)
+                return;
             var icon = document.getElementById('siteWishlistToastIcon');
             var content = document.getElementById('siteWishlistToastContent');
 
@@ -273,8 +295,9 @@
             }
 
             toast.style.display = 'flex';
-            if (window.__siteToastTimeout) clearTimeout(window.__siteToastTimeout);
-            window.__siteToastTimeout = setTimeout(function() {
+            if (window.__siteToastTimeout)
+                clearTimeout(window.__siteToastTimeout);
+            window.__siteToastTimeout = setTimeout(function () {
                 toast.style.display = 'none';
             }, loginUrl ? 5000 : 3000);
         }
@@ -283,7 +306,7 @@
 
         function markProductInWishlist(pid) {
             var buttons = document.querySelectorAll('.add-to-wishlist[data-product-id="' + pid + '"]');
-            buttons.forEach(function(b) {
+            buttons.forEach(function (b) {
                 b.classList.add('in-wishlist');
                 b.setAttribute('title', 'Product is in wishlist');
                 var heartIcon = b.querySelector('i');
@@ -305,7 +328,7 @@
 
         function syncAllWishlistButtons() {
             if (window.__wishlistProductIds && window.__wishlistProductIds.size > 0) {
-                window.__wishlistProductIds.forEach(function(pid) {
+                window.__wishlistProductIds.forEach(function (pid) {
                     markProductInWishlist(pid);
                 });
             }
@@ -317,9 +340,10 @@
             syncAllWishlistButtons();
         }
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             var btn = e.target.closest('.add-to-wishlist');
-            if (!btn) return;
+            if (!btn)
+                return;
 
             e.preventDefault();
             e.stopPropagation();
@@ -358,46 +382,47 @@
                 },
                 body: formData.toString()
             })
-            .then(function(res) {
-                if (!res.ok) {
-                    throw new Error('HTTP ' + res.status + ' (' + res.statusText + ')');
-                }
-                return res.json();
-            })
-            .then(function(data) {
-                if (data.requireLogin) {
-                    var loginUrl = data.loginUrl || ((contextPath ? contextPath : '') + '/authen/login.jsp');
-                    showSiteWishlistToast(data.message || 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích!', true, loginUrl);
-                    return;
-                }
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('HTTP ' + res.status + ' (' + res.statusText + ')');
+                        }
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        if (data.requireLogin) {
+                            var loginUrl = data.loginUrl || ((contextPath ? contextPath : '') + '/authen/login.jsp');
+                            showSiteWishlistToast(data.message || 'Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích!', true, loginUrl);
+                            return;
+                        }
 
-                if (data.alreadyInWishlist) {
-                    if (window.__wishlistProductIds) {
-                        window.__wishlistProductIds.add(pidInt);
-                    }
-                    markProductInWishlist(pidInt);
-                    showSiteWishlistToast(data.message || 'Sản phẩm đã có trong wishlist!', false);
-                    return;
-                }
+                        if (data.alreadyInWishlist) {
+                            if (window.__wishlistProductIds) {
+                                window.__wishlistProductIds.add(pidInt);
+                            }
+                            markProductInWishlist(pidInt);
+                            showSiteWishlistToast(data.message || 'Sản phẩm đã có trong wishlist!', false);
+                            return;
+                        }
 
-                if (data.success) {
-                    var badge = document.getElementById('headerWishlistQty');
-                    if (badge) badge.innerText = data.count;
+                        if (data.success) {
+                            var badge = document.getElementById('headerWishlistQty');
+                            if (badge)
+                                badge.innerText = data.count;
 
-                    if (window.__wishlistProductIds) {
-                        window.__wishlistProductIds.add(pidInt);
-                    }
-                    markProductInWishlist(pidInt);
+                            if (window.__wishlistProductIds) {
+                                window.__wishlistProductIds.add(pidInt);
+                            }
+                            markProductInWishlist(pidInt);
 
-                    showSiteWishlistToast(data.message || 'Đã thêm vào danh sách yêu thích!', false);
-                } else {
-                    showSiteWishlistToast(data.message || 'Có lỗi xảy ra khi thêm vào danh sách yêu thích.', true);
-                }
-            })
-            .catch(function(err) {
-                console.error('[WISHLIST FRONTEND AJAX ERROR]:', err);
-                showSiteWishlistToast('Không thể kết nối máy chủ: ' + err.message, true);
-            });
+                            showSiteWishlistToast(data.message || 'Đã thêm vào danh sách yêu thích!', false);
+                        } else {
+                            showSiteWishlistToast(data.message || 'Có lỗi xảy ra khi thêm vào danh sách yêu thích.', true);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('[WISHLIST FRONTEND AJAX ERROR]:', err);
+                        showSiteWishlistToast('Không thể kết nối máy chủ: ' + err.message, true);
+                    });
         }, true);
     })();
 </script>

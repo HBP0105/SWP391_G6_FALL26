@@ -1,36 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Address {
 
     private int addressId;
     private int customerId;
-
     private String receiverName;
     private String receiverPhone;
     private String addressLine;
     private String ward;
     private String district;
     private String province;
-
     private boolean isDefault;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Address() {
     }
 
-    public Address(int addressId, int customerId, String receiverName, String receiverPhone, String addressLine, String ward, String district, String province, boolean isDefault, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Address(int addressId, int customerId, String receiverName, String receiverPhone,
+                   String addressLine, String ward, String district, String province, boolean isDefault) {
         this.addressId = addressId;
         this.customerId = customerId;
         this.receiverName = receiverName;
@@ -40,6 +30,12 @@ public class Address {
         this.district = district;
         this.province = province;
         this.isDefault = isDefault;
+    }
+
+    public Address(int addressId, int customerId, String receiverName, String receiverPhone,
+                   String addressLine, String ward, String district, String province, boolean isDefault,
+                   LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this(addressId, customerId, receiverName, receiverPhone, addressLine, ward, district, province, isDefault);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -58,6 +54,31 @@ public class Address {
 
     public void setCustomerId(int customerId) {
         this.customerId = customerId;
+    }
+
+    // Aliases
+    public int getAddressID() {
+        return addressId;
+    }
+
+    public void setAddressID(int addressID) {
+        this.addressId = addressID;
+    }
+
+    public int getCustomerID() {
+        return customerId;
+    }
+
+    public void setCustomerID(int customerID) {
+        this.customerId = customerID;
+    }
+
+    public int getUserID() {
+        return customerId;
+    }
+
+    public void setUserID(int userID) {
+        this.customerId = userID;
     }
 
     public String getReceiverName() {
@@ -108,6 +129,14 @@ public class Address {
         this.province = province;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
     public boolean isIsDefault() {
         return isDefault;
     }
@@ -131,5 +160,4 @@ public class Address {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
 }

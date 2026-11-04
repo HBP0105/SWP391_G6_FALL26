@@ -1,0 +1,233 @@
+/* Custom Admin & Staff Dashboard Stylesheet - HeadphoneSales System */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --info-gradient: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+    --dark-bg: #0f172a;
+    --card-bg: #ffffff;
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-muted: #64748b;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f8fafc;
+    color: var(--text-primary);
+}
+
+/* Dashboard Navbar */
+.dash-navbar {
+    background: #0f172a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dash-navbar .navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.5px;
+}
+
+.dash-navbar .nav-link {
+    color: #94a3b8 !important;
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.dash-navbar .nav-link:hover,
+.dash-navbar .nav-link.active {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Stat Cards */
+.stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.primary { background: var(--primary-gradient); }
+.stat-icon.success { background: var(--success-gradient); }
+.stat-icon.warning { background: var(--warning-gradient); }
+.stat-icon.info { background: var(--info-gradient); }
+.stat-icon.danger { background: var(--danger-gradient); }
+
+.stat-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* Custom Table Styling */
+.custom-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.custom-card-header {
+    background: #ffffff;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.table-custom {
+    margin-bottom: 0;
+}
+
+.table-custom thead th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.825rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.table-custom tbody td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+    color: #334155;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table-custom tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 0.45em 0.85em;
+    font-weight: 600;
+    font-size: 0.775rem;
+    border-radius: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-status.pending { background-color: #fef3c7; color: #92400e; }
+.badge-status.confirmed { background-color: #e0f2fe; color: #075985; }
+.badge-status.shipping { background-color: #e0e7ff; color: #3730a3; }
+.badge-status.delivered { background-color: #d1fae5; color: #065f46; }
+.badge-status.cancelled { background-color: #fee2e2; color: #991b1b; }
+
+.badge-status.view { background-color: #f1f5f9; color: #475569; }
+.badge-status.search { background-color: #e0f2fe; color: #0369a1; }
+.badge-status.favorite { background-color: #fce7f3; color: #9d174d; }
+.badge-status.cart { background-color: #fef3c7; color: #b45309; }
+.badge-status.purchase { background-color: #d1fae5; color: #047857; }
+
+/* Stepper / Order Status Timeline */
+.status-timeline {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 2rem 0;
+}
+
+.status-timeline::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+
+.timeline-step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+}
+
+.step-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: 700;
+    color: #64748b;
+    transition: all 0.3s ease;
+}
+
+.timeline-step.completed .step-icon {
+    background: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+}
+
+.timeline-step.active .step-icon {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.2);
+}
+
+.timeline-step .step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.timeline-step.active .step-label,
+.timeline-step.completed .step-label {
+    color: #0f172a;
+}

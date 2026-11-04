@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%--
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <%
     // Kiểm tra phân quyền: Chỉ cho phép Customer xem trang checkout
     Object customer = session.getAttribute("customer");
@@ -9,7 +11,7 @@
         return; 
     }
 %>
---%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,12 +41,50 @@
         <!-- TOP HEADER -->
         <div id="top-header">
             <div class="container">
+                <%@ page import="com.swp391.model.Customer" %>
+                <%@ page import="com.swp391.model.Staff" %>
+                <%
+                    Object currentUser = session.getAttribute("customer");
+                    if (currentUser == null) {
+                        currentUser = session.getAttribute("user");
+                    }
+                    String displayPhone = "";
+                    String displayEmail = "";
+                    String displayName = "";
+                    if (currentUser instanceof Customer) {
+                        Customer c = (Customer) currentUser;
+                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
+                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
+                        displayName = c.getFullName() != null ? c.getFullName() : "";
+                    } else if (currentUser instanceof Staff) {
+                        Staff s = (Staff) currentUser;
+                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
+                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
+                        displayName = s.getFullName() != null ? s.getFullName() : "";
+                    }
+                %>
                 <ul class="header-links pull-left">
-                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
+                    <% if (!displayPhone.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <% } %>
+                    <% if (!displayEmail.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <% } %>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+                    <% if (currentUser == null) { %>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/login">
+                            <i class="fa fa-user-o"></i> My Account
+                        </a>
+                    </li>
+                    <% } else { %>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/profile">
+                            <i class="fa fa-user"></i> <%= displayName %>
+                        </a>
+                    </li>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -75,9 +115,9 @@
         <div class="container">
             <div id="responsive-nav">
                 <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
-                    <li><a href="#">Categories</a></li>
-                    <li><a href="${pageContext.request.contextPath}/views/cart.jsp">Cart</a></li>
+                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                    <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
+                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
                     <li class="active"><a href="#">Checkout</a></li>
                 </ul>
             </div>
@@ -88,51 +128,83 @@
     <!-- CHECKOUT SECTION -->
     <div class="section checkout-section">
         <div class="container">
-            <form action="#" method="POST">
+            <form action="${pageContext.request.contextPath}/checkout" method="POST">
                 <div class="row">
                     <!-- Billing Details -->
                     <div class="col-md-7">
                         <div class="checkout-details">
-                            <h3>Shipping Address</h3>
+                            <h3>Shipping Information</h3>
                             
                             <div class="form-group">
-                                <label for="shippingName">Receiver Name</label>
-                                <input type="text" class="form-control" id="shippingName" name="shippingName" placeholder="Enter receiver's name" required>
+                                <label>Customer Name</label>
+                                <input type="text" class="form-control" value="${sessionScope.customer.fullName}" readonly style="background-color: #f5f5f5;">
                             </div>
                             
                             <div class="form-group">
-                                <label for="shippingPhone">Receiver Phone</label>
-                                <input type="tel" class="form-control" id="shippingPhone" name="shippingPhone" placeholder="Enter receiver's phone number" required>
+                                <label>Customer Phone</label>
+                                <input type="tel" class="form-control" value="${sessionScope.customer.phone}" readonly style="background-color: #f5f5f5;">
                             </div>
                             
                             <div class="form-group">
-                                <label for="shippingEmail">Email Address</label>
-                                <input type="email" class="form-control" id="shippingEmail" name="shippingEmail" placeholder="Enter email for notifications" required>
+                                <label>Email Address</label>
+                                <input type="email" class="form-control" value="${sessionScope.customer.email}" readonly style="background-color: #f5f5f5;">
+                            </div>
+
+                            <!-- CHỌN ĐỊA CHỈ TỪ ADDRESS REPOSITORY HOẶC TỰ NHẬP MỚI -->
+                            <div class="form-group" style="background: #f9f9f9; border: 1px solid #E4E7ED; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Select from Address Repository:</label>
+                                    <a href="${pageContext.request.contextPath}/addresses" class="btn btn-default btn-xs">
+                                        Manage Address Repository
+                                    </a>
+                                </div>
+                                <c:choose>
+                                    <c:when test="${not empty requestScope.savedAddresses}">
+                                        <select id="savedAddressSelect" class="form-control" onchange="applySavedAddress(this)" style="height: 38px; cursor: pointer;">
+                                            <option value="">-- Enter a new address manually below --</option>
+                                            <c:forEach items="${requestScope.savedAddresses}" var="addr">
+                                                <option value="${addr.addressId}"
+                                                        data-province="${addr.province}"
+                                                        data-district="${addr.district}"
+                                                        data-ward="${addr.ward}"
+                                                        data-line="${addr.addressLine}"
+                                                        ${addr.isDefault ? 'selected' : ''}>
+                                                    ${addr.receiverName} (${addr.receiverPhone}) - ${addr.addressLine}, ${addr.ward}, ${addr.district}, ${addr.province} ${addr.isDefault ? '[Default]' : ''}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="text-muted" style="margin: 0; font-size: 13px;">
+                                            No saved addresses yet. <a href="${pageContext.request.contextPath}/addresses" style="color: #D10024;">Add to Address Repository</a> or enter your address below.
+                                        </p>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="province">Province/City</label>
+                                        <label for="province">Province/City <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="province" name="province" placeholder="Province" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="district">District</label>
+                                        <label for="district">District <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="district" name="district" placeholder="District" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="ward">Ward</label>
+                                        <label for="ward">Ward <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="ward" name="ward" placeholder="Ward" required>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="addressLine">Address Line</label>
+                                <label for="addressLine">Address Line <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="addressLine" name="addressLine" placeholder="Street name, house number, etc." required>
                             </div>
 
@@ -154,20 +226,19 @@
                                     <strong>Product</strong>
                                     <strong>Total</strong>
                                 </div>
-                                <!-- Static Data Example -->
-                                <div class="order-col">
-                                    <div>1x Headphone XYZ Model 1</div>
-                                    <div>$150.00</div>
-                                </div>
-                                <div class="order-col">
-                                    <div>2x Wireless Earbuds Pro</div>
-                                    <div>$400.00</div>
-                                </div>
+                                <c:set var="totalPrice" value="0" />
+                                <c:forEach items="${requestScope.listCart}" var="item">
+                                    <div class="order-col">
+                                        <div>${item.quantity}x ${item.productName}</div>
+                                        <div>$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></div>
+                                    </div>
+                                    <c:set var="totalPrice" value="${totalPrice + (item.price * item.quantity)}" />
+                                </c:forEach>
                             </div>
                             
                             <div class="order-col">
                                 <div><strong>Subtotal</strong></div>
-                                <div><strong>$550.00</strong></div>
+                                <div><strong>$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></strong></div>
                             </div>
                             <div class="order-col">
                                 <div><strong>Shipping</strong></div>
@@ -184,7 +255,7 @@
                             
                             <div class="order-col order-total">
                                 <div><strong>TOTAL</strong></div>
-                                <div><strong class="order-total-price">$550.00</strong></div>
+                                <div><strong class="order-total-price">$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></strong></div>
                             </div>
 
                             <!-- Payment Method -->
@@ -194,7 +265,6 @@
                                     <select class="form-control" name="paymentMethod" id="paymentMethod" style="height: 40px; cursor: pointer;">
                                         <option value="COD">Cash on Delivery (COD)</option>
                                         <option value="VNPAY">VNPay</option>
-                                        <option value="BANK_TRANSFER">Bank Transfer</option>
                                     </select>
                                 </div>
                             </div>
@@ -228,5 +298,28 @@
     <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/bootstrap.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+    <script>
+        function applySavedAddress(selectElem) {
+            var opt = selectElem.options[selectElem.selectedIndex];
+            if (!opt || !opt.value) {
+                document.getElementById('province').value = '';
+                document.getElementById('district').value = '';
+                document.getElementById('ward').value = '';
+                document.getElementById('addressLine').value = '';
+                return;
+            }
+            document.getElementById('province').value = opt.getAttribute('data-province') || '';
+            document.getElementById('district').value = opt.getAttribute('data-district') || '';
+            document.getElementById('ward').value = opt.getAttribute('data-ward') || '';
+            document.getElementById('addressLine').value = opt.getAttribute('data-line') || '';
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            var selectElem = document.getElementById('savedAddressSelect');
+            if (selectElem && selectElem.value) {
+                applySavedAddress(selectElem);
+            }
+        });
+    </script>
 </body>
 </html>

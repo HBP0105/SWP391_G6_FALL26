@@ -767,9 +767,6 @@ ON Orders(CustomerID);
 GO
 
 
--- =========================================================
--- SEED DATA FOR AI INTEGRATION & TESTING
--- =========================================================
 
 INSERT INTO Roles (RoleName, Description)
 VALUES

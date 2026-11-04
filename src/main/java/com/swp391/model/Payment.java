@@ -1,34 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Payment {
 
     private long paymentId;
     private int orderId;
-
     private String paymentMethod;
     private String transactionId;
-
     private BigDecimal amount;
     private String paymentStatus;
-
     private String responseCode;
     private LocalDateTime paymentDate;
 
     public Payment() {
     }
 
-    public Payment(long paymentId, int orderId, String paymentMethod, String transactionId, BigDecimal amount, String paymentStatus, String responseCode, LocalDateTime paymentDate) {
+    public Payment(long paymentId, int orderId, String paymentMethod,
+            String transactionId, BigDecimal amount,
+            String paymentStatus, String responseCode,
+            LocalDateTime paymentDate) {
         this.paymentId = paymentId;
         this.orderId = orderId;
         this.paymentMethod = paymentMethod;
@@ -47,12 +39,28 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
+    public long getPaymentID() {
+        return paymentId;
+    }
+
+    public void setPaymentID(long paymentID) {
+        this.paymentId = paymentID;
+    }
+
     public int getOrderId() {
         return orderId;
     }
 
     public void setOrderId(int orderId) {
         this.orderId = orderId;
+    }
+
+    public int getOrderID() {
+        return orderId;
+    }
+
+    public void setOrderID(int orderID) {
+        this.orderId = orderID;
     }
 
     public String getPaymentMethod() {
@@ -69,6 +77,14 @@ public class Payment {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getTransactionID() {
+        return transactionId;
+    }
+
+    public void setTransactionID(String transactionID) {
+        this.transactionId = transactionID;
     }
 
     public BigDecimal getAmount() {
@@ -102,5 +118,4 @@ public class Payment {
     public void setPaymentDate(LocalDateTime paymentDate) {
         this.paymentDate = paymentDate;
     }
-
 }

@@ -1,36 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author ADMIN
- */
 public class Order {
 
     private int orderId;
     private int customerId;
-
     private BigDecimal totalAmount;
-
     private String shippingName;
     private String shippingPhone;
     private String shippingAddress;
-
     private String orderStatus;
-
+    private String cancelReason;
     private LocalDateTime orderDate;
     private LocalDateTime updatedAt;
 
     public Order() {
     }
 
-    public Order(int orderId, int customerId, BigDecimal totalAmount, String shippingName, String shippingPhone, String shippingAddress, String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
+    public Order(int orderId, int customerId, BigDecimal totalAmount,
+            String shippingName, String shippingPhone, String shippingAddress,
+            String orderStatus, LocalDateTime orderDate, LocalDateTime updatedAt) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.totalAmount = totalAmount;
@@ -42,6 +33,7 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
+    // Getters and Setters with dual-naming support
     public int getOrderId() {
         return orderId;
     }
@@ -50,12 +42,28 @@ public class Order {
         this.orderId = orderId;
     }
 
+    public int getOrderID() {
+        return orderId;
+    }
+
+    public void setOrderID(int orderID) {
+        this.orderId = orderID;
+    }
+
     public int getCustomerId() {
         return customerId;
     }
 
     public void setCustomerId(int customerId) {
         this.customerId = customerId;
+    }
+
+    public int getCustomerID() {
+        return customerId;
+    }
+
+    public void setCustomerID(int customerID) {
+        this.customerId = customerID;
     }
 
     public BigDecimal getTotalAmount() {
@@ -98,6 +106,14 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
     public LocalDateTime getOrderDate() {
         return orderDate;
     }
@@ -114,4 +130,59 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
+    // Associated Entities loaded via SQL JOIN
+    private Customer customer;
+    private Address address;
+    private Shipment shipment;
+    private Payment payment;
+    private String productSummary;
+    private int totalQuantity;
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public Shipment getShipment() {
+        return shipment;
+    }
+
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public String getProductSummary() {
+        return productSummary;
+    }
+
+    public void setProductSummary(String productSummary) {
+        this.productSummary = productSummary;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
 }

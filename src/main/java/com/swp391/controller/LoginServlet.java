@@ -64,6 +64,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("wishlistCount", dbItems.size());
             session.setAttribute("wishlistModified", false);
 
+
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
@@ -73,17 +74,18 @@ public class LoginServlet extends HttpServlet {
         if (staff != null) {
             HttpSession session = request.getSession();
             session.setAttribute("user", staff);
+            session.setAttribute("staff", staff);
             session.setAttribute("role", staff.getRoleName());
 
             if ("ADMIN".equalsIgnoreCase(staff.getRoleName())) {
-                response.sendRedirect(request.getContextPath() + "/views/admin.jsp");
+                response.sendRedirect(request.getContextPath() + "/admin/revenue-report");
             } else if ("MANAGER".equalsIgnoreCase(staff.getRoleName())) {
-                response.sendRedirect(request.getContextPath() + "/views/manager.jsp");
+                response.sendRedirect(request.getContextPath() + "/Manager/Dashboard");
             } else {
                 response.sendRedirect(request.getContextPath() + "/home");
             }
             return;
-        }
+     }
 
         // Dang nhap that bai
         request.setAttribute("error", "Email or password incorrect");

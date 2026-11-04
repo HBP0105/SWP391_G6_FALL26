@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -30,12 +31,50 @@
         <!-- TOP HEADER -->
         <div id="top-header">
             <div class="container">
+                <%@ page import="com.swp391.model.Customer" %>
+                <%@ page import="com.swp391.model.Staff" %>
+                <%
+                    Object currentUser = session.getAttribute("customer");
+                    if (currentUser == null) {
+                        currentUser = session.getAttribute("user");
+                    }
+                    String displayPhone = "";
+                    String displayEmail = "";
+                    String displayName = "";
+                    if (currentUser instanceof Customer) {
+                        Customer c = (Customer) currentUser;
+                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
+                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
+                        displayName = c.getFullName() != null ? c.getFullName() : "";
+                    } else if (currentUser instanceof Staff) {
+                        Staff s = (Staff) currentUser;
+                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
+                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
+                        displayName = s.getFullName() != null ? s.getFullName() : "";
+                    }
+                %>
                 <ul class="header-links pull-left">
-                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
+                    <% if (!displayPhone.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <% } %>
+                    <% if (!displayEmail.isEmpty()) { %>
+                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <% } %>
                 </ul>
                 <ul class="header-links pull-right">
-                    <li><a href="#"><i class="fa fa-user-o"></i> My Account</a></li>
+                    <% if (currentUser == null) { %>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/login">
+                            <i class="fa fa-user-o"></i> My Account
+                        </a>
+                    </li>
+                    <% } else { %>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/profile">
+                            <i class="fa fa-user"></i> <%= displayName %>
+                        </a>
+                    </li>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -48,7 +87,7 @@
                     <!-- LOGO -->
                     <div class="col-md-3">
                         <div class="header-logo">
-                            <a href="${pageContext.request.contextPath}/views/home.jsp" class="logo">
+                            <a href="${pageContext.request.contextPath}/home" class="logo">
                                 <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
                             </a>
                         </div>
@@ -66,9 +105,10 @@
         <div class="container">
             <div id="responsive-nav">
                 <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
-                    <li><a href="#">Categories</a></li>
-                    <li class="active"><a href="#">Cart</a></li>
+                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                    <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
+                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
+                    <li class="active"><a href="${pageContext.request.contextPath}/cart">Cart</a></li>
                 </ul>
             </div>
         </div>
@@ -116,11 +156,20 @@
                                         <td class="cart-item-title">${item.productName}</td>
                                         <td>$${item.price}</td>
                                         <td>
-                                            <input type="number" class="qty-input" value="${item.quantity}" min="1">
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="display: flex; align-items: center; gap: 5px; margin: 0;">
+                                                <input type="hidden" name="action" value="update">
+                                                <input type="hidden" name="productId" value="${item.productId}">
+                                                
+                                                <input type="number" name="quantity" class="qty-input" value="${item.quantity}" min="1" style="width: 60px;" onchange="this.form.submit()">
+                                            </form>
                                         </td>
-                                        <td>$${item.price * item.quantity}</td>
+                                        <td>$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></td>
                                         <td>
-                                            <button class="remove-btn"><i class="fa fa-trash"></i></button>
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="action" value="remove">
+                                                <input type="hidden" name="productId" value="${item.productId}">
+                                                <button type="submit" class="remove-btn"><i class="fa fa-trash"></i></button>
+                                            </form>
                                         </td>
                                     </tr>
                                     <c:set var="totalPrice" value="${totalPrice + (item.price * item.quantity)}" />
@@ -137,9 +186,9 @@
                         <h3>Order Summary</h3>
                         <div class="summary-item summary-total" style="border-top: none; padding-top: 0;">
                             <span>Total:</span>
-                            <span>$${totalPrice}</span>
+                            <span>$<fmt:formatNumber value="${totalPrice}" pattern="#,##0" /></span>
                         </div>
-                        <a href="checkout.jsp" class="primary-btn checkout-btn text-center">Proceed to Checkout</a>
+                        <a href="${pageContext.request.contextPath}/checkout" class="primary-btn checkout-btn text-center">Proceed to Checkout</a>
                     </div>
                 </div>
                 <!-- /Cart Summary -->
@@ -154,7 +203,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12 text-center">
-                        <p class="text-muted">Â© 2026 Headphone Store. All rights reserved.</p>
+                        <p class="text-muted">© 2026 Headphone Store. All rights reserved.</p>
                     </div>
                 </div>
             </div>
