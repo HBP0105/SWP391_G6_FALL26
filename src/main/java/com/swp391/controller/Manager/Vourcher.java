@@ -1,7 +1,7 @@
-package com.swp391.controller.manager;
+package com.swp391.controller.Manager;
 
 import com.swp391.model.Voucher;
-import com.swp391.service.VoucherService;
+import com.swp391.service.Manager.VoucherService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -32,9 +32,25 @@ public class Vourcher extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("add".equals(action)) {
-            request.getRequestDispatcher("/views/Manager/addVoucher.jsp")
-                    .forward(request, response);
+            showVoucherForm(request, response, "add", null);
             return;
+        }
+
+        if ("edit".equals(action)) {
+            String idStr = request.getParameter("id");
+            try {
+                int id = Integer.parseInt(idStr);
+                Voucher voucher = voucherService.getVoucherById(id);
+                if (voucher == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Voucher not found");
+                    return;
+                }
+                showVoucherForm(request, response, "edit", voucher);
+                return;
+            } catch (NumberFormatException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid voucher ID");
+                return;
+            }
         }
 
         if ("detail".equals(action)) {
@@ -57,6 +73,9 @@ public class Vourcher extends HttpServlet {
         }
 
         String keyword = request.getParameter("keyword");
+        if (keyword != null) {
+            keyword = keyword.replaceAll("\\s+", " ").trim();
+        }
         String discountType = request.getParameter("discountType");
         String status = request.getParameter("status");
         String validPeriod = request.getParameter("validPeriod");
@@ -104,7 +123,7 @@ public class Vourcher extends HttpServlet {
         );
 
         request.setAttribute("vouchers", vouchers);
-        request.setAttribute("keyword", keyword != null ? keyword.trim() : "");
+        request.setAttribute("keyword", keyword);
         request.setAttribute("selectedDiscountType", discountType != null ? discountType.trim() : "");
         request.setAttribute("selectedStatus", status != null ? status.trim() : "");
         request.setAttribute("selectedValidPeriod", validPeriod != null ? validPeriod.trim() : "");
@@ -136,6 +155,11 @@ public class Vourcher extends HttpServlet {
             return;
         }
 
+        if ("edit".equals(action)) {
+            handleEditVoucher(request, response);
+            return;
+        }
+
         doGet(request, response);
     }
 
@@ -160,17 +184,17 @@ public class Vourcher extends HttpServlet {
             v.setDiscountType(discountType);
 
             if (discountValueStr != null && !discountValueStr.isBlank()) {
-                v.setDiscountValue(new BigDecimal(discountValueStr.trim()));
+                v.setDiscountValue(new BigDecimal(discountValueStr.replace(",", "").trim()));
             }
 
             BigDecimal minOrder = BigDecimal.ZERO;
             if (minOrderStr != null && !minOrderStr.isBlank()) {
-                minOrder = new BigDecimal(minOrderStr.trim());
+                minOrder = new BigDecimal(minOrderStr.replace(",", "").trim());
             }
             v.setMinOrderAmount(minOrder);
 
             if (maxDiscountStr != null && !maxDiscountStr.isBlank()) {
-                v.setMaxDiscount(new BigDecimal(maxDiscountStr.trim()));
+                v.setMaxDiscount(new BigDecimal(maxDiscountStr.replace(",", "").trim()));
             } else {
                 v.setMaxDiscount(null);
             }
@@ -207,8 +231,8 @@ public class Vourcher extends HttpServlet {
             request.setAttribute("errorMessage", "Unexpected error: " + e.getMessage());
         }
 
-        // Keep values on error
         request.setAttribute("activePage", "voucher");
+        request.setAttribute("action", "add");
         request.setAttribute("voucherCode", code);
         request.setAttribute("description", description);
         request.setAttribute("discountType", discountType);
@@ -220,7 +244,117 @@ public class Vourcher extends HttpServlet {
         request.setAttribute("usageLimit", usageLimitStr);
         request.setAttribute("status", status);
 
-        request.getRequestDispatcher("/views/Manager/addVoucher.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/Manager/voucherForm.jsp").forward(request, response);
+    }
+
+    private void handleEditVoucher(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String voucherIdStr = request.getParameter("voucherId");
+        String description = request.getParameter("description");
+        String discountType = request.getParameter("discountType");
+        String discountValueStr = request.getParameter("discountValue");
+        String minOrderStr = request.getParameter("minOrderAmount");
+        String maxDiscountStr = request.getParameter("maxDiscount");
+        String startDateStr = request.getParameter("startDate");
+        String endDateStr = request.getParameter("endDate");
+        String usageLimitStr = request.getParameter("usageLimit");
+        String status = request.getParameter("status");
+
+        try {
+            int voucherId = Integer.parseInt(voucherIdStr);
+            Voucher existing = voucherService.getVoucherById(voucherId);
+            if (existing == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Voucher not found");
+                return;
+            }
+
+            Voucher v = new Voucher();
+            v.setVoucherId(voucherId);
+            v.setVoucherCode(existing.getVoucherCode()); // keep original code
+            v.setDescription(description);
+            v.setDiscountType(discountType);
+
+            if (discountValueStr != null && !discountValueStr.isBlank()) {
+                v.setDiscountValue(new BigDecimal(discountValueStr.replace(",", "").trim()));
+            }
+
+            BigDecimal minOrder = BigDecimal.ZERO;
+            if (minOrderStr != null && !minOrderStr.isBlank()) {
+                minOrder = new BigDecimal(minOrderStr.replace(",", "").trim());
+            }
+            v.setMinOrderAmount(minOrder);
+
+            if (maxDiscountStr != null && !maxDiscountStr.isBlank()) {
+                v.setMaxDiscount(new BigDecimal(maxDiscountStr.replace(",", "").trim()));
+            } else {
+                v.setMaxDiscount(null);
+            }
+
+            if (startDateStr != null && !startDateStr.isBlank()) {
+                v.setStartDate(LocalDateTime.parse(startDateStr.trim()));
+            }
+
+            if (endDateStr != null && !endDateStr.isBlank()) {
+                v.setEndDate(LocalDateTime.parse(endDateStr.trim()));
+            }
+
+            if (usageLimitStr != null && !usageLimitStr.isBlank()) {
+                v.setUsageLimit(Integer.parseInt(usageLimitStr.trim()));
+            } else {
+                v.setUsageLimit(null);
+            }
+
+            v.setStatus(status != null && !status.isBlank() ? status.trim() : "ACTIVE");
+
+            boolean success = voucherService.updateVoucher(v);
+            if (success) {
+                request.getSession().setAttribute("successMessage", "Voucher '" + v.getVoucherCode() + "' has been updated successfully!");
+                response.sendRedirect(request.getContextPath() + "/Manager/Voucher");
+                return;
+            } else {
+                request.setAttribute("errorMessage", "Failed to update voucher.");
+            }
+        } catch (IllegalArgumentException | DateTimeParseException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "Unexpected error: " + e.getMessage());
+        }
+
+        try {
+            int voucherId = Integer.parseInt(voucherIdStr);
+            Voucher voucher = voucherService.getVoucherById(voucherId);
+            if (voucher != null) {
+                
+                voucher.setDescription(description);
+                voucher.setDiscountType(discountType);
+                voucher.setStatus(status);
+                request.setAttribute("voucher", voucher);
+                
+                request.setAttribute("editDiscountValue", discountValueStr);
+                request.setAttribute("editMinOrderAmount", minOrderStr);
+                request.setAttribute("editMaxDiscount", maxDiscountStr);
+                request.setAttribute("editStartDate", startDateStr);
+                request.setAttribute("editEndDate", endDateStr);
+                request.setAttribute("editUsageLimit", usageLimitStr);
+            }
+        } catch (Exception ignored) {
+        }
+
+        request.setAttribute("activePage", "voucher");
+        request.setAttribute("action", "edit");
+        request.getRequestDispatcher("/views/Manager/voucherForm.jsp").forward(request, response);
+    }
+
+    private void showVoucherForm(HttpServletRequest request, HttpServletResponse response,
+            String action, Voucher voucher) throws ServletException, IOException {
+        request.setAttribute("activePage", "voucher");
+        request.setAttribute("action", action);
+        if (voucher != null) {
+            request.setAttribute("voucher", voucher);
+        }
+        request.getRequestDispatcher("/views/Manager/voucherForm.jsp").forward(request, response);
     }
 
     private void handleChangeStatus(HttpServletRequest request, HttpServletResponse response)

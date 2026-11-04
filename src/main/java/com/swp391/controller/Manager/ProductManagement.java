@@ -1,7 +1,8 @@
-package com.swp391.controller.manager;
+package com.swp391.controller.Manager;
 
 import com.swp391.model.Product;
-import com.swp391.service.ProductService;
+import com.swp391.service.Manager.ProductService;
+import com.swp391.service.external.CloudinaryService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -26,10 +27,12 @@ public class ProductManagement extends HttpServlet {
     private static final int DEFAULT_PAGE_SIZE = 10;
 
     private ProductService productService;
+    private CloudinaryService cloudinaryService;
 
     @Override
     public void init() {
         productService = new ProductService();
+        cloudinaryService = new CloudinaryService();
     }
 
     @Override
@@ -128,7 +131,6 @@ public class ProductManagement extends HttpServlet {
             return;
         }
 
-        
         if ("delete".equals(action)) {
 
             System.out.println(
@@ -166,6 +168,10 @@ public class ProductManagement extends HttpServlet {
             throws ServletException, IOException {
 
         String keyword = request.getParameter("keyword");
+
+        if (keyword != null) {
+            keyword = keyword.replaceAll("\\s+", " ").trim();
+        }
         String stock = request.getParameter("stock");
         String status = request.getParameter("status");
         String sort = request.getParameter("sort");
@@ -292,7 +298,7 @@ public class ProductManagement extends HttpServlet {
 
         try {
             ProductFormData data = readProductForm(request);
-            String imageURL = resolveImageUrl(request, existingProduct.getImageURL());
+            String imageURL = resolveImageUrl(request, existingProduct.getImageUrl());
 
             boolean success = productService.updateProduct(
                     id,
@@ -301,7 +307,6 @@ public class ProductManagement extends HttpServlet {
                     data.categoryId,
                     data.brandId,
                     data.price,
-                    data.stock,
                     imageURL,
                     data.connectionType,
                     data.driverSize,
@@ -311,7 +316,6 @@ public class ProductManagement extends HttpServlet {
                     data.waterResistance,
                     data.status
             );
-
             if (success) {
                 String from = request.getParameter("from");
                 if ("inventory".equalsIgnoreCase(from)) {
@@ -369,8 +373,17 @@ public class ProductManagement extends HttpServlet {
         data.description = request.getParameter("description");
         data.categoryId = Integer.parseInt(request.getParameter("categoryId"));
         data.brandId = Integer.parseInt(request.getParameter("brandId"));
-        data.price = new BigDecimal(request.getParameter("price"));
-        data.stock = Integer.parseInt(request.getParameter("stock"));
+        String priceParam = request.getParameter("price");
+        if (priceParam != null) {
+            priceParam = priceParam.replace(",", "").trim();
+        }
+        data.price = new BigDecimal(priceParam);
+        String stockParam = request.getParameter("stock");
+        if (stockParam != null && !stockParam.isBlank()) {
+            data.stock = Integer.parseInt(stockParam.trim());
+        } else {
+            data.stock = 0;
+        }
         data.connectionType = request.getParameter("connectionType");
         data.driverSize = parseNullableDouble(request.getParameter("driverSize"));
         data.noiseCancelling = request.getParameter("noiseCancelling") != null;
@@ -396,21 +409,8 @@ public class ProductManagement extends HttpServlet {
             throw new IllegalArgumentException("Selected file must be an image.");
         }
 
-        String uploadDirectory = getServletContext().getRealPath(
-                "/uploads/products"
-        );
-
-        if (uploadDirectory == null) {
-            throw new IOException("Product upload directory is unavailable.");
-        }
-
         try (var input = imagePart.getInputStream()) {
-            return productService.saveProductImage(
-                    input,
-                    imagePart.getSubmittedFileName(),
-                    uploadDirectory,
-                    request.getContextPath() + "/uploads/products"
-            );
+            return cloudinaryService.uploadProductImage(input);
         }
     }
 

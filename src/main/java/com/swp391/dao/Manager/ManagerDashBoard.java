@@ -21,7 +21,7 @@ public class ManagerDashBoard {
     public int getTotalProducts() {
         String sql = "SELECT COUNT(*) FROM Products WHERE Status = 'ACTIVE'";
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -55,7 +55,7 @@ public class ManagerDashBoard {
               AND YEAR(CreatedAt) = YEAR(GETDATE())
         """;
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -84,7 +84,7 @@ public class ManagerDashBoard {
     public int getTotalOrders() {
         String sql = "SELECT COUNT(*) FROM Orders";
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -124,7 +124,7 @@ public class ManagerDashBoard {
                 ,0) * 100
         """;
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -153,7 +153,7 @@ public class ManagerDashBoard {
     public int getLowStockProducts() {
         String sql = "SELECT COUNT(*) FROM Products WHERE StockQuantity > 0 AND StockQuantity <= 10";
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -195,7 +195,7 @@ public class ManagerDashBoard {
         """;
 
         try {
-            conn = DBContext.getConnection();
+            conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -212,8 +212,8 @@ public class ManagerDashBoard {
                 Timestamp ts = rs.getTimestamp("OrderDate");
                 if (ts != null) {
                     LocalDateTime ldt = ts.toLocalDateTime();
-                    o.setOrderDate(ldt); // v?n gi? LocalDateTime
-                    o.setFormattedDate(ldt.format(formatter)); // ? THÊM DÒNG NÀY
+                    o.setOrderDate(ldt);
+                    o.setFormattedDate(ldt.format(formatter));
                 }
 
                 list.add(o);

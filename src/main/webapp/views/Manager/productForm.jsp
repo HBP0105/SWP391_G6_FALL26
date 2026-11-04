@@ -1,5 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US" scope="page"/>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -59,7 +61,6 @@
                             </div>
                         </div>
 
-                        <!-- ONE form is used for both Add and Edit -->
                         <form method="post"
                               enctype="multipart/form-data"
                               action="${pageContext.request.contextPath}/Manager/products">
@@ -127,24 +128,42 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Price</label>
-                                    <input type="number"
-                                           name="price"
-                                           class="form-control"
-                                           value="${mode eq 'edit' ? product.price : ''}"
-                                           min="0"
-                                           step="0.01"
-                                           required>
+                                    <label class="form-label">Price (VND) <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text"
+                                               name="price"
+                                               id="productPrice" autocomplete="off"
+                                               class="form-control vnd-currency-input"
+                                               value="<c:choose><c:when test="${mode eq 'edit' && not empty product.price}"><fmt:formatNumber value="${product.price}" maxFractionDigits="0"/></c:when><c:otherwise>${param.price}</c:otherwise></c:choose>"
+                                               placeholder="0"
+                                               required>
+                                        <span class="input-group-text">VND</span>
+                                    </div>
+                                    <small class="text-muted">Enter product price in VND (e.g. 1,500,000).</small>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Stock Quantity</label>
-                                    <input type="number"
-                                           name="stock"
-                                           class="form-control"
-                                           value="${mode eq 'edit' ? product.stockQuantity : ''}"
-                                           min="0"
-                                           required>
+                                    <label class="form-label">${mode eq 'edit' ? 'Stock Quantity' : 'Initial Stock'}</label>
+                                    <c:choose>
+                                        <c:when test="${mode eq 'edit'}">
+                                            <input type="number"
+                                                   class="form-control"
+                                                   value="${product.stockQuantity}"
+                                                   readonly
+                                                   disabled>
+                                            <div class="form-text">
+                                                Stock cannot be modified here. Manage stock in Inventory.
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <input type="number"
+                                                   name="stock"
+                                                   class="form-control"
+                                                   value=""
+                                                   min="0"
+                                                   required>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
 
                                 <div class="col-12">
@@ -152,9 +171,9 @@
                                         ${mode eq 'edit' ? 'Replace Product Image' : 'Product Image'}
                                     </label>
 
-                                    <c:if test="${mode eq 'edit' && not empty product.imageURL}">
+                                    <c:if test="${mode eq 'edit' && not empty product.imageUrl}">
                                         <div class="mb-2">
-                                            <img src="${product.imageURL}"
+                                            <img src="${product.imageUrl}"
                                                  alt="${product.productName}"
                                                  style="width:96px;height:96px;object-fit:cover;border-radius:8px;">
                                             <div class="form-text">
@@ -292,6 +311,64 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=2"></script>
+        <script>
+            (function () {
+                function formatVndNumber(val) {
+                    if (val === null || val === undefined || val === '') return '';
+                    var str = val.toString().split('.')[0];
+                    var raw = str.replace(/\D/g, '').replace(/^0+(?!$)/, '');
+                    if (!raw) return '';
+                    return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+
+                function attachAutoComma(input) {
+                    if (!input) return;
+
+                    function applyFormat() {
+                        var raw = input.value.split('.')[0].replace(/\D/g, '');
+                        if (!raw) {
+                            input.value = '';
+                            return;
+                        }
+
+                        var cursorPos = input.selectionStart || 0;
+                        var rawBefore = input.value.substring(0, cursorPos).replace(/\D/g, '');
+                        var digitsBefore = rawBefore.length;
+
+                        var formatted = formatVndNumber(raw);
+                        input.value = formatted;
+
+                        var newCursor = 0;
+                        var dCount = 0;
+                        for (var i = 0; i < formatted.length; i++) {
+                            if (/\d/.test(formatted[i])) {
+                                dCount++;
+                            }
+                            if (dCount === digitsBefore) {
+                                newCursor = i + 1;
+                                break;
+                            }
+                        }
+                        input.setSelectionRange(newCursor, newCursor);
+                    }
+
+                    input.addEventListener('input', applyFormat);
+                    input.addEventListener('keyup', applyFormat);
+                    input.addEventListener('paste', function () {
+                        setTimeout(applyFormat, 10);
+                    });
+
+                    if (input.value) {
+                        input.value = formatVndNumber(input.value);
+                    }
+                }
+
+                var priceInput = document.getElementById('productPrice') || document.querySelector('.vnd-currency-input');
+                if (priceInput) {
+                    attachAutoComma(priceInput);
+                }
+            })();
+        </script>
     </body>
 </html>

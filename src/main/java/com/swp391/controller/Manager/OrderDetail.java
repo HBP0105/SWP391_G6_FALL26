@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpSession;
  * Thin Controller for Order Details & Status Update (Screen 2).
  * Delegates all data bundling, validation, state machine transitions, and updates to OrderService.
  */
-@WebServlet(name = "OrderDetail", urlPatterns = {"/staff/order-detail"})
+@WebServlet(name = "OrderDetail", urlPatterns = {"/Manager/OrderManagement/Detail", "/staff/order-detail"})
 public class OrderDetail extends HttpServlet {
 
     private OrderService orderService;
@@ -39,7 +39,7 @@ public class OrderDetail extends HttpServlet {
 
         if (orderId <= 0) {
             request.getSession().setAttribute("msgErrorStatus", "Invalid Order ID specified!");
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -62,7 +62,7 @@ public class OrderDetail extends HttpServlet {
         Map<String, Object> bundle = orderService.getOrderDetailBundle(orderId);
         if (bundle == null || bundle.get("order") == null) {
             request.getSession().setAttribute("msgErrorStatus", "Order #ORD-" + orderId + " was not found in database!");
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -118,9 +118,9 @@ public class OrderDetail extends HttpServlet {
         }
 
         if (orderId > 0) {
-            response.sendRedirect(request.getContextPath() + "/staff/order-detail?id=" + orderId);
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement/Detail?id=" + orderId);
         } else {
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
         }
     }
 

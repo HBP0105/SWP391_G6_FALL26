@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="">
+    <Environment
+        name="CLOUDINARY_CLOUD_NAME"
+        value="dxzrwn8eu"
+        type="java.lang.String"
+        override="false" />
+
+    <Environment
+        name="CLOUDINARY_API_KEY"
+        value="169416268712694"
+        type="java.lang.String"
+        override="false" />
+
+    <Environment
+        name="CLOUDINARY_API_SECRET"
+        value="W8hmX_07RBYxDze7_wF2UKfGfkM"
+        type="java.lang.String"
+        override="false" />
+</Context>

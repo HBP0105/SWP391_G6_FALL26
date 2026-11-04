@@ -1,4 +1,4 @@
-    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
     <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -139,36 +139,15 @@
                                 </button>
 
                                 <div class="dropdown">
-                                    <button class="icon-button"
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                            aria-label="Notifications">
-                                        <span class="notification-dot"></span>
-                                        <i class="bi bi-bell"></i>
-                                    </button>
-
-                                    <div class="dropdown-menu dropdown-menu-end notification-menu">
-                                        <div class="dropdown-header fw-bold text-body">
-                                            Notifications
-                                        </div>
-                                        <span class="dropdown-item text-muted">
-                                            No new notifications.
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="dropdown">
                                     <button class="profile-button dropdown-toggle"
                                             type="button"
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false">
                                         <img class="avatar-img avatar-sm"
-                                             src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                             alt="Manager">
-                                        <span class="profile-name d-none d-sm-inline">
-                                            Manager
-                                        </span>
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
+                                        <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
                                     </button>
 
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -224,6 +203,28 @@
 
                             </div>
 
+                            <!-- REPORT NAVIGATION TABS -->
+                            <div class="mb-4">
+                                <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
+                                    <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' || empty currentTab ? 'active' : 'text-body'}" 
+                                       href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
+                                        <i class="bi bi-grid-1x2 me-1"></i> Overview
+                                    </a>
+                                    <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'revenue' ? 'active' : 'text-body'}" 
+                                       href="${pageContext.request.contextPath}/Manager/Report?tab=revenue">
+                                        <i class="bi bi-graph-up-arrow me-1"></i> Revenue
+                                    </a>
+                                    <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'products' ? 'active' : 'text-body'}" 
+                                       href="${pageContext.request.contextPath}/Manager/Report?tab=products">
+                                        <i class="bi bi-box-seam me-1"></i> Products
+                                    </a>
+                                    <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'orders' ? 'active' : 'text-body'}" 
+                                       href="${pageContext.request.contextPath}/Manager/Report?tab=orders">
+                                        <i class="bi bi-receipt me-1"></i> Orders
+                                    </a>
+                                </div>
+                            </div>
+
                             <section class="panel mb-4">
 
                                 <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -237,20 +238,21 @@
 
                                     <!-- Quick Presets -->
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Preset filters">
-                                        <a href="${pageContext.request.contextPath}/Manager/Report?period=all" 
+                                        <a href="${pageContext.request.contextPath}/Manager/Report?tab=overview&period=all" 
                                            class="btn btn-outline-primary ${selectedPeriod == 'all' ? 'active' : ''}">All</a>
-                                        <a href="${pageContext.request.contextPath}/Manager/Report?period=today" 
+                                        <a href="${pageContext.request.contextPath}/Manager/Report?tab=overview&period=today" 
                                            class="btn btn-outline-primary ${selectedPeriod == 'today' ? 'active' : ''}">Today</a>
-                                        <a href="${pageContext.request.contextPath}/Manager/Report?period=this_week" 
+                                        <a href="${pageContext.request.contextPath}/Manager/Report?tab=overview&period=this_week" 
                                            class="btn btn-outline-primary ${selectedPeriod == 'this_week' ? 'active' : ''}">This Week</a>
-                                        <a href="${pageContext.request.contextPath}/Manager/Report?period=this_month" 
+                                        <a href="${pageContext.request.contextPath}/Manager/Report?tab=overview&period=this_month" 
                                            class="btn btn-outline-primary ${selectedPeriod == 'this_month' ? 'active' : ''}">This Month</a>
-                                        <a href="${pageContext.request.contextPath}/Manager/Report?period=this_year" 
+                                        <a href="${pageContext.request.contextPath}/Manager/Report?tab=overview&period=this_year" 
                                            class="btn btn-outline-primary ${selectedPeriod == 'this_year' ? 'active' : ''}">This Year</a>
                                     </div>
                                 </div>
 
                                 <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end">
+                                    <input type="hidden" name="tab" value="overview">
 
                                     <div class="col-12 col-md-3">
                                         <label class="form-label small text-muted mb-1">Start Date</label>
@@ -376,6 +378,7 @@
                                             </div>
 
                                             <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="d-inline-flex align-items-center gap-1">
+                                                <input type="hidden" name="tab" value="overview">
                                                 <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
                                                     <option value="2026" ${currentYear == 2026 ? 'selected' : ''}>2026</option>
                                                     <option value="2025" ${currentYear == 2025 ? 'selected' : ''}>2025</option>

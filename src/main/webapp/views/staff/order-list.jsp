@@ -65,31 +65,43 @@
     <!-- SIDEBAR -->
     <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-header">
-        <a class="brand-mark" href="${pageContext.request.contextPath}/staff/orders">
-          <span class="brand-icon"><i class="bi bi-grid-1x2-fill"></i></span>
+        <a class="brand-mark" href="${pageContext.request.contextPath}/Manager/Dashboard">
+          <span class="brand-icon"><i class="bi bi-headphones"></i></span>
           <span class="brand-copy">
-            <span class="brand-title">Manager</span>
-            <span class="brand-subtitle">Headphone Store</span>
+            <span class="brand-title">Headphone Store</span>
+            <span class="brand-subtitle">Manager Panel</span>
           </span>
         </a>
       </div>
 
       <nav class="sidebar-nav">
-        <a class="nav-link active" href="${pageContext.request.contextPath}/staff/orders">
-          <span class="nav-icon"><i class="bi bi-table"></i></span>
-          <span class="nav-text">Order Management</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Dashboard">
+          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+          <span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-link" href="#">
-          <span class="nav-icon"><i class="bi bi-archive"></i></span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/products">
+          <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+          <span class="nav-text">Products</span>
+        </a>
+        <a class="nav-link active" href="${pageContext.request.contextPath}/Manager/OrderManagement">
+          <span class="nav-icon"><i class="bi bi-cart-check"></i></span>
+          <span class="nav-text">Orders</span>
+        </a>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Inventory">
+          <span class="nav-icon"><i class="bi bi-boxes"></i></span>
           <span class="nav-text">Inventory</span>
         </a>
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Voucher">
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/audit-logs">
-          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
-          <span class="nav-text">Audit Logs</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Report">
+          <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
+          <span class="nav-text">Reports</span>
+        </a>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Profile">
+          <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+          <span class="nav-text">Profile</span>
         </a>
       </nav>
     </aside>
@@ -231,7 +243,7 @@
               </div>
             </div>
 
-            <form method="get" action="${pageContext.request.contextPath}/staff/orders" id="filterForm">
+            <form method="get" action="${pageContext.request.contextPath}/Manager/OrderManagement" id="filterForm">
               <input type="hidden" name="keyword" value="<c:out value='${selectedKeyword}'/>">
               <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -263,7 +275,7 @@
                 </div>
 
                 <div class="col-md-3 text-end">
-                  <a href="${pageContext.request.contextPath}/staff/orders" class="btn btn-outline-secondary btn-sm w-100">
+                  <a href="${pageContext.request.contextPath}/Manager/OrderManagement" class="btn btn-outline-secondary btn-sm w-100">
                     <i class="bi bi-x-circle me-1"></i> Clear Filter
                   </a>
                 </div>
@@ -286,7 +298,7 @@
                 <p class="text-muted mb-0">Showing records matching active filter parameters.</p>
               </div>
               <div style="max-width: 320px;" class="w-100">
-                <form method="get" action="${pageContext.request.contextPath}/staff/orders" class="m-0" id="searchForm">
+                <form method="get" action="${pageContext.request.contextPath}/Manager/OrderManagement" class="m-0" id="searchForm">
                   <input type="hidden" name="status" value="<c:out value='${selectedStatus}'/>">
                   <input type="hidden" name="startDate" value="<c:out value='${selectedStartDate}'/>">
                   <input type="hidden" name="endDate" value="<c:out value='${selectedEndDate}'/>">
@@ -402,7 +414,7 @@
                         <div class="d-inline-flex gap-1 align-items-center justify-content-center">
                           <c:choose>
                             <c:when test="${upperStatus == 'PENDING'}">
-                              <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to CONFIRM order #ORD-${o.orderID}?');">
+                              <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement" style="display:inline;" onsubmit="return confirm('Are you sure you want to CONFIRM order #ORD-${o.orderID}?');">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="orderId" value="${o.orderID}">
                                 <input type="hidden" name="newStatus" value="CONFIRMED">
@@ -424,7 +436,7 @@
                               </button>
                             </c:when>
                             <c:when test="${upperStatus == 'SHIPPING'}">
-                              <form method="post" action="${pageContext.request.contextPath}/staff/orders" style="display:inline;" onsubmit="return confirm('Are you sure you want to mark order #ORD-${o.orderID} as COMPLETED?');">
+                              <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement" style="display:inline;" onsubmit="return confirm('Are you sure you want to mark order #ORD-${o.orderID} as COMPLETED?');">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="orderId" value="${o.orderID}">
                                 <input type="hidden" name="newStatus" value="DELIVERED">
@@ -438,7 +450,7 @@
                             </c:when>
                           </c:choose>
 
-                          <a href="${pageContext.request.contextPath}/staff/order-detail?id=${o.orderID}" class="btn btn-light btn-action-sm border" title="View Order Details">
+                          <a href="${pageContext.request.contextPath}/Manager/OrderManagement/Detail?id=${o.orderID}" class="btn btn-light btn-action-sm border" title="View Order Details">
                             <i class="bi bi-eye"></i> Details
                           </a>
                         </div>
@@ -467,7 +479,7 @@
 
                 <ul class="pagination pagination-sm mb-0">
                   <c:if test="${currentPage > 1}">
-                    <c:url var="prevPageUrl" value="/staff/orders">
+                    <c:url var="prevPageUrl" value="/Manager/OrderManagement">
                       <c:param name="page" value="${currentPage - 1}"/>
                       <c:param name="status" value="${selectedStatus}"/>
                       <c:param name="startDate" value="${selectedStartDate}"/>
@@ -480,7 +492,7 @@
                   </c:if>
                   
                   <c:forEach var="p" begin="1" end="${totalPages}">
-                    <c:url var="pageUrl" value="/staff/orders">
+                    <c:url var="pageUrl" value="/Manager/OrderManagement">
                       <c:param name="page" value="${p}"/>
                       <c:param name="status" value="${selectedStatus}"/>
                       <c:param name="startDate" value="${selectedStartDate}"/>
@@ -493,7 +505,7 @@
                   </c:forEach>
                   
                   <c:if test="${currentPage < totalPages}">
-                    <c:url var="nextPageUrl" value="/staff/orders">
+                    <c:url var="nextPageUrl" value="/Manager/OrderManagement">
                       <c:param name="page" value="${currentPage + 1}"/>
                       <c:param name="status" value="${selectedStatus}"/>
                       <c:param name="startDate" value="${selectedStartDate}"/>
@@ -526,7 +538,7 @@
   <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow-lg border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/orders" id="cancelOrderForm" onsubmit="return validateCancelModal();">
+        <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement" id="cancelOrderForm" onsubmit="return validateCancelModal();">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="newStatus" value="CANCELLED">
           <input type="hidden" name="orderId" id="modalOrderId" value="">
@@ -576,7 +588,7 @@
   <div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow-lg border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/orders" onsubmit="return validateShipModal()">
+        <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement" onsubmit="return validateShipModal()">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="orderId" id="shipModalOrderId">
           <input type="hidden" name="newStatus" value="SHIPPING">
@@ -732,7 +744,7 @@
       var endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
       var keyword = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
 
-      var exportUrl = "${pageContext.request.contextPath}/staff/orders?action=export"
+      var exportUrl = "${pageContext.request.contextPath}/Manager/OrderManagement?action=export"
         + "&status=" + encodeURIComponent(status)
         + "&startDate=" + encodeURIComponent(startDate)
         + "&endDate=" + encodeURIComponent(endDate)

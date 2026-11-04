@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -211,70 +211,17 @@
 
                             <div class="dropdown">
 
-                                <button class="icon-button"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                        aria-label="Notifications">
-
-                                    <span class="notification-dot"></span>
-
-                                    <i class="bi bi-bell"></i>
-
-                                </button>
-
-
-                                <div class="dropdown-menu dropdown-menu-end notification-menu">
-
-                                    <div class="dropdown-header fw-bold text-body">
-                                        Notifications
-                                    </div>
-
-                                    <a class="dropdown-item"
-                                       href="${pageContext.request.contextPath}/Manager/OrderManagement">
-
-                                        <span class="notification-title">
-                                            Order management
-                                        </span>
-
-                                        <span class="notification-time">
-                                            View orders
-                                        </span>
-
-                                    </a>
-
-
-                                    <a class="dropdown-item"
-                                       href="${pageContext.request.contextPath}/Manager/Inventory">
-
-                                        <span class="notification-title">
-                                            Inventory management
-                                        </span>
-
-                                        <span class="notification-time">
-                                            View stock
-                                        </span>
-
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-                            <div class="dropdown">
-
                                 <button class="profile-button dropdown-toggle"
                                         type="button"
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false">
 
                                     <img class="avatar-img avatar-sm"
-                                         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                         alt="Manager">
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
 
-                                    <span class="profile-name d-none d-sm-inline">
-                                        Manager
-                                    </span>
+                                    <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
 
                                 </button>
 
@@ -351,6 +298,24 @@
                             </div>
 
                         </div>
+
+                        <c:if test="${not empty sessionScope.successMessage}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-1"></i>
+                                ${sessionScope.successMessage}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <c:remove var="successMessage" scope="session"/>
+                        </c:if>
+
+                        <c:if test="${not empty sessionScope.errorMessage}">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-octagon me-1"></i>
+                                ${sessionScope.errorMessage}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <c:remove var="errorMessage" scope="session"/>
+                        </c:if>
 
                         <section class="row g-3 mb-3">
 
@@ -520,7 +485,6 @@
 
                             </div>
 
-                            <!-- Server-side search & filter form -->
                             <div class="px-3 pt-3 pb-2">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/Inventory"
@@ -586,7 +550,7 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-xl-2 col-lg-4 col-md-12 d-flex gap-2">
+                                    <div class="col-xl-2 col-lg-4 col-md-6 d-flex gap-2">
                                         <button type="submit" class="btn btn-primary flex-grow-1">
                                             <i class="bi bi-search me-1"></i>
                                             Filter
@@ -595,6 +559,17 @@
                                            class="btn btn-light">
                                             Reset
                                         </a>
+                                    </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                        <label class="form-label">Page Size</label>
+                                        <select name="pageSize" class="form-select"
+                                                onchange="this.form.submit()">
+                                            <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+                                            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                                            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                                            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                                        </select>
                                     </div>
                                 </form>
                             </div>
@@ -607,6 +582,8 @@
                                     <thead>
 
                                         <tr>
+
+                                            <th>ID</th>
 
                                             <th>Product</th>
 
@@ -639,13 +616,17 @@
                                                     <tr>
 
                                                         <td>
+                                                            ${product.productId}
+                                                        </td>
+
+                                                        <td>
 
                                                             <div class="table-media">
 
                                                                 <img class="product-thumb"
-                                                                     src="${empty product.imageURL
+                                                                     src="${empty product.imageUrl
                                                                             ? pageContext.request.contextPath.concat('/assets/Admin_Manager/images/ecommerce/product-1.jpg')
-                                                                            : product.imageURL}"
+                                                                            : product.imageUrl}"
                                                                      alt="${product.productName}">
 
                                                                 <div>
@@ -654,9 +635,6 @@
                                                                         ${product.productName}
                                                                     </strong>
 
-                                                                    <small>
-                                                                        #P${product.productId}
-                                                                    </small>
 
                                                                 </div>
 
@@ -724,9 +702,9 @@
 
                                                         <td class="text-end">
 
-                                                            <a href="${pageContext.request.contextPath}/Manager/products?action=edit&id=${product.productId}&from=inventory"
+                                                            <a href="${pageContext.request.contextPath}/Manager/Inventory?action=adjust&id=${product.productId}"
                                                                class="btn btn-light btn-sm"
-                                                               title="Adjust stock / edit product">
+                                                               title="Adjust stock">
 
                                                                 <i class="bi bi-pencil"></i>
 
@@ -756,7 +734,7 @@
 
                                                 <tr>
 
-                                                    <td colspan="6"
+                                                    <td colspan="7"
                                                         class="text-center text-muted py-4">
 
                                                         No products found.
@@ -779,7 +757,7 @@
                             <c:if test="${totalPages > 1}">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
                                     <small class="text-muted">
-                                        Page ${currentPage} of ${totalPages} — ${totalItems} item(s)
+                                        Page ${currentPage} of ${totalPages} &mdash; ${totalItems} item(s)
                                     </small>
 
                                     <nav aria-label="Inventory pagination">
@@ -793,6 +771,11 @@
                                                 <c:param name="pageSize" value="${pageSize}"/>
                                                 <c:param name="page" value="${currentPage - 1}"/>
                                                 <c:param name="txPage" value="${currentTxPage}"/>
+                                                <c:param name="txPageSize" value="${txPageSize}"/>
+                                                <c:param name="txKeyword" value="${txKeyword}"/>
+                                                <c:param name="txType" value="${selectedTxType}"/>
+                                                <c:param name="txFromDate" value="${txFromDate}"/>
+                                                <c:param name="txToDate" value="${txToDate}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
@@ -808,6 +791,11 @@
                                                     <c:param name="pageSize" value="${pageSize}"/>
                                                     <c:param name="page" value="${p}"/>
                                                     <c:param name="txPage" value="${currentTxPage}"/>
+                                                    <c:param name="txPageSize" value="${txPageSize}"/>
+                                                    <c:param name="txKeyword" value="${txKeyword}"/>
+                                                    <c:param name="txType" value="${selectedTxType}"/>
+                                                    <c:param name="txFromDate" value="${txFromDate}"/>
+                                                    <c:param name="txToDate" value="${txToDate}"/>
                                                 </c:url>
 
                                                 <li class="page-item ${p == currentPage ? 'active' : ''}">
@@ -823,6 +811,11 @@
                                                 <c:param name="pageSize" value="${pageSize}"/>
                                                 <c:param name="page" value="${currentPage + 1}"/>
                                                 <c:param name="txPage" value="${currentTxPage}"/>
+                                                <c:param name="txPageSize" value="${txPageSize}"/>
+                                                <c:param name="txKeyword" value="${txKeyword}"/>
+                                                <c:param name="txType" value="${selectedTxType}"/>
+                                                <c:param name="txFromDate" value="${txFromDate}"/>
+                                                <c:param name="txToDate" value="${txToDate}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
@@ -859,6 +852,91 @@
 
                             </div>
 
+                            <c:if test="${not empty txFilterError}">
+                                <div class="alert alert-danger mx-3 mt-3 mb-0" role="alert">
+                                    <i class="bi bi-exclamation-octagon me-1"></i>
+                                    ${txFilterError}
+                                </div>
+                            </c:if>
+
+                            <div class="p-3 border-bottom">
+                                <form method="get"
+                                      action="${pageContext.request.contextPath}/Manager/Inventory"
+                                      class="row g-2 align-items-end">
+                                    <input type="hidden" name="keyword" value="${keyword}"/>
+                                    <input type="hidden" name="category" value="${selectedCategory}"/>
+                                    <input type="hidden" name="stock" value="${selectedStock}"/>
+                                    <input type="hidden" name="sort" value="${selectedSort}"/>
+                                    <input type="hidden" name="page" value="${currentPage}"/>
+                                    <input type="hidden" name="pageSize" value="${pageSize}"/>
+                                    <input type="hidden" name="txPage" value="1"/>
+
+                                    <div class="col-xl-3 col-lg-4 col-md-6">
+                                        <label class="form-label">Search Transactions</label>
+                                        <input type="search"
+                                               name="txKeyword"
+                                               class="form-control"
+                                               value="${txKeyword}"
+                                               placeholder="Product, reason, product ID, transaction ID">
+                                    </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                        <label class="form-label">Transaction Type</label>
+                                        <select name="txType" class="form-select">
+                                            <option value="">All Types</option>
+                                            <option value="IMPORT" ${selectedTxType == 'IMPORT' ? 'selected' : ''}>IMPORT</option>
+                                            <option value="SALE" ${selectedTxType == 'SALE' ? 'selected' : ''}>SALE</option>
+                                            <option value="RETURN" ${selectedTxType == 'RETURN' ? 'selected' : ''}>RETURN</option>
+                                            <option value="ADJUSTMENT" ${selectedTxType == 'ADJUSTMENT' ? 'selected' : ''}>ADJUSTMENT</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                        <label class="form-label">From Date</label>
+                                        <input type="date"
+                                               name="txFromDate"
+                                               class="form-control"
+                                               value="${txFromDate}"
+                                               max="${today}">
+                                    </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                        <label class="form-label">To Date</label>
+                                        <input type="date"
+                                               name="txToDate"
+                                               class="form-control"
+                                               value="${txToDate}"
+                                               max="${today}">
+                                    </div>
+
+                                    <div class="col-xl-1 col-lg-4 col-md-6">
+                                        <label class="form-label">Page Size</label>
+                                        <select name="txPageSize" class="form-select"
+                                                onchange="this.form.submit()">
+                                            <option value="5" ${txPageSize == 5 ? 'selected' : ''}>5</option>
+                                            <option value="10" ${txPageSize == 10 ? 'selected' : ''}>10</option>
+                                            <option value="20" ${txPageSize == 20 ? 'selected' : ''}>20</option>
+                                            <option value="50" ${txPageSize == 50 ? 'selected' : ''}>50</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary flex-grow-1">
+                                            <i class="bi bi-search me-1"></i>
+                                            Filter
+                                        </button>
+                                        <c:url var="resetTxUrl" value="/Manager/Inventory">
+                                            <c:param name="keyword" value="${keyword}"/>
+                                            <c:param name="category" value="${selectedCategory}"/>
+                                            <c:param name="stock" value="${selectedStock}"/>
+                                            <c:param name="sort" value="${selectedSort}"/>
+                                            <c:param name="page" value="${currentPage}"/>
+                                            <c:param name="pageSize" value="${pageSize}"/>
+                                        </c:url>
+                                        <a href="${resetTxUrl}" class="btn btn-light">Reset</a>
+                                    </div>
+                                </form>
+                            </div>
 
                             <div class="table-responsive">
 
@@ -997,8 +1075,9 @@
 
                                                         <td>
 
-                                                            ${transaction.createdAt}
-
+                                                            <fmt:formatDate
+                                                                value="${transaction.createdAt}"
+                                                                pattern="yyyy-MM-dd HH:mm"/>
                                                         </td>
 
                                                     </tr>
@@ -1037,7 +1116,7 @@
                             <c:if test="${totalTxPages > 1}">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
                                     <small class="text-muted">
-                                        Transaction Page ${currentTxPage} of ${totalTxPages} — ${totalTx} total record(s)
+                                        Transaction Page ${currentTxPage} of ${totalTxPages} &mdash; ${totalTx} total record(s)
                                     </small>
 
                                     <nav aria-label="Transaction pagination">
@@ -1050,6 +1129,11 @@
                                                 <c:param name="sort" value="${selectedSort}"/>
                                                 <c:param name="page" value="${currentPage}"/>
                                                 <c:param name="pageSize" value="${pageSize}"/>
+                                                <c:param name="txPageSize" value="${txPageSize}"/>
+                                                <c:param name="txKeyword" value="${txKeyword}"/>
+                                                <c:param name="txType" value="${selectedTxType}"/>
+                                                <c:param name="txFromDate" value="${txFromDate}"/>
+                                                <c:param name="txToDate" value="${txToDate}"/>
                                                 <c:param name="txPage" value="${currentTxPage - 1}"/>
                                             </c:url>
 
@@ -1065,6 +1149,11 @@
                                                     <c:param name="sort" value="${selectedSort}"/>
                                                     <c:param name="page" value="${currentPage}"/>
                                                     <c:param name="pageSize" value="${pageSize}"/>
+                                                    <c:param name="txPageSize" value="${txPageSize}"/>
+                                                    <c:param name="txKeyword" value="${txKeyword}"/>
+                                                    <c:param name="txType" value="${selectedTxType}"/>
+                                                    <c:param name="txFromDate" value="${txFromDate}"/>
+                                                    <c:param name="txToDate" value="${txToDate}"/>
                                                     <c:param name="txPage" value="${tp}"/>
                                                 </c:url>
 
@@ -1080,6 +1169,11 @@
                                                 <c:param name="sort" value="${selectedSort}"/>
                                                 <c:param name="page" value="${currentPage}"/>
                                                 <c:param name="pageSize" value="${pageSize}"/>
+                                                <c:param name="txPageSize" value="${txPageSize}"/>
+                                                <c:param name="txKeyword" value="${txKeyword}"/>
+                                                <c:param name="txType" value="${selectedTxType}"/>
+                                                <c:param name="txFromDate" value="${txFromDate}"/>
+                                                <c:param name="txToDate" value="${txToDate}"/>
                                                 <c:param name="txPage" value="${currentTxPage + 1}"/>
                                             </c:url>
 

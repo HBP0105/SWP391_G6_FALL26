@@ -1,6 +1,7 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US" scope="page"/>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -82,9 +83,10 @@
                             <div class="dropdown">
                                 <button class="profile-button dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     <img class="avatar-img avatar-sm"
-                                         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                         alt="Manager">
-                                    <span class="profile-name d-none d-sm-inline">Manager</span>
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
+                                    <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="${pageContext.request.contextPath}/Manager/Profile">Profile</a></li>
@@ -113,6 +115,11 @@
                                 <a href="${pageContext.request.contextPath}/Manager/Voucher" class="btn btn-light">
                                     <i class="bi bi-arrow-left me-1"></i>
                                     Back to Vouchers
+                                </a>
+
+                                <a href="${pageContext.request.contextPath}/Manager/Voucher?action=edit&id=${voucher.voucherId}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    Edit Voucher
                                 </a>
 
                                 <c:choose>

@@ -1,7 +1,9 @@
-package com.swp391.controller.manager;
+package com.swp391.controller.Manager;
 
 import com.swp391.model.Category;
-import com.swp391.service.InventoryService;
+import com.swp391.model.Product;
+import com.swp391.model.Staff;
+import com.swp391.service.Manager.InventoryService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +34,25 @@ public class Inventory extends HttpServlet {
             throws ServletException, IOException {
 
         request.setAttribute("activePage", "inventory");
+
+        String action = request.getParameter("action");
+        if ("adjust".equals(action)) {
+            Integer productId = parsePositiveInteger(request.getParameter("id"));
+            if (productId == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID");
+                return;
+            }
+
+            Product product = inventoryService.getProductById(productId);
+            if (product == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Product not found");
+                return;
+            }
+
+            request.setAttribute("product", product);
+            request.getRequestDispatcher("/views/Manager/inventoryAdjust.jsp").forward(request, response);
+            return;
+        }
 
         String keyword = request.getParameter("keyword");
         String stock = request.getParameter("stock");
@@ -67,19 +90,41 @@ public class Inventory extends HttpServlet {
                 pageSize
         );
 
+        String txKeyword = request.getParameter("txKeyword");
+        String txType = request.getParameter("txType");
+        String txFromDate = request.getParameter("txFromDate");
+        String txToDate = request.getParameter("txToDate");
+
         int txPage = parseInteger(request.getParameter("txPage"), 1);
-        int txPageSize = 5;
-
-        int totalTx = inventoryService.countRecentTransactions();
-        int totalTxPages = inventoryService.getTotalTransactionPages(totalTx, txPageSize);
-
+        int txPageSize = parseInteger(request.getParameter("txPageSize"), 5);
         txPage = inventoryService.normalizePage(txPage);
-        if (txPage > totalTxPages) {
-            txPage = totalTxPages;
+        txPageSize = inventoryService.normalizePageSize(txPageSize);
+
+        int totalTx = 0;
+        int totalTxPages = 1;
+        List<Map<String, Object>> recentTransactions = Collections.emptyList();
+
+        try {
+            inventoryService.validateTransactionDateRange(txFromDate, txToDate);
+
+            totalTx = inventoryService.countRecentTransactions(
+                    txKeyword, txType, txFromDate, txToDate
+            );
+            totalTxPages = inventoryService.getTotalTransactionPages(totalTx, txPageSize);
+
+            if (txPage > totalTxPages) {
+                txPage = totalTxPages;
+            }
+
+            recentTransactions = inventoryService.getRecentTransactions(
+                    txKeyword, txType, txFromDate, txToDate, txPage, txPageSize
+            );
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("txFilterError", e.getMessage());
+            txPage = 1;
         }
 
         List<Category> categories = inventoryService.getAllCategories();
-        List<Map<String, Object>> recentTransactions = inventoryService.getRecentTransactions(txPage, txPageSize);
 
         request.setAttribute("inventoryProducts", inventoryProducts);
         request.setAttribute("categories", categories);
@@ -99,6 +144,11 @@ public class Inventory extends HttpServlet {
         request.setAttribute("txPageSize", txPageSize);
         request.setAttribute("totalTx", totalTx);
         request.setAttribute("totalTxPages", totalTxPages);
+        request.setAttribute("txKeyword", txKeyword);
+        request.setAttribute("selectedTxType", txType);
+        request.setAttribute("txFromDate", txFromDate);
+        request.setAttribute("txToDate", txToDate);
+        request.setAttribute("today", LocalDate.now().toString());
 
         request.setAttribute("totalProducts", inventoryService.getTotalProducts());
         request.setAttribute("inStockProducts", inventoryService.getInStockProducts());
@@ -111,7 +161,76 @@ public class Inventory extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+
+        if ("adjust".equals(action)) {
+            handleAdjustStock(request, response);
+            return;
+        }
+
         doGet(request, response);
+    }
+
+    private void handleAdjustStock(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Integer productId = parsePositiveInteger(request.getParameter("productId"));
+        if (productId == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID");
+            return;
+        }
+
+        String transactionType = request.getParameter("transactionType");
+        String quantityStr = request.getParameter("quantity");
+        String reason = request.getParameter("reason");
+
+        try {
+            if (quantityStr == null || quantityStr.isBlank()) {
+                throw new IllegalArgumentException("Quantity is required.");
+            }
+            int quantity = Integer.parseInt(quantityStr.trim());
+
+            Integer staffId = null;
+            Object staffObj = request.getSession().getAttribute("staff");
+            if (staffObj instanceof Staff staff) {
+                staffId = staff.getStaffId();
+            }
+
+            boolean success = inventoryService.adjustStock(
+                    productId,
+                    transactionType,
+                    quantity,
+                    reason,
+                    staffId
+            );
+
+            if (success) {
+                request.getSession().setAttribute(
+                        "successMessage",
+                        "Stock adjusted successfully for product #" + productId
+                );
+                response.sendRedirect(request.getContextPath() + "/Manager/Inventory");
+                return;
+            } else {
+                request.setAttribute("errorMessage", "Failed to adjust stock. Please try again.");
+            }
+        } catch (NumberFormatException e) {
+            request.setAttribute("errorMessage", "Quantity must be a valid integer number.");
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
+        }
+
+        Product product = inventoryService.getProductById(productId);
+        request.setAttribute("activePage", "inventory");
+        request.setAttribute("product", product);
+        request.setAttribute("selectedType", transactionType);
+        request.setAttribute("enteredQuantity", quantityStr);
+        request.setAttribute("enteredReason", reason);
+        request.getRequestDispatcher("/views/Manager/inventoryAdjust.jsp").forward(request, response);
     }
 
     private Integer parsePositiveInteger(String value) {

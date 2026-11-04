@@ -1,7 +1,8 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,12 +41,9 @@
                  data-sidebar-close>
             </div>
 
-
-
             <aside class="admin-sidebar"
                    id="adminSidebar"
                    aria-label="Main navigation">
-
 
                 <div class="sidebar-header">
 
@@ -73,8 +71,6 @@
                     </a>
 
                 </div>
-
-
 
                 <nav class="sidebar-nav">
 
@@ -174,8 +170,6 @@
 
             <div class="admin-main">
 
-
-
                 <nav class="navbar admin-navbar navbar-expand bg-white">
 
                     <div class="container-fluid px-3 px-lg-4">
@@ -195,7 +189,7 @@
 
                         </button>
 
-                        
+
 
 
                         <!-- NAVBAR ACTIONS -->
@@ -220,71 +214,6 @@
 
                             <!-- NOTIFICATION -->
 
-                            <div class="dropdown">
-
-                                <button class="icon-button"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                        aria-label="Notifications">
-
-                                    <span class="notification-dot"></span>
-
-                                    <i class="bi bi-bell"
-                                       aria-hidden="true"></i>
-
-                                </button>
-
-
-                                <div class="dropdown-menu dropdown-menu-end notification-menu">
-
-                                    <div class="dropdown-header fw-bold text-body">
-                                        Notifications
-                                    </div>
-
-                                    <a class="dropdown-item" href="#">
-
-                                        <span class="notification-title">
-                                            Low stock product
-                                        </span>
-
-                                        <span class="notification-time">
-                                            4 minutes ago
-                                        </span>
-
-                                    </a>
-
-
-                                    <a class="dropdown-item" href="#">
-
-                                        <span class="notification-title">
-                                            New order received
-                                        </span>
-
-                                        <span class="notification-time">
-                                            32 minutes ago
-                                        </span>
-
-                                    </a>
-
-
-                                    <a class="dropdown-item" href="#">
-
-                                        <span class="notification-title">
-                                            Product updated
-                                        </span>
-
-                                        <span class="notification-time">
-                                            1 hour ago
-                                        </span>
-
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-
                             <!-- PROFILE -->
 
                             <div class="dropdown">
@@ -295,12 +224,11 @@
                                         aria-expanded="false">
 
                                     <img class="avatar-img avatar-sm"
-                                         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                         alt="Manager">
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
 
-                                    <span class="profile-name d-none d-sm-inline">
-                                        Manager
-                                    </span>
+                                    <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
 
                                 </button>
 
@@ -336,14 +264,12 @@
                 </nav>
 
 
-                <!-- ================= CONTENT ================= -->
 
                 <main class="dashboard-content">
 
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
 
-                        <!-- ================= PAGE HEADING ================= -->
 
                         <div class="page-heading">
 
@@ -376,7 +302,6 @@
                             </div>
 
 
-                            <!-- ADD VOUCHER -->
 
                             <div>
 
@@ -394,7 +319,6 @@
                         </div>
 
 
-                        <!-- ================= MESSAGE ================= -->
 
                         <c:if test="${not empty sessionScope.successMessage}">
 
@@ -436,13 +360,8 @@
                         </c:if>
 
 
-                        <!-- ================= VOUCHER TABLE ================= -->
-
                         <section class="panel">
-
-
-                            <!-- PANEL HEADER -->
-
+                            
                             <div class="panel-header">
 
                                 <div>
@@ -467,13 +386,13 @@
                             </div>
 
 
-                            <!-- Server-side search and filtering -->
                             <div class="px-3 pt-3 pb-2">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/Voucher"
-                                      class="row g-3 align-items-end">
+                                      class="row g-2 align-items-end flex-xl-nowrap">
 
-                                    <div class="col-xl-3 col-lg-4 col-md-6">
+                                    <!-- Search -->
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Search</label>
                                         <input class="form-control"
                                                type="search"
@@ -482,89 +401,155 @@
                                                placeholder="Voucher code or description">
                                     </div>
 
-                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                    <!-- Discount Type -->
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Discount Type</label>
                                         <select name="discountType" class="form-select">
                                             <option value="">All Types</option>
-                                            <option value="PERCENT" ${selectedDiscountType == 'PERCENT' ? 'selected' : ''}>
+
+                                            <option value="PERCENT"
+                                                    ${selectedDiscountType == 'PERCENT' ? 'selected' : ''}>
                                                 Percentage (%)
                                             </option>
-                                            <option value="FIXED" ${selectedDiscountType == 'FIXED' ? 'selected' : ''}>
+
+                                            <option value="FIXED"
+                                                    ${selectedDiscountType == 'FIXED' ? 'selected' : ''}>
                                                 Fixed Amount (đ)
                                             </option>
                                         </select>
                                     </div>
 
-                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                    <!-- Status -->
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Status</label>
                                         <select name="status" class="form-select">
                                             <option value="">All Statuses</option>
-                                            <option value="ACTIVE" ${selectedStatus == 'ACTIVE' ? 'selected' : ''}>
+
+                                            <option value="ACTIVE"
+                                                    ${selectedStatus == 'ACTIVE' ? 'selected' : ''}>
                                                 Active
                                             </option>
-                                            <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>
+
+                                            <option value="INACTIVE"
+                                                    ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>
                                                 Inactive
                                             </option>
-                                            <option value="EXPIRED" ${selectedStatus == 'EXPIRED' ? 'selected' : ''}>
+
+                                            <option value="EXPIRED"
+                                                    ${selectedStatus == 'EXPIRED' ? 'selected' : ''}>
                                                 Expired
                                             </option>
                                         </select>
                                     </div>
 
-                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                    <!-- Valid Period -->
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Valid Period</label>
                                         <select name="validPeriod" class="form-select">
                                             <option value="">All Periods</option>
-                                            <option value="valid_now" ${selectedValidPeriod == 'valid_now' ? 'selected' : ''}>
+
+                                            <option value="valid_now"
+                                                    ${selectedValidPeriod == 'valid_now' ? 'selected' : ''}>
                                                 Currently Valid
                                             </option>
-                                            <option value="upcoming" ${selectedValidPeriod == 'upcoming' ? 'selected' : ''}>
+
+                                            <option value="upcoming"
+                                                    ${selectedValidPeriod == 'upcoming' ? 'selected' : ''}>
                                                 Upcoming
                                             </option>
-                                            <option value="expired" ${selectedValidPeriod == 'expired' ? 'selected' : ''}>
+
+                                            <option value="expired"
+                                                    ${selectedValidPeriod == 'expired' ? 'selected' : ''}>
                                                 Expired Period
                                             </option>
                                         </select>
                                     </div>
 
-                                    <div class="col-xl-3 col-lg-4 col-md-6">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Sort</label>
                                         <select name="sort" class="form-select">
-                                            <option value="" ${empty selectedSort ? 'selected' : ''}>Newest</option>
-                                            <option value="minorder_asc" ${selectedSort == 'minorder_asc' ? 'selected' : ''}>
+
+                                            <option value=""
+                                                    ${empty selectedSort ? 'selected' : ''}>
+                                                Newest
+                                            </option>
+
+                                            <option value="minorder_asc"
+                                                    ${selectedSort == 'minorder_asc' ? 'selected' : ''}>
                                                 Min Order: Low to High
                                             </option>
-                                            <option value="minorder_desc" ${selectedSort == 'minorder_desc' ? 'selected' : ''}>
+
+                                            <option value="minorder_desc"
+                                                    ${selectedSort == 'minorder_desc' ? 'selected' : ''}>
                                                 Min Order: High to Low
                                             </option>
-                                            <option value="discount_asc" ${selectedSort == 'discount_asc' ? 'selected' : ''}>
-                                                Discount Value: Low to High
+
+                                            <option value="discount_asc"
+                                                    ${selectedSort == 'discount_asc' ? 'selected' : ''}>
+                                                Discount: Low to High
                                             </option>
-                                            <option value="discount_desc" ${selectedSort == 'discount_desc' ? 'selected' : ''}>
-                                                Discount Value: High to Low
+
+                                            <option value="discount_desc"
+                                                    ${selectedSort == 'discount_desc' ? 'selected' : ''}>
+                                                Discount: High to Low
                                             </option>
-                                            <option value="expiring_soon" ${selectedSort == 'expiring_soon' ? 'selected' : ''}>
+
+                                            <option value="expiring_soon"
+                                                    ${selectedSort == 'expiring_soon' ? 'selected' : ''}>
                                                 Expiring Soon
                                             </option>
+
                                         </select>
                                     </div>
 
-                                    <div class="col-12 d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary">
+                                    <div class="col-12 col-md-6 col-xl">
+                                        <label class="form-label">Page Size</label>
+
+                                        <select name="pageSize"
+                                                class="form-select"
+                                                onchange="this.form.submit()">
+
+                                            <option value="5"
+                                                    ${pageSize == 5 ? 'selected' : ''}>
+                                                5
+                                            </option>
+
+                                            <option value="10"
+                                                    ${pageSize == 10 ? 'selected' : ''}>
+                                                10
+                                            </option>
+
+                                            <option value="20"
+                                                    ${pageSize == 20 ? 'selected' : ''}>
+                                                20
+                                            </option>
+
+                                            <option value="50"
+                                                    ${pageSize == 50 ? 'selected' : ''}>
+                                                50
+                                            </option>
+
+                                        </select>
+                                    </div>
+
+                                    <!-- Buttons -->
+                                    <div class="col-12 col-md-6 col-xl-auto d-flex gap-2">
+
+                                        <button type="submit"
+                                                class="btn btn-primary text-nowrap">
                                             <i class="bi bi-search me-1"></i>
-                                            Filter / Search
+                                            Search / Filter
                                         </button>
 
                                         <a href="${pageContext.request.contextPath}/Manager/Voucher"
                                            class="btn btn-light">
                                             Reset
                                         </a>
+
                                     </div>
+
                                 </form>
                             </div>
-
-
-                            <!-- ================= TABLE ================= -->
 
                             <div class="table-responsive">
 
@@ -615,8 +600,6 @@
                                     <tbody>
 
 
-                                        <!-- ================= DYNAMIC DATA ================= -->
-
                                         <c:choose>
 
                                             <c:when test="${not empty vouchers}">
@@ -627,8 +610,6 @@
 
                                                     <tr>
 
-
-                                                        <!-- CODE -->
 
                                                         <td>
 
@@ -812,9 +793,6 @@
 
                                                         </td>
 
-
-                                                        <!-- ACTION -->
-
                                                         <td class="text-end">
 
                                                             <!-- DETAIL -->
@@ -829,7 +807,18 @@
 
                                                             </a>
 
-                                                            <!-- ACTIVE -->
+                                                            <!-- EDIT -->
+
+                                                            <a href="${pageContext.request.contextPath}/Manager/Voucher?action=edit&id=${voucher.voucherId}"
+                                                               class="btn btn-light btn-sm"
+                                                               title="Edit voucher">
+
+                                                                <i class="bi bi-pencil-square"></i>
+
+                                                                Edit
+
+                                                            </a>
+
 
                                                             <c:if test="${voucher.status == 'ACTIVE'}">
 
@@ -863,8 +852,6 @@
 
                                                             </c:if>
 
-
-                                                            <!-- INACTIVE -->
 
                                                             <c:if test="${voucher.status == 'INACTIVE'}">
 
@@ -1000,9 +987,6 @@
 
                 </main>
 
-
-                <!-- ================= FOOTER ================= -->
-
                 <footer class="admin-footer">
 
                     <div class="container-fluid px-3 px-lg-4">
@@ -1016,7 +1000,6 @@
                             Manager Voucher Management
 
                         </span>
-
 
                         <span>
 

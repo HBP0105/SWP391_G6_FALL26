@@ -1,6 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:setLocale value="en_US" scope="page"/>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -16,7 +17,6 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
         <style>
-            /* Keep all product filters and action buttons on one desktop row. */
             @media (min-width: 1200px) {
                 .product-filter-form {
                     display: grid;
@@ -136,9 +136,10 @@
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false">
                                     <img class="avatar-img avatar-sm"
-                                         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                         alt="Manager">
-                                    <span class="profile-name d-none d-sm-inline">Manager</span>
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
+                                    <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
@@ -198,7 +199,6 @@
                                 </div>
                             </div>
 
-                            <!-- Server-side search/filter. No JS table search here. -->
                             <div class="px-3 pt-3 pb-2">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/products"
@@ -281,6 +281,19 @@
                                             Reset
                                         </a>
                                     </div>
+
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                        <label class="form-label">Page Size</label>
+                                        <select name="pageSize" class="form-select"
+                                                onchange="this.form.submit()">
+
+                                            <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+                                            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                                            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                                            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+
+                                        </select>
+                                    </div>
                                 </form>
                             </div>
 
@@ -309,9 +322,9 @@
                                                         <td>
                                                             <div class="table-media">
                                                                 <img class="product-thumb"
-                                                                     src="${empty product.imageURL
+                                                                     src="${empty product.imageUrl
                                                                             ? pageContext.request.contextPath.concat('/assets/Admin_Manager/images/ecommerce/product-1.jpg')
-                                                                            : product.imageURL}"
+                                                                            : product.imageUrl}"
                                                                      alt="${product.productName}">
                                                                 <span>${product.productName}</span>
                                                             </div>
@@ -382,7 +395,6 @@
                                 </table>
                             </div>
 
-                            <!-- Server-side pagination -->
                             <c:if test="${totalPages > 1}">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
                                     <small class="text-muted">
