@@ -7,7 +7,7 @@ public class DBContext {
 
     private final String URL = "jdbc:sqlserver://localhost:1433;databaseName=HeadphoneSalesDB;encrypt=true;trustServerCertificate=true";
     private final String USER = "sa";
-    private final String PASSWORD = "sa";
+    private final String PASSWORD = "12345";
 
     public Connection getConnection() throws Exception {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");

@@ -1,11 +1,15 @@
 package com.swp391.dao.Manager;
 
 import com.swp391.model.Category;
+import com.swp391.model.Product;
+import java.sql.Types;
 import com.swp391.util.DBContext;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +55,7 @@ public class inventoryDao {
             params.add(pageSize);
         }
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
@@ -96,7 +100,7 @@ public class inventoryDao {
         List<Object> params = new ArrayList<>();
         appendFilters(sql, params, keyword, categoryId, stock);
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
@@ -126,7 +130,7 @@ public class inventoryDao {
             ORDER BY CategoryName
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -189,13 +193,24 @@ public class inventoryDao {
     }
 
     public List<Map<String, Object>> getRecentTransactions() {
-        return getRecentTransactions(0, 10);
+        return getRecentTransactions(null, null, null, null, 0, 10);
     }
 
     public List<Map<String, Object>> getRecentTransactions(int offset, int pageSize) {
+        return getRecentTransactions(null, null, null, null, offset, pageSize);
+    }
+
+    public List<Map<String, Object>> getRecentTransactions(
+            String keyword,
+            String transactionType,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int offset,
+            int pageSize) {
+
         List<Map<String, Object>> list = new ArrayList<>();
 
-        String sql = """
+        StringBuilder sql = new StringBuilder("""
             SELECT
                 it.TransactionID,
                 it.ProductID,
@@ -209,27 +224,42 @@ public class inventoryDao {
             FROM InventoryTransactions it
             LEFT JOIN Products p
                 ON it.ProductID = p.ProductID
-            ORDER BY it.CreatedAt DESC
-            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-        """;
+            WHERE 1 = 1
+        """);
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        List<Object> params = new ArrayList<>();
+        appendTransactionFilters(sql, params, keyword, transactionType, fromDate, toDate);
+        sql.append(" ORDER BY it.CreatedAt DESC, it.TransactionID DESC");
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(pageSize);
 
-            ps.setInt(1, offset);
-            ps.setInt(2, pageSize);
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> item = new HashMap<>();
 
-                    item.put("transactionId", rs.getInt("TransactionID"));
+                    item.put("transactionId", rs.getLong("TransactionID"));
                     item.put("productId", rs.getInt("ProductID"));
                     item.put("productName", rs.getString("ProductName"));
                     item.put("transactionType", rs.getString("TransactionType"));
-                    item.put("quantity", rs.getInt("Quantity"));
-                    item.put("previousQuantity", rs.getInt("PreviousQuantity"));
-                    item.put("newQuantity", rs.getInt("NewQuantity"));
+
+                    int qty = rs.getInt("Quantity");
+                    int prev = rs.getInt("PreviousQuantity");
+                    int next = rs.getInt("NewQuantity");
+                    if (next < prev && qty > 0) {
+                        qty = -qty;
+                    }
+
+                    item.put("quantity", qty);
+                    item.put("previousQuantity", prev);
+                    item.put("newQuantity", next);
                     item.put("reason", rs.getString("Reason"));
                     item.put("createdAt", rs.getTimestamp("CreatedAt"));
 
@@ -245,14 +275,37 @@ public class inventoryDao {
     }
 
     public int countRecentTransactions() {
-        String sql = "SELECT COUNT(*) FROM InventoryTransactions";
+        return countRecentTransactions(null, null, null, null);
+    }
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+    public int countRecentTransactions(
+            String keyword,
+            String transactionType,
+            LocalDate fromDate,
+            LocalDate toDate) {
 
-            if (rs.next()) {
-                return rs.getInt(1);
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(*)
+            FROM InventoryTransactions it
+            LEFT JOIN Products p
+                ON it.ProductID = p.ProductID
+            WHERE 1 = 1
+        """);
+
+        List<Object> params = new ArrayList<>();
+        appendTransactionFilters(sql, params, keyword, transactionType, fromDate, toDate);
+
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -261,13 +314,53 @@ public class inventoryDao {
         return 0;
     }
 
+    private void appendTransactionFilters(
+            StringBuilder sql,
+            List<Object> params,
+            String keyword,
+            String transactionType,
+            LocalDate fromDate,
+            LocalDate toDate) {
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append("""
+                AND (
+                    LOWER(REPLACE(ISNULL(p.ProductName, ''), ' ', '')) LIKE ?
+                    OR LOWER(REPLACE(ISNULL(it.Reason, ''), ' ', '')) LIKE ?
+                    OR CAST(it.ProductID AS VARCHAR(20)) LIKE ?
+                    OR CAST(it.TransactionID AS VARCHAR(20)) LIKE ?
+                )
+            """);
+            String pattern = "%" + keyword.toLowerCase() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (transactionType != null && !transactionType.isBlank()) {
+            sql.append(" AND it.TransactionType = ?");
+            params.add(transactionType);
+        }
+
+        if (fromDate != null) {
+            sql.append(" AND CAST(it.CreatedAt AS DATE) >= ?");
+            params.add(Date.valueOf(fromDate));
+        }
+
+        if (toDate != null) {
+            sql.append(" AND CAST(it.CreatedAt AS DATE) <= ?");
+            params.add(Date.valueOf(toDate));
+        }
+    }
+
     public int getTotalProducts() {
         String sql = """
             SELECT COUNT(*)
             FROM Products
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -289,7 +382,7 @@ public class inventoryDao {
             WHERE StockQuantity > 10
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -312,7 +405,7 @@ public class inventoryDao {
               AND StockQuantity <= 10
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -334,7 +427,7 @@ public class inventoryDao {
             WHERE StockQuantity = 0
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -347,5 +440,98 @@ public class inventoryDao {
         }
 
         return 0;
+    }
+    public Product getProductById(int id) {
+        String sql = """
+            SELECT p.ProductID, p.ProductName, p.StockQuantity
+            FROM Products p
+            WHERE p.ProductID = ?
+        """;
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Product p = new Product();
+                    p.setProductId(rs.getInt("ProductID"));
+                    p.setProductName(rs.getString("ProductName"));
+                    p.setStockQuantity(rs.getInt("StockQuantity"));
+                    return p;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean adjustStock(
+            int productId,
+            String transactionType,
+            int quantity,
+            int previousQuantity,
+            int newQuantity,
+            String reason,
+            Integer createdBy) {
+
+        String updateSql = "UPDATE Products SET StockQuantity = ?, UpdatedAt = GETDATE() WHERE ProductID = ?";
+        String insertTxSql = """
+            INSERT INTO InventoryTransactions
+            (ProductID, TransactionType, Quantity, PreviousQuantity, NewQuantity, Reason, CreatedBy, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())
+        """;
+
+        try (Connection conn = new DBContext().getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql);
+                 PreparedStatement psInsert = conn.prepareStatement(insertTxSql)) {
+
+                psUpdate.setInt(1, newQuantity);
+                psUpdate.setInt(2, productId);
+                int updated = psUpdate.executeUpdate();
+
+                psInsert.setInt(1, productId);
+                psInsert.setString(2, transactionType);
+                psInsert.setInt(3, quantity);
+                psInsert.setInt(4, previousQuantity);
+                psInsert.setInt(5, newQuantity);
+                if (reason != null && !reason.isBlank()) {
+                    psInsert.setString(6, reason.trim());
+                } else {
+                    psInsert.setNull(6, Types.NVARCHAR);
+                }
+                if (createdBy != null && createdBy > 0) {
+                    try (PreparedStatement psCheck = conn.prepareStatement("SELECT 1 FROM Staff WHERE StaffID = ?")) {
+                        psCheck.setInt(1, createdBy);
+                        try (ResultSet rsCheck = psCheck.executeQuery()) {
+                            if (rsCheck.next()) {
+                                psInsert.setInt(7, createdBy);
+                            } else {
+                                psInsert.setNull(7, Types.INTEGER);
+                            }
+                        }
+                    }
+                } else {
+                    psInsert.setNull(7, Types.INTEGER);
+                }
+                int inserted = psInsert.executeUpdate();
+
+                if (updated > 0 && inserted > 0) {
+                    conn.commit();
+                    return true;
+                } else {
+                    conn.rollback();
+                    return false;
+                }
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

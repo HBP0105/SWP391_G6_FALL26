@@ -56,12 +56,13 @@ public class LoginServlet extends HttpServlet {
         if (staff != null) {
             HttpSession session = request.getSession();
             session.setAttribute("user", staff);
+            session.setAttribute("staff", staff);
             session.setAttribute("role", staff.getRoleName());
 
             if ("ADMIN".equalsIgnoreCase(staff.getRoleName())) {
                 response.sendRedirect(request.getContextPath() + "/admin/revenue-report");
             } else if ("MANAGER".equalsIgnoreCase(staff.getRoleName())) {
-                response.sendRedirect(request.getContextPath() + "/staff/orders");
+                response.sendRedirect(request.getContextPath() + "/Manager/Dashboard");
             } else {
                 response.sendRedirect(request.getContextPath() + "/views/home.jsp");
             }

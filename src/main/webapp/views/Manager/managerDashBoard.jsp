@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -184,64 +184,17 @@
                             <!-- Notification -->
                             <div class="dropdown">
 
-                                <button class="icon-button"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                        aria-label="Notifications">
-
-                                    <span class="notification-dot"></span>
-
-                                    <i class="bi bi-bell"></i>
-
-                                </button>
-
-
-                                <div class="dropdown-menu dropdown-menu-end notification-menu">
-
-                                    <div class="dropdown-header fw-bold text-body">
-                                        Notifications
-                                    </div>
-
-                                    <c:choose>
-                                        <c:when test="${not empty notifications}">
-                                            <c:forEach var="notification" items="${notifications}" begin="0" end="2">
-                                                <a class="dropdown-item" href="${not empty notification.link ? notification.link : '#'}">
-                                                    <span class="notification-title">
-                                                        ${notification.message}
-                                                    </span>
-                                                    <span class="notification-time">
-                                                        ${notification.timeAgo}
-                                                    </span>
-                                                </a>
-                                            </c:forEach>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="dropdown-item text-muted">
-                                                No new notifications.
-                                            </span>
-                                        </c:otherwise>
-                                    </c:choose>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="dropdown">
-
                                 <button class="profile-button dropdown-toggle"
                                         type="button"
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false">
 
                                     <img class="avatar-img avatar-sm"
-                                         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
-                                         alt="Manager">
+         src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+         alt="Manager"
+         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
 
-                                    <span class="profile-name d-none d-sm-inline">
-                                        Manager
-                                    </span>
+                                    <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
 
                                 </button>
 

@@ -6,6 +6,7 @@ package com.swp391.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -147,6 +148,21 @@ public class Voucher {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+
+    public String getFormattedStartDate() {
+        if (startDate == null) {
+            return "";
+        }
+        return startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    public String getFormattedEndDate() {
+        if (endDate == null) {
+            return "";
+        }
+        return endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
     public Integer getCreatedBy() {

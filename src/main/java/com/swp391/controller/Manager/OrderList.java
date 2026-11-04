@@ -17,7 +17,7 @@ import java.util.Map;
  * Strictly handles HTTP Request/Response flow and delegates all business logic,
  * validation, state transitions, and CSV generation to OrderService.
  */
-@WebServlet(name = "OrderList", urlPatterns = {"/staff/orders"})
+@WebServlet(name = "OrderList", urlPatterns = {"/Manager/OrderManagement", "/staff/orders"})
 public class OrderList extends HttpServlet {
    
     private static final int DEFAULT_PAGE_SIZE = 10; // Hằng số cấu hình kích thước trang mặc định (10 đơn hàng/trang)
@@ -40,6 +40,12 @@ public class OrderList extends HttpServlet {
         String keyword = request.getParameter("keyword");
         String action = request.getParameter("action");
         String pageParam = request.getParameter("page");
+
+        if ("detail".equals(action)) {
+            String id = request.getParameter("id");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement/Detail?id=" + id);
+            return;
+        }
 
         // Xuất báo cáo CSV
         if ("export".equals(action)) {
@@ -78,7 +84,7 @@ public class OrderList extends HttpServlet {
             
             String errorMsg = csvContent.replace("\uFEFF\"Export Error:", "").replace("\"\n", "").replace("\"\"", "\"").trim();
             request.getSession().setAttribute("msgErrorStatus", errorMsg);
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -102,7 +108,7 @@ public class OrderList extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty() || !"updateStatus".equals(action)) {
             request.getSession().setAttribute("msgErrorStatus", "Invalid or unsupported action requested!");
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -114,7 +120,7 @@ public class OrderList extends HttpServlet {
             }
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("msgErrorStatus", "Invalid parameter: Order ID must be a numeric integer!");
-            response.sendRedirect(request.getContextPath() + "/staff/orders");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -139,7 +145,7 @@ public class OrderList extends HttpServlet {
                 session.setAttribute("msgSuccessOrderId", orderId);
                 session.setAttribute("msgSuccessStatus", newStatus);
                 session.removeAttribute("msgErrorStatus"); 
-                response.sendRedirect(request.getContextPath() + "/staff/orders");
+                response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
                 return;
             }
         } catch (Exception e) {
@@ -152,7 +158,7 @@ public class OrderList extends HttpServlet {
         session.removeAttribute("msgSuccessOrderId");
         session.removeAttribute("msgSuccessStatus");
 
-        response.sendRedirect(request.getContextPath() + "/staff/orders");
+        response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
     }
 
     @Override

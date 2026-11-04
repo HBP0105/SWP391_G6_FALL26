@@ -16,7 +16,7 @@ public class ProductDao {
         String sql = baseSelect()
                 + " ORDER BY p.ProductID DESC";
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(mapProduct(rs));
@@ -38,7 +38,7 @@ public class ProductDao {
                 ORDER BY BrandName
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Brand brand = new Brand();
@@ -53,7 +53,6 @@ public class ProductDao {
         return list;
     }
 
-    // Gi? method c? ?? không phá code khác.
     public List<Product> getProducts(
             Integer categoryId,
             String stock,
@@ -114,7 +113,7 @@ public class ProductDao {
             params.add(pageSize);
         }
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             bindParams(ps, params);
 
@@ -147,7 +146,7 @@ public class ProductDao {
         List<Object> params = new ArrayList<>();
         appendFilters(sql, params, keyword, categoryId, stock, status);
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             bindParams(ps, params);
 
@@ -173,7 +172,7 @@ public class ProductDao {
                 ORDER BY CategoryName
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Category category = new Category();
@@ -225,7 +224,7 @@ public class ProductDao {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             bindProductValues(
                     ps,
@@ -252,6 +251,80 @@ public class ProductDao {
             return false;
         }
     }
+
+    public boolean updateProduct(
+            int id,
+            String name,
+            String description,
+            int categoryId,
+            int brandId,
+            BigDecimal price,
+            String imageURL,
+            String connectionType,
+            Double driverSize,
+            boolean noiseCancelling,
+            Integer batteryLife,
+            boolean microphone,
+            String waterResistance,
+            String status) {
+
+        String sql = """
+                UPDATE Products
+                SET ProductName = ?,
+                    Description = ?,
+                    CategoryID = ?,
+                    BrandID = ?,
+                    Price = ?,
+                    ImageURL = ?,
+                    ConnectionType = ?,
+                    DriverSize = ?,
+                    NoiseCancelling = ?,
+                    BatteryLife = ?,
+                    Microphone = ?,
+                    WaterResistance = ?,
+                    Status = ?,
+                    UpdatedAt = GETDATE()
+                WHERE ProductID = ?
+                """;
+
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            ps.setString(i++, name);
+            setNullableString(ps, i++, description);
+            ps.setInt(i++, categoryId);
+            ps.setInt(i++, brandId);
+            ps.setBigDecimal(i++, price);
+            setNullableString(ps, i++, imageURL);
+            setNullableString(ps, i++, connectionType);
+
+            if (driverSize != null) {
+                ps.setDouble(i++, driverSize);
+            } else {
+                ps.setNull(i++, Types.DECIMAL);
+            }
+
+            ps.setBoolean(i++, noiseCancelling);
+
+            if (batteryLife != null) {
+                ps.setInt(i++, batteryLife);
+            } else {
+                ps.setNull(i++, Types.INTEGER);
+            }
+
+            ps.setBoolean(i++, microphone);
+            setNullableString(ps, i++, waterResistance);
+            ps.setString(i++, status);
+
+            ps.setInt(i++, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public boolean updateProduct(
             int id,
@@ -290,7 +363,8 @@ public class ProductDao {
                 WHERE ProductID = ?
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int nextIndex = bindProductValues(
                     ps,
@@ -323,7 +397,7 @@ public class ProductDao {
     public boolean deleteProduct(int id) {
         String sql = "DELETE FROM Products WHERE ProductID = ?";
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -337,7 +411,7 @@ public class ProductDao {
         String sql = baseSelect()
                 + " WHERE p.ProductID = ?";
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -390,8 +464,17 @@ public class ProductDao {
             String status) {
 
         if (keyword != null && !keyword.isBlank()) {
-            sql.append(" AND (p.ProductName LIKE ? OR c.CategoryName LIKE ? OR b.BrandName LIKE ?)");
-            String value = "%" + keyword.trim() + "%";
+
+            sql.append("""
+        AND (
+            LOWER(REPLACE(p.ProductName, ' ', '')) LIKE ?
+            OR LOWER(REPLACE(c.CategoryName, ' ', '')) LIKE ?
+            OR LOWER(REPLACE(b.BrandName, ' ', '')) LIKE ?
+        )
+    """);
+
+            String value = "%" + keyword.toLowerCase() + "%";
+
             params.add(value);
             params.add(value);
             params.add(value);
@@ -503,7 +586,7 @@ public class ProductDao {
         p.setDescription(rs.getString("Description"));
         p.setPrice(rs.getBigDecimal("Price"));
         p.setStockQuantity(rs.getInt("StockQuantity"));
-        p.setImageURL(rs.getString("ImageURL"));
+        p.setImageUrl(rs.getString("ImageURL"));
         p.setConnectionType(rs.getString("ConnectionType"));
 
         double driverSize = rs.getDouble("DriverSize");

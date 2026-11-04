@@ -53,7 +53,7 @@ public class VoucherDao {
             params.add(pageSize);
         }
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
@@ -87,7 +87,7 @@ public class VoucherDao {
         List<Object> params = new ArrayList<>();
         appendFilters(sql, params, keyword, discountType, status, validPeriod);
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             for (int i = 0; i < params.size(); i++) {
@@ -115,10 +115,15 @@ public class VoucherDao {
             String validPeriod) {
 
         if (keyword != null && !keyword.isBlank()) {
-            sql.append(" AND (v.VoucherCode LIKE ? OR v.Description LIKE ?)");
-            String pattern = "%" + keyword.trim() + "%";
-            params.add(pattern);
-            params.add(pattern);
+            sql.append("""
+                AND (
+                    LOWER(REPLACE(v.VoucherCode, ' ', '')) LIKE ?
+                    OR LOWER(REPLACE(ISNULL(v.Description, ''), ' ', '')) LIKE ?
+                )
+            """);
+            String value = "%" + keyword.toLowerCase() + "%";
+            params.add(value);
+            params.add(value);
         }
 
         if (discountType != null && !discountType.isBlank() && !"ALL".equalsIgnoreCase(discountType)) {
@@ -177,7 +182,7 @@ public class VoucherDao {
             WHERE VoucherID = ?
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -218,7 +223,7 @@ public class VoucherDao {
             WHERE VoucherCode = ?
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, code.trim());
@@ -253,7 +258,7 @@ public class VoucherDao {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
         """;
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, v.getVoucherCode());
@@ -294,10 +299,59 @@ public class VoucherDao {
         return false;
     }
 
+    public boolean updateVoucher(Voucher v) {
+        String sql = """
+            UPDATE Vouchers SET
+                Description = ?,
+                DiscountType = ?,
+                DiscountValue = ?,
+                MinOrderAmount = ?,
+                MaxDiscount = ?,
+                StartDate = ?,
+                EndDate = ?,
+                UsageLimit = ?,
+                Status = ?
+            WHERE VoucherID = ?
+        """;
+
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, v.getDescription());
+            ps.setString(2, v.getDiscountType());
+            ps.setBigDecimal(3, v.getDiscountValue());
+            ps.setBigDecimal(4, v.getMinOrderAmount());
+
+            if (v.getMaxDiscount() != null) {
+                ps.setBigDecimal(5, v.getMaxDiscount());
+            } else {
+                ps.setNull(5, Types.DECIMAL);
+            }
+
+            ps.setTimestamp(6, Timestamp.valueOf(v.getStartDate()));
+            ps.setTimestamp(7, Timestamp.valueOf(v.getEndDate()));
+
+            if (v.getUsageLimit() != null && v.getUsageLimit() > 0) {
+                ps.setInt(8, v.getUsageLimit());
+            } else {
+                ps.setNull(8, Types.INTEGER);
+            }
+
+            ps.setString(9, v.getStatus() != null ? v.getStatus() : "ACTIVE");
+            ps.setInt(10, v.getVoucherId());
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public boolean updateStatus(int voucherId, String status) {
         String sql = "UPDATE Vouchers SET Status = ? WHERE VoucherID = ?";
 
-        try (Connection conn = DBContext.getConnection();
+        try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, status);
@@ -307,7 +361,6 @@ public class VoucherDao {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
 

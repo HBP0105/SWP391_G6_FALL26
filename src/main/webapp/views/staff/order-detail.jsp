@@ -225,31 +225,43 @@
     <!-- SIDEBAR -->
     <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-header">
-        <a class="brand-mark" href="${pageContext.request.contextPath}/staff/orders">
-          <span class="brand-icon"><i class="bi bi-grid-1x2-fill"></i></span>
+        <a class="brand-mark" href="${pageContext.request.contextPath}/Manager/Dashboard">
+          <span class="brand-icon"><i class="bi bi-headphones"></i></span>
           <span class="brand-copy">
-            <span class="brand-title">Manager</span>
-            <span class="brand-subtitle">Headphone Store</span>
+            <span class="brand-title">Headphone Store</span>
+            <span class="brand-subtitle">Manager Panel</span>
           </span>
         </a>
       </div>
 
       <nav class="sidebar-nav">
-        <a class="nav-link active" href="${pageContext.request.contextPath}/staff/orders">
-          <span class="nav-icon"><i class="bi bi-table"></i></span>
-          <span class="nav-text">Order Management</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Dashboard">
+          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+          <span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-link" href="#">
-          <span class="nav-icon"><i class="bi bi-archive"></i></span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/products">
+          <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
+          <span class="nav-text">Products</span>
+        </a>
+        <a class="nav-link active" href="${pageContext.request.contextPath}/Manager/OrderManagement">
+          <span class="nav-icon"><i class="bi bi-cart-check"></i></span>
+          <span class="nav-text">Orders</span>
+        </a>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Inventory">
+          <span class="nav-icon"><i class="bi bi-boxes"></i></span>
           <span class="nav-text">Inventory</span>
         </a>
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Voucher">
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/audit-logs">
-          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
-          <span class="nav-text">Audit Logs</span>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Report">
+          <span class="nav-icon"><i class="bi bi-bar-chart-line"></i></span>
+          <span class="nav-text">Reports</span>
+        </a>
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Profile">
+          <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+          <span class="nav-text">Profile</span>
         </a>
       </nav>
     </aside>
@@ -262,7 +274,7 @@
           
           <!-- Left: Order Title, Back Button & Status Badge -->
           <div class="d-flex align-items-center gap-2">
-            <a href="${pageContext.request.contextPath}/staff/orders" class="btn btn-outline-secondary btn-sm px-2 py-0.5" style="font-size: 0.72rem;">
+            <a href="${pageContext.request.contextPath}/Manager/OrderManagement" class="btn btn-outline-secondary btn-sm px-2 py-0.5" style="font-size: 0.72rem;">
               <i class="bi bi-arrow-left me-1"></i> Orders
             </a>
             <span class="text-muted fs-7">/</span>
@@ -499,7 +511,7 @@
                             <div class="d-flex gap-1.5 ms-auto">
                               <c:choose>
                                 <c:when test="${order.orderStatus == 'PENDING'}">
-                                  <form method="post" action="${pageContext.request.contextPath}/staff/order-detail" class="m-0" onsubmit="return confirm('Confirm order #ORD-${order.orderID}?');">
+                                  <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement/Detail" class="m-0" onsubmit="return confirm('Confirm order #ORD-${order.orderID}?');">
                                     <input type="hidden" name="action" value="updateStatus">
                                     <input type="hidden" name="orderId" value="${order.orderID}">
                                     <input type="hidden" name="newStatus" value="CONFIRMED">
@@ -521,7 +533,7 @@
                                   </button>
                                 </c:when>
                                 <c:when test="${order.orderStatus == 'SHIPPING'}">
-                                  <form method="post" action="${pageContext.request.contextPath}/staff/order-detail" class="m-0" onsubmit="return confirm('Mark order #ORD-${order.orderID} as COMPLETED?');">
+                                  <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement/Detail" class="m-0" onsubmit="return confirm('Mark order #ORD-${order.orderID} as COMPLETED?');">
                                     <input type="hidden" name="action" value="updateStatus">
                                     <input type="hidden" name="orderId" value="${order.orderID}">
                                     <input type="hidden" name="newStatus" value="DELIVERED">
@@ -715,7 +727,7 @@
   <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow-lg border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/order-detail" id="cancelOrderForm" onsubmit="return validateCancelModal();">
+        <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement/Detail" id="cancelOrderForm" onsubmit="return validateCancelModal();">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="newStatus" value="CANCELLED">
           <input type="hidden" name="orderId" id="modalOrderId" value="${order.orderID}">
@@ -765,7 +777,7 @@
   <div class="modal fade" id="shipOrderModal" tabindex="-1" aria-labelledby="shipOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content shadow border-0">
-        <form method="post" action="${pageContext.request.contextPath}/staff/order-detail" onsubmit="return validateShipModal()">
+        <form method="post" action="${pageContext.request.contextPath}/Manager/OrderManagement/Detail" onsubmit="return validateShipModal()">
           <input type="hidden" name="action" value="updateStatus">
           <input type="hidden" name="orderId" id="shipModalOrderId">
           <input type="hidden" name="newStatus" value="SHIPPING">
