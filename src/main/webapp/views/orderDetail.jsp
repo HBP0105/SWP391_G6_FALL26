@@ -22,47 +22,8 @@
     <!-- Main Stylesheet -->
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
 
-    <style>
-        .detail-box {
-            background: #fff;
-            border: 1px solid #E4E7ED;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .step-wizard {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0 5px 0;
-            padding: 0;
-            list-style: none;
-        }
-        .step-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px 5px;
-            border-bottom: 4px solid #E4E7ED;
-            color: #888;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .step-item.completed {
-            border-bottom-color: #28a745;
-            color: #155724;
-        }
-        .step-item.current {
-            border-bottom-color: #D10024;
-            color: #D10024;
-        }
-        .product-thumb {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            border: 1px solid #E4E7ED;
-            padding: 4px;
-            background: #fff;
-        }
-    </style>
+    <!-- Custom Order Detail Stylesheet -->
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/orderDetail.css" />
 </head>
 <body>
     <!-- HEADER -->
@@ -150,10 +111,10 @@
 
     <c:set var="order" value="${requestScope.order}" />
 
-    <div class="section" style="padding-top: 30px; padding-bottom: 60px;">
+    <div class="section order-detail-section">
         <div class="container">
             <!-- Nút quay lại My Orders -->
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="detail-top-actions">
                 <a href="${pageContext.request.contextPath}/my-orders" class="btn btn-default btn-sm">
                     &laquo; Back to My Orders
                 </a>
@@ -172,14 +133,14 @@
 
             <!-- KHỐI 1: TIÊU ĐỀ ĐƠN HÀNG & TIẾN TRÌNH TRẠNG THÁI -->
             <div class="detail-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                <div class="detail-header-row">
                     <div>
-                        <h4 style="margin: 0;">Order Details: #ORD-${order.orderId}</h4>
-                        <span class="text-muted" style="font-size: 13px;">Placed on: ${order.orderDate}</span>
+                        <h4 class="detail-title">Order Details: #ORD-${order.orderId}</h4>
+                        <span class="text-muted detail-date">Placed on: ${order.orderDate}</span>
                     </div>
                     <div>
                         <strong>Status: </strong>
-                        <span class="label ${order.orderStatus eq 'CANCELLED' ? 'label-danger' : (order.orderStatus eq 'DELIVERED' ? 'label-success' : 'label-info')}" style="font-size: 13px; padding: 5px 10px;">
+                        <span class="label ${order.orderStatus eq 'CANCELLED' ? 'label-danger' : (order.orderStatus eq 'DELIVERED' ? 'label-success' : 'label-info')} detail-status-label">
                             ${order.orderStatus}
                         </span>
                     </div>
@@ -188,7 +149,7 @@
                 <!-- Thanh tiến trình 4 bước (Ẩn nếu đơn đã bị hủy) -->
                 <c:choose>
                     <c:when test="${order.orderStatus eq 'CANCELLED'}">
-                        <p class="text-danger" style="margin: 15px 0 0 0; font-weight: 600;">
+                        <p class="text-danger detail-cancelled-msg">
                             This order has been cancelled.
                         </p>
                     </c:when>
@@ -214,13 +175,13 @@
             <!-- KHỐI 2: THÔNG TIN GIAO HÀNG & THÔNG TIN THANH TOÁN -->
             <div class="row">
                 <div class="col-md-6">
-                    <div class="detail-box" style="min-height: 190px;">
-                        <h5 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; font-weight: 700;">
+                    <div class="detail-box detail-info-card">
+                        <h5 class="detail-box-heading">
                             Shipping & Delivery Information
                         </h5>
-                        <p style="margin-bottom: 6px;"><strong>Customer:</strong> ${sessionScope.customer.fullName} (${sessionScope.customer.phone})</p>
-                        <p style="margin-bottom: 6px;"><strong>Shipping Address:</strong> ${order.shippingAddress}</p>
-                        <p style="margin-bottom: 6px;">
+                        <p class="detail-line"><strong>Customer:</strong> ${sessionScope.customer.fullName} (${sessionScope.customer.phone})</p>
+                        <p class="detail-line"><strong>Shipping Address:</strong> ${order.shippingAddress}</p>
+                        <p class="detail-line">
                             <strong>Delivery Person (Shipper):</strong>
                             <c:choose>
                                 <c:when test="${order.shippingName ne 'Unassigned' && not empty order.shippingName}">
@@ -232,36 +193,36 @@
                             </c:choose>
                         </p>
                         <c:if test="${not empty order.shippingProvider}">
-                            <p style="margin-bottom: 6px;"><strong>Carrier:</strong> ${order.shippingProvider} | <strong>Tracking No:</strong> ${order.trackingNumber}</p>
+                            <p class="detail-line"><strong>Carrier:</strong> ${order.shippingProvider} | <strong>Tracking No:</strong> ${order.trackingNumber}</p>
                         </c:if>
                         <c:if test="${not empty order.estimatedDeliveryDate}">
-                            <p style="margin-bottom: 0;"><strong>Estimated Delivery:</strong> ${order.estimatedDeliveryDate}</p>
+                            <p class="detail-line-last"><strong>Estimated Delivery:</strong> ${order.estimatedDeliveryDate}</p>
                         </c:if>
                     </div>
                 </div>
 
                 <div class="col-md-6">
-                    <div class="detail-box" style="min-height: 190px;">
-                        <h5 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 8px; font-weight: 700;">
+                    <div class="detail-box detail-info-card">
+                        <h5 class="detail-box-heading">
                             Payment Summary
                         </h5>
-                        <p style="margin-bottom: 6px;">
+                        <p class="detail-line">
                             <strong>Payment Method:</strong>
                             ${order.paymentMethod eq 'VNPAY' ? 'VNPay Online' : 'Cash on Delivery (COD)'}
                         </p>
-                        <p style="margin-bottom: 6px;">
+                        <p class="detail-line">
                             <strong>Payment Status:</strong>
                             ${not empty order.paymentStatus ? order.paymentStatus : 'PENDING'}
                         </p>
                         <c:if test="${not empty order.transactionId}">
-                            <p style="margin-bottom: 6px;"><strong>VNPay Transaction No:</strong> ${order.transactionId}</p>
+                            <p class="detail-line"><strong>VNPay Transaction No:</strong> ${order.transactionId}</p>
                         </c:if>
                         <c:if test="${not empty order.paymentDate}">
-                            <p style="margin-bottom: 6px;"><strong>Payment Time:</strong> ${order.paymentDate}</p>
+                            <p class="detail-line"><strong>Payment Time:</strong> ${order.paymentDate}</p>
                         </c:if>
-                        <p style="margin-bottom: 0; font-size: 16px;">
+                        <p class="detail-total-row">
                             <strong>Total Amount:</strong>
-                            <span style="color: #D10024; font-weight: 700;">$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0" /></span>
+                            <span class="detail-total-price">$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0" /></span>
                         </p>
                     </div>
                 </div>
@@ -269,14 +230,14 @@
 
             <!-- KHỐI 3: DANH SÁCH SẢN PHẨM & THÔNG SỐ KỸ THUẬT CHI TIẾT -->
             <div class="detail-box">
-                <h5 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; font-weight: 700;">
+                <h5 class="detail-box-heading-lg">
                     Ordered Products & Specifications (${order.items.size()})
                 </h5>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered" style="margin-bottom: 0;">
+                    <table class="table table-bordered detail-products-table">
                         <thead>
-                            <tr style="background: #f9f9f9;">
+                            <tr class="detail-table-head">
                                 <th width="100" class="text-center">Image</th>
                                 <th>Product Information & Technical Specifications</th>
                                 <th width="130" class="text-right">Unit Price</th>
@@ -287,7 +248,7 @@
                         <tbody>
                             <c:forEach items="${order.items}" var="item">
                                 <tr>
-                                    <td class="text-center" style="vertical-align: middle;">
+                                    <td class="text-center align-middle">
                                         <c:choose>
                                             <c:when test="${not empty item.imageUrl}">
                                                 <img src="${item.imageUrl}" class="product-thumb" alt="${item.productName}"
@@ -299,15 +260,15 @@
                                         </c:choose>
                                     </td>
                                     <td>
-                                        <strong style="font-size: 15px; color: #2B2D42;">${item.productName}</strong>
-                                        <div class="text-muted" style="font-size: 12px; margin-bottom: 6px;">
+                                        <strong class="detail-prod-name">${item.productName}</strong>
+                                        <div class="text-muted detail-prod-meta">
                                             Brand: <strong>${not empty item.brandName ? item.brandName : 'N/A'}</strong> |
                                             Category: <strong>${not empty item.categoryName ? item.categoryName : 'Headphone'}</strong>
                                         </div>
                                         <c:if test="${not empty item.description}">
-                                            <p style="font-size: 13px; color: #555; margin-bottom: 6px;">${item.description}</p>
+                                            <p class="detail-prod-desc">${item.description}</p>
                                         </c:if>
-                                        <div style="font-size: 12px; color: #444; background: #f9f9f9; padding: 6px 10px; border-radius: 3px;">
+                                        <div class="detail-prod-specs">
                                             <strong>Specs:</strong>
                                             Connection: ${not empty item.connectionType ? item.connectionType : 'Standard'} |
                                             Driver: ${item.driverSize > 0 ? item.driverSize : 'Standard'} mm |
@@ -318,14 +279,14 @@
                                             Weight: ${item.weight > 0 ? item.weight : 'N/A'} g
                                         </div>
                                     </td>
-                                    <td class="text-right" style="vertical-align: middle;">
+                                    <td class="text-right align-middle">
                                         $<fmt:formatNumber value="${item.price}" pattern="#,##0" />
                                     </td>
-                                    <td class="text-center" style="vertical-align: middle;">
+                                    <td class="text-center align-middle">
                                         x${item.quantity}
                                     </td>
-                                    <td class="text-right" style="vertical-align: middle;">
-                                        <strong style="color: #D10024;">$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></strong>
+                                    <td class="text-right align-middle">
+                                        <strong class="detail-subtotal-price">$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></strong>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -344,11 +305,11 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Cancel Order</h4>
                 </div>
-                <form action="${pageContext.request.contextPath}/order-detail" method="POST" style="margin: 0;">
+                <form action="${pageContext.request.contextPath}/order-detail" method="POST" class="modal-form-clean">
                     <div class="modal-body">
                         <input type="hidden" name="action" value="cancel">
                         <input type="hidden" name="orderId" value="${order.orderId}">
-                        <p style="margin: 0;">Are you sure you want to cancel order <strong>#ORD-${order.orderId}</strong>?</p>
+                        <p class="modal-confirm-text">Are you sure you want to cancel order <strong>#ORD-${order.orderId}</strong>?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">No</button>

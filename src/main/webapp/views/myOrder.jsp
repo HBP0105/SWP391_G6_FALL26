@@ -23,152 +23,8 @@
     <!-- Main Stylesheet -->
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
 
-    <style>
-        /* Shopee-style Horizontal Status Tabs */
-        .order-tabs {
-            display: flex;
-            background: #fff;
-            border: 1px solid #E4E7ED;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-        }
-        .order-tab-item {
-            flex: 1;
-            text-align: center;
-            padding: 15px 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #555;
-            text-decoration: none !important;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .order-tab-item:hover {
-            color: #D10024;
-            background-color: #fafafa;
-        }
-        .order-tab-item.active {
-            color: #D10024;
-            border-bottom: 3px solid #D10024;
-            background-color: #fffafa;
-        }
-        .tab-count {
-            display: inline-block;
-            background: #eee;
-            color: #555;
-            font-size: 11px;
-            padding: 2px 7px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-        .order-tab-item.active .tab-count {
-            background: #D10024;
-            color: #fff;
-        }
-
-        .order-card {
-            background: #fff;
-            border: 1px solid #E4E7ED;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-        }
-        .order-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .order-card-header {
-            background: #fbfbfb;
-            padding: 15px 20px;
-            border-bottom: 1px solid #E4E7ED;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 6px 6px 0 0;
-        }
-        .order-card-body {
-            padding: 20px;
-        }
-        .order-card-footer {
-            background: #fbfbfb;
-            padding: 15px 20px;
-            border-top: 1px solid #E4E7ED;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 0 0 6px 6px;
-        }
-        .order-status-badge {
-            font-size: 13px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .badge-pending {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        .badge-confirmed {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .badge-shipping {
-            background-color: #cce5ff;
-            color: #004085;
-            border: 1px solid #b8daff;
-        }
-        .badge-delivered {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .badge-cancelled {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .product-img-thumb {
-            width: 65px;
-            height: 65px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #E4E7ED;
-            background: #f8f9fa;
-        }
-        .info-pill {
-            background-color: #f8f9fa;
-            border-left: 3px solid #D10024;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-radius: 0 4px 4px 0;
-        }
-        .payment-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: 11px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: 600;
-        }
-        .payment-paid {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .payment-unpaid {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .payment-failed {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
+    <!-- Custom My Orders Stylesheet -->
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/myOrder.css" />
 </head>
 <body>
     <!-- HEADER -->
@@ -279,7 +135,7 @@
     </c:forEach>
 
     <!-- ORDERS SECTION -->
-    <div class="section" style="padding-top: 30px; padding-bottom: 60px;">
+    <div class="section orders-section">
         <div class="container">
             
             <!-- ORDER PLACED / VNPAY CONFIRMED FLASH ALERT -->
@@ -342,13 +198,13 @@
 
                     <!-- THANH TÌM KIẾM ĐƠN HÀNG (CHỈ HIỂN THỊ Ở MỤC ALL ORDERS) -->
                     <c:if test="${currentTab eq 'ALL'}">
-                        <form action="${pageContext.request.contextPath}/my-orders" method="GET" style="margin-bottom: 20px;">
+                        <form action="${pageContext.request.contextPath}/my-orders" method="GET" class="order-search-form">
                             <input type="hidden" name="status" value="ALL">
                             <div class="input-group">
                                 <input type="text" class="form-control" name="keyword" value="${fn:escapeXml(param.keyword)}"
                                        placeholder="Search by Order ID (e.g. #ORD-5), Product Name, or Shipping Address...">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-danger" type="submit" style="background: #D10024; border-color: #D10024;">
+                                    <button class="btn btn-danger btn-search-order" type="submit">
                                         <i class="fa fa-search"></i> Search
                                     </button>
                                     <c:if test="${not empty param.keyword}">
@@ -399,8 +255,8 @@
                                 <!-- Card Header: Order ID + Date + Status -->
                                 <div class="order-card-header">
                                     <div>
-                                        <strong style="font-size: 16px; color: #2B2D42;">Order: #ORD-${order.orderId}</strong>
-                                        <span class="text-muted" style="margin-left: 15px; font-size: 13px;">
+                                        <strong class="order-id-title">Order: #ORD-${order.orderId}</strong>
+                                        <span class="text-muted order-date-text">
                                             <i class="fa fa-calendar"></i> ${order.orderDate}
                                         </span>
                                     </div>
@@ -442,18 +298,18 @@
                                 <div class="order-card-body">
                                     <div class="row info-pill">
                                         <div class="col-md-7">
-                                            <p style="margin: 0; font-size: 14px;">
-                                                <i class="fa fa-map-marker" style="color: #D10024;"></i> 
+                                            <p class="info-pill-text">
+                                                <i class="fa fa-map-marker icon-brand"></i> 
                                                 <strong>Shipping Address:</strong> ${order.shippingAddress}
                                             </p>
                                         </div>
                                         <div class="col-md-5 text-right">
-                                            <p style="margin: 0; font-size: 14px;">
-                                                <i class="fa fa-motorcycle" style="color: #D10024;"></i> 
+                                            <p class="info-pill-text">
+                                                <i class="fa fa-motorcycle icon-brand"></i> 
                                                 <strong>Delivery Person (Shipper):</strong> 
                                                 <c:choose>
                                                     <c:when test="${order.shippingName ne 'Unassigned' && order.shippingName ne 'Chưa phân công' && not empty order.shippingName}">
-                                                        <span style="color: #28a745; font-weight: bold;">${order.shippingName}</span> 
+                                                        <span class="shipper-name">${order.shippingName}</span> 
                                                         (Phone: <a href="tel:${order.shippingPhone}">${order.shippingPhone}</a>)
                                                     </c:when>
                                                     <c:otherwise>
@@ -465,20 +321,20 @@
                                     </div>
 
                                     <!-- Items Table -->
-                                    <div class="table-responsive" style="margin-top: 15px;">
-                                        <table class="table" style="margin-bottom: 0;">
+                                    <div class="table-responsive order-items-wrap">
+                                        <table class="table order-items-table">
                                             <thead>
-                                                <tr style="border-top: none; color: #8D99AE; font-size: 13px;">
-                                                    <th style="border-top: none;" width="80">Image</th>
-                                                    <th style="border-top: none;">Product</th>
-                                                    <th style="border-top: none;" class="text-center" width="120">Quantity</th>
-                                                    <th style="border-top: none;" class="text-right" width="160">Price</th>
-                                                    <th style="border-top: none;" class="text-right" width="180">Total</th>
+                                                <tr>
+                                                    <th width="80">Image</th>
+                                                    <th>Product</th>
+                                                    <th class="text-center" width="120">Quantity</th>
+                                                    <th class="text-right" width="160">Price</th>
+                                                    <th class="text-right" width="180">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <c:forEach items="${order.items}" var="item">
-                                                    <tr style="vertical-align: middle;">
+                                                    <tr>
                                                         <td>
                                                             <a href="javascript:void(0);"
                                                                onclick="showOrderedProductModal(this)"
@@ -508,7 +364,7 @@
                                                                 </c:choose>
                                                             </a>
                                                         </td>
-                                                        <td style="vertical-align: middle;">
+                                                        <td>
                                                             <a href="javascript:void(0);"
                                                                onclick="showOrderedProductModal(this)"
                                                                data-name="${item.productName}"
@@ -526,20 +382,18 @@
                                                                data-mic="${item.microphone ? 'Yes (Built-in Mic)' : 'No'}"
                                                                data-water="${not empty item.waterResistance ? item.waterResistance : 'None'}"
                                                                data-weight="${item.weight > 0 ? item.weight : 'N/A'}"
-                                                               style="color: #2B2D42; text-decoration: none;"
-                                                               onmouseover="this.style.color='#D10024'"
-                                                               onmouseout="this.style.color='#2B2D42'">
+                                                               class="product-name-link">
                                                                 <strong>${item.productName}</strong>
                                                             </a>
                                                         </td>
-                                                        <td style="vertical-align: middle;" class="text-center">
+                                                        <td class="text-center">
                                                             x${item.quantity}
                                                         </td>
-                                                        <td style="vertical-align: middle;" class="text-right">
+                                                        <td class="text-right">
                                                             $<fmt:formatNumber value="${item.price}" pattern="#,##0" />
                                                         </td>
-                                                        <td style="vertical-align: middle;" class="text-right">
-                                                            <strong style="color: #D10024;">$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></strong>
+                                                        <td class="text-right">
+                                                            <strong class="price-highlight">$<fmt:formatNumber value="${item.price * item.quantity}" pattern="#,##0" /></strong>
                                                         </td>
                                                     </tr>
                                                 </c:forEach>
@@ -550,7 +404,7 @@
 
                                 <!-- Card Footer: Payment Method + Cancel Button + Total -->
                                 <div class="order-card-footer">
-                                    <span class="text-muted" style="font-size: 13px;">
+                                    <span class="text-muted payment-info-text">
                                         <c:choose>
                                             <c:when test="${order.paymentMethod eq 'VNPAY'}">
                                                 <i class="fa fa-credit-card"></i> Payment Method: <strong>VNPay Online</strong>
@@ -579,7 +433,7 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </span>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="order-footer-actions">
                                         <!-- NÚT XEM CHI TIẾT ĐƠN HÀNG (MỞ SCREEN RIÊNG /order-detail) -->
                                         <a href="${pageContext.request.contextPath}/order-detail?id=${order.orderId}" class="btn btn-default btn-sm">
                                             View Details
@@ -594,8 +448,8 @@
                                         </c:if>
 
                                         <div>
-                                            <span style="font-size: 15px; margin-right: 10px;">Order Total:</span>
-                                            <strong style="font-size: 20px; color: #D10024;">$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0" /></strong>
+                                            <span class="order-total-label">Order Total:</span>
+                                            <strong class="order-total-amount">$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0" /></strong>
                                         </div>
                                     </div>
                                 </div>
@@ -609,8 +463,8 @@
                     <c:set var="totalPages" value="${matchedCount == 0 ? 1 : ((matchedCount + pageSize - 1) - ((matchedCount + pageSize - 1) % pageSize)) / pageSize}" />
                     <fmt:parseNumber var="totalPagesInt" integerOnly="true" type="number" value="${totalPages}" />
                     <c:if test="${totalPagesInt > 1}">
-                        <div class="text-center" style="margin-top: 10px; margin-bottom: 20px;">
-                            <ul class="pagination" style="margin: 0;">
+                        <div class="text-center order-pagination-wrap">
+                            <ul class="pagination order-pagination">
                                 <!-- Nút Previous -->
                                 <li class="${currPage <= 1 ? 'disabled' : ''}">
                                     <c:choose>
@@ -626,8 +480,7 @@
                                 <!-- Các số trang 1, 2, 3... -->
                                 <c:forEach begin="1" end="${totalPagesInt}" var="p">
                                     <li class="${p == currPage ? 'active' : ''}">
-                                        <a href="${pageContext.request.contextPath}/my-orders?status=${currentTab}&keyword=${fn:escapeXml(param.keyword)}&page=${p}"
-                                           style="${p == currPage ? 'background-color: #D10024; border-color: #D10024; color: #fff;' : ''}">
+                                        <a href="${pageContext.request.contextPath}/my-orders?status=${currentTab}&keyword=${fn:escapeXml(param.keyword)}&page=${p}">
                                             ${p}
                                         </a>
                                     </li>
@@ -650,16 +503,16 @@
 
                     <!-- TRƯỜNG HỢP TAB HIỆN TẠI KHÔNG CÓ ĐƠN HÀNG NÀO -->
                     <c:if test="${displayedCount == 0}">
-                        <div class="text-center" style="padding: 60px 20px; background: #fff; border: 1px solid #E4E7ED; border-radius: 6px;">
-                            <i class="fa fa-shopping-bag" style="font-size: 60px; color: #ccc; margin-bottom: 15px;"></i>
-                            <h4 style="color: #666; margin-bottom: 15px;">
+                        <div class="text-center empty-orders-box">
+                            <i class="fa fa-shopping-bag empty-orders-icon"></i>
+                            <h4 class="empty-orders-title">
                                 <c:choose>
                                     <c:when test="${currentTab eq 'ALL'}">You have no orders yet!</c:when>
                                     <c:otherwise>No orders in "${currentTab}" status.</c:otherwise>
                                 </c:choose>
                             </h4>
-                            <p style="color: #999; margin-bottom: 25px;">Explore our collection of premium headphones and earbuds.</p>
-                            <a href="${pageContext.request.contextPath}/home" class="primary-btn" style="border-radius: 4px; padding: 10px 25px;">
+                            <p class="empty-orders-desc">Explore our collection of premium headphones and earbuds.</p>
+                            <a href="${pageContext.request.contextPath}/home" class="primary-btn empty-orders-btn">
                                 Continue Shopping
                             </a>
                         </div>
@@ -694,21 +547,21 @@
                     <h4 class="modal-title" id="modal_prod_name">Product Details</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="row" style="margin-bottom: 15px;">
+                    <div class="row modal-prod-top">
                         <div class="col-sm-4 text-center">
                             <img id="modal_prod_img" src="" alt="Product Image"
-                                 style="max-width: 100%; height: 140px; object-fit: contain; border: 1px solid #ddd; padding: 5px;"
+                                 class="modal-prod-img"
                                  onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/product01.png';">
                         </div>
                         <div class="col-sm-8">
                             <p><strong>Brand:</strong> <span id="modal_prod_brand"></span> | <strong>Category:</strong> <span id="modal_prod_category"></span></p>
                             <p><strong>Price:</strong> <span id="modal_prod_price"></span> | <strong>Quantity:</strong> <span id="modal_prod_qty"></span></p>
-                            <p><strong>Total:</strong> <span id="modal_prod_total" style="color: #D10024; font-weight: bold;"></span></p>
-                            <p id="modal_prod_desc" class="text-muted" style="font-size: 13px; margin-bottom: 0;"></p>
+                            <p><strong>Total:</strong> <span id="modal_prod_total" class="price-highlight"></span></p>
+                            <p id="modal_prod_desc" class="text-muted modal-prod-desc"></p>
                         </div>
                     </div>
 
-                    <table class="table table-bordered" style="font-size: 13px; margin-bottom: 0;">
+                    <table class="table table-bordered modal-specs-table">
                         <tbody>
                             <tr>
                                 <th width="40%">Connection Type</th>
@@ -756,11 +609,11 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Cancel Order</h4>
                 </div>
-                <form action="${pageContext.request.contextPath}/my-orders" method="POST" style="margin: 0;">
+                <form action="${pageContext.request.contextPath}/my-orders" method="POST" class="modal-form-clean">
                     <div class="modal-body">
                         <input type="hidden" name="action" value="cancel">
                         <input type="hidden" name="orderId" id="cancel_modal_orderId">
-                        <p style="margin: 0;">Are you sure you want to cancel order <strong id="cancel_modal_orderLabel"></strong>?</p>
+                        <p class="modal-confirm-text">Are you sure you want to cancel order <strong id="cancel_modal_orderLabel"></strong>?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">No</button>

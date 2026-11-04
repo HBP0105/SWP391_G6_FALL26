@@ -1,0 +1,171 @@
+/* orderDetail.css - Custom styling for the Order Details page */
+
+.order-detail-section {
+    padding-top: 30px;
+    padding-bottom: 60px;
+}
+
+.detail-top-actions {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-box {
+    background: #fff;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.detail-info-card {
+    min-height: 190px;
+}
+
+.detail-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+}
+
+.detail-title {
+    margin: 0;
+}
+
+.detail-date {
+    font-size: 13px;
+}
+
+.detail-status-label {
+    font-size: 13px;
+    padding: 5px 10px;
+}
+
+.detail-cancelled-msg {
+    margin: 15px 0 0 0;
+    font-weight: 600;
+}
+
+/* 4-Step Progress Wizard */
+.step-wizard {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0 5px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px 5px;
+    border-bottom: 4px solid #E4E7ED;
+    color: #888;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.step-item.completed {
+    border-bottom-color: #28a745;
+    color: #155724;
+}
+
+.step-item.current {
+    border-bottom-color: #D10024;
+    color: #D10024;
+}
+
+/* Info Box Headings & Lines */
+.detail-box-heading {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    font-weight: 700;
+}
+
+.detail-box-heading-lg {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+.detail-line {
+    margin-bottom: 6px;
+}
+
+.detail-line-last {
+    margin-bottom: 0;
+}
+
+.detail-total-row {
+    margin-bottom: 0;
+    font-size: 16px;
+}
+
+.detail-total-price {
+    color: #D10024;
+    font-weight: 700;
+}
+
+/* Ordered Products Table */
+.detail-products-table {
+    margin-bottom: 0;
+}
+
+.detail-table-head {
+    background: #f9f9f9;
+}
+
+.detail-products-table > tbody > tr > td.align-middle {
+    vertical-align: middle;
+}
+
+.product-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border: 1px solid #E4E7ED;
+    padding: 4px;
+    background: #fff;
+}
+
+.detail-prod-name {
+    font-size: 15px;
+    color: #2B2D42;
+}
+
+.detail-prod-meta {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.detail-prod-desc {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.detail-prod-specs {
+    font-size: 12px;
+    color: #444;
+    background: #f9f9f9;
+    padding: 6px 10px;
+    border-radius: 3px;
+}
+
+.detail-subtotal-price {
+    color: #D10024;
+}
+
+.modal-form-clean {
+    margin: 0;
+}
+
+.modal-confirm-text {
+    margin: 0;
+}
