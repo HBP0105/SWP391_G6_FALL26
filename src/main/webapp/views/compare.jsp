@@ -27,29 +27,13 @@
 
     <!-- Custom stylesheet -->
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
-    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/compare.css?v=1.0" />
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/compare.css?v=1.3" />
 </head>
 <body>
     <c:set var="activeNav" value="compare" scope="request" />
 
     <!-- HEADER COMPONENT -->
     <jsp:include page="/assets/components/header.jsp" />
-
-    <!-- BREADCRUMB -->
-<!--    <div id="breadcrumb" class="section" style="padding: 15px 0; background: #FBFBFC; border-bottom: 1px solid #E4E7ED; margin-bottom: 25px;">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <ul class="breadcrumb-tree" style="list-style: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8D99AE;">
-                        <li><a href="${pageContext.request.contextPath}/home" style="color: #333; text-decoration: none;">Home</a></li>
-                        <li style="color: #E4E7ED;">/</li>
-                        <li class="active" style="color: #D10024; font-weight: 600;">Compare Products</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>-->
-    <!-- /BREADCRUMB -->
 
     <!-- MAIN COMPARE CONTAINER -->
     <div class="compare-page-container">
@@ -185,6 +169,27 @@
 
         </div>
         <!-- /TOP COMPARISON ROW -->
+
+        <!-- 1.5 AI COMPARISON ANALYSIS (PROS, CONS & VERDICT) -->
+        <div class="ai-compare-card" id="aiCompareSection">
+            <div class="ai-compare-header">
+                <div class="ai-compare-title-wrap">
+                    <span class="ai-compare-icon-badge"><i class="fa fa-magic"></i></span>
+                    <div>
+                        <h3 class="ai-compare-title">AI Smart Comparison &amp; Pros/Cons Analysis</h3>
+                        <p class="ai-compare-subtitle">Powered by 512-Dimensional Vector Embedding &amp; Hybrid Feature Scoring</p>
+                    </div>
+                </div>
+                <div class="ai-compare-badges" id="aiCompareHeaderBadges">
+                    <span class="ai-engine-pill"><i class="fa fa-microchip"></i> 512-D Vector Engine</span>
+                </div>
+            </div>
+
+            <div class="ai-compare-body" id="aiCompareBody">
+                <%-- Dynamically rendered by compare.js --%>
+            </div>
+        </div>
+        <!-- /AI COMPARISON ANALYSIS -->
 
         <!-- 2. FILTER TOOLBAR: Categories options - Brands options - Search bar -->
         <div class="compare-filter-toolbar">
@@ -340,12 +345,14 @@
         window.__contextPath = '${pageContext.request.contextPath}';
         window.__initialProductA = ${not empty productAJson ? productAJson : 'null'};
         window.__initialProductB = ${not empty productBJson ? productBJson : 'null'};
+        window.__aiSimWeight = ${not empty aiSimWeight ? aiSimWeight : 0.5};
+        window.__aiBehWeight = ${not empty aiBehWeight ? aiBehWeight : 0.5};
         window.__initialCurrentPage = ${currentPage != null ? currentPage : 1};
         window.__initialTotalPages = ${totalPages != null ? totalPages : 1};
         window.__initialTotalCount = ${totalCount != null ? totalCount : 0};
         window.__initialFromIndex = ${fromIndex != null ? fromIndex : 0};
         window.__initialToIndex = ${toIndex != null ? toIndex : 0};
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=1.2"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=1.3"></script>
 </body>
 </html>

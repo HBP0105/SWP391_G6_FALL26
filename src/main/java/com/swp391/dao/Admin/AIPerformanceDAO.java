@@ -633,4 +633,92 @@ public class AIPerformanceDAO {
             LOGGER.log(Level.WARNING, "Error inserting VIEW into UserBehaviors", e);
         }
     }
+
+    /**
+     * Aggregates personal product interaction weights for a specific user (CustomerID and/or SessionID)
+     * combining UserBehaviors, Favorites, and OrderItems.
+     */
+    public Map<Integer, Double> getUserPersonalBehaviorWeights(Integer customerId, String sessionId) {
+        Map<Integer, Double> weights = new HashMap<>();
+
+        // 1. Từ bảng UserBehaviors (theo CustomerID hoặc SessionID)
+        String behaviorSql = """
+                SELECT ProductID,
+                       SUM(CASE 
+                             WHEN BehaviorType = 'PURCHASE' THEN 5.0 
+                             WHEN BehaviorType = 'CART' THEN 4.0 
+                             WHEN BehaviorType = 'FAVORITE' THEN 3.0 
+                             WHEN BehaviorType = 'SEARCH' THEN 2.0 
+                             ELSE 1.0 
+                           END) AS Points
+                FROM UserBehaviors
+                WHERE ProductID IS NOT NULL
+                  AND ((? IS NOT NULL AND CustomerID = ?) OR (? IS NOT NULL AND SessionID = ?))
+                GROUP BY ProductID
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(behaviorSql)) {
+            if (customerId != null) {
+                ps.setInt(1, customerId);
+                ps.setInt(2, customerId);
+            } else {
+                ps.setNull(1, java.sql.Types.INTEGER);
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
+            if (sessionId != null && !sessionId.isEmpty()) {
+                ps.setString(3, sessionId);
+                ps.setString(4, sessionId);
+            } else {
+                ps.setNull(3, java.sql.Types.VARCHAR);
+                ps.setNull(4, java.sql.Types.VARCHAR);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int pid = rs.getInt("ProductID");
+                    double pts = rs.getDouble("Points");
+                    weights.put(pid, weights.getOrDefault(pid, 0.0) + pts);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error reading personal UserBehaviors weights", e);
+        }
+
+        // 2. Nếu đã đăng nhập, bổ sung thêm điểm từ bảng Favorites và OrderItems
+        if (customerId != null) {
+            String favSql = "SELECT ProductID FROM Favorites WHERE CustomerID = ?";
+            try (Connection conn = dbContext.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(favSql)) {
+                ps.setInt(1, customerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int pid = rs.getInt("ProductID");
+                        weights.put(pid, weights.getOrDefault(pid, 0.0) + 3.5);
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+
+            String orderSql = """
+                    SELECT oi.ProductID, SUM(oi.Quantity) AS TotalQty
+                    FROM Orders o
+                    JOIN OrderItems oi ON o.OrderID = oi.OrderID
+                    WHERE o.CustomerID = ?
+                    GROUP BY oi.ProductID
+                    """;
+            try (Connection conn = dbContext.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(orderSql)) {
+                ps.setInt(1, customerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int pid = rs.getInt("ProductID");
+                        int qty = Math.max(1, rs.getInt("TotalQty"));
+                        weights.put(pid, weights.getOrDefault(pid, 0.0) + (5.0 * qty));
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return weights;
+    }
 }

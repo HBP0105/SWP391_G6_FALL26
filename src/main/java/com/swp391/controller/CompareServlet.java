@@ -6,6 +6,7 @@ import com.swp391.dao.ProductDAO;
 import com.swp391.model.Brand;
 import com.swp391.model.Category;
 import com.swp391.model.Product;
+import com.swp391.service.Admin.AIPerformanceService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,9 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "CompareServlet", urlPatterns = {"/compare"})
 public class CompareServlet extends HttpServlet {
@@ -23,12 +24,14 @@ public class CompareServlet extends HttpServlet {
     private ProductDAO productDAO;
     private CategoryDAO categoryDAO;
     private BrandDAO brandDAO;
+    private AIPerformanceService aiPerformanceService;
 
     @Override
     public void init() throws ServletException {
         productDAO = new ProductDAO();
         categoryDAO = new CategoryDAO();
         brandDAO = new BrandDAO();
+        aiPerformanceService = new AIPerformanceService();
         System.out.println("[CompareServlet] Initialized successfully.");
     }
 
@@ -76,17 +79,6 @@ public class CompareServlet extends HttpServlet {
             productB = productDAO.getProductById(idB);
         }
 
-        // Nếu cả A và B đều chưa được truyền tham số, chọn mặc định 2 sản phẩm bán chạy nhất
-//        if (productA == null && productB == null && idAParam == null && idBParam == null) {
-//            List<Product> topSelling = productDAO.getTopSellingProducts(2);
-//            if (topSelling != null && topSelling.size() >= 2) {
-//                productA = topSelling.get(0);
-//                productB = topSelling.get(1);
-//            } else if (topSelling != null && !topSelling.isEmpty()) {
-//                productA = topSelling.get(0);
-//            }
-//        }
-
         // 2. Load danh mục và thương hiệu cho bộ lọc tìm kiếm
         List<Category> categories = categoryDAO.getAllActiveCategories();
         List<Brand> brands = brandDAO.getAllActiveBrands();
@@ -112,10 +104,14 @@ public class CompareServlet extends HttpServlet {
         int fromIndex = totalCount > 0 ? (page - 1) * pageSize + 1 : 0;
         int toIndex = Math.min(page * pageSize, totalCount);
 
+        Map<String, Object> aiConfig = aiPerformanceService.getAIConfigurationMap();
+
         request.setAttribute("productA", productA);
         request.setAttribute("productB", productB);
         request.setAttribute("productAJson", productToJson(productA));
         request.setAttribute("productBJson", productToJson(productB));
+        request.setAttribute("aiSimWeight", aiConfig.getOrDefault("similarityWeight", 0.50));
+        request.setAttribute("aiBehWeight", aiConfig.getOrDefault("behaviorWeight", 0.50));
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
         request.setAttribute("searchResults", searchResults);

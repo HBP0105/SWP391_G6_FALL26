@@ -14,7 +14,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
-@WebServlet(name = "ProductListServlet", urlPatterns = {"/productList"})
+@WebServlet(name = "ProductListServlet", urlPatterns = {"/productList", "/search"})
 public class ProductListServlet extends HttpServlet {
 
     private static final int PAGE_SIZE = 9;

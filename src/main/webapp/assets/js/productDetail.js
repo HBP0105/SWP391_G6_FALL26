@@ -47,6 +47,8 @@
     var debounceTimer = null;
 
     if (!searchInput || !suggestionsBox) return;
+    if (searchInput.getAttribute('data-suggest-bound') === '1') return;
+    searchInput.setAttribute('data-suggest-bound', '1');
 
     function formatPrice(price) {
         return parseFloat(price).toLocaleString('vi-VN') + ' \u20ab';

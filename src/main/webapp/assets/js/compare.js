@@ -5,6 +5,8 @@
     var contextPath = window.__contextPath || '';
     var currentProductA = window.__initialProductA || null;
     var currentProductB = window.__initialProductB || null;
+    var aiSimWeight = typeof window.__aiSimWeight === 'number' ? window.__aiSimWeight : 0.5;
+    var aiBehWeight = typeof window.__aiBehWeight === 'number' ? window.__aiBehWeight : 0.5;
 
     // Format currency VND
     function formatVND(amount) {
@@ -82,6 +84,302 @@
                     '</div>' +
                 '</div>';
         }
+    }
+
+    // Generate 512-Dimensional Normalized Feature Vector for Cosine Similarity
+    function generate512FeatureVector(p) {
+        var vec = new Array(512);
+        var priceNorm = Math.min(1.0, (Number(p.price) || 0) / 15000000.0);
+        var batNorm = Math.min(1.0, (Number(p.batteryLife) || 0) / 120.0);
+        var drvNorm = Math.min(1.0, (Number(p.driverSize) || 0) / 55.0);
+        var wtNorm = Math.min(1.0, (Number(p.weight) || 0) / 400.0);
+        var ancVal = p.noiseCancelling ? 1.0 : 0.0;
+        var micVal = p.microphone ? 1.0 : 0.0;
+        var waterVal = (p.waterResistance && p.waterResistance.toLowerCase() !== 'none') ? 1.0 : 0.0;
+        var catVal = (p.categoryName && p.categoryName.toLowerCase().indexOf('earbud') !== -1) ? 1.0 : 0.3;
+        var connVal = (p.connectionType && p.connectionType.toUpperCase() === 'WIRED') ? 0.2 : 1.0;
+
+        var baseFeatures = [priceNorm, batNorm, drvNorm, wtNorm, ancVal, micVal, waterVal, catVal, connVal];
+        var textSeed = (p.categoryName || '') + '|' + (p.connectionType || '') + '|' + (p.noiseCancelling ? 'ANC' : 'STD');
+
+        var sumSq = 0;
+        for (var i = 0; i < 512; i++) {
+            var fVal = baseFeatures[i % baseFeatures.length];
+            var h = ((i + 1) * 31 + textSeed.charCodeAt(i % Math.max(1, textSeed.length))) % 100;
+            var val = (fVal * 0.8) + ((h / 100.0) * 0.2);
+            vec[i] = val;
+            sumSq += val * val;
+        }
+        var norm = Math.sqrt(sumSq);
+        if (norm > 0) {
+            for (var j = 0; j < 512; j++) {
+                vec[j] = vec[j] / norm;
+            }
+        }
+        return vec;
+    }
+
+    function calculateCosineSimilarity512(pA, pB) {
+        var vA = generate512FeatureVector(pA);
+        var vB = generate512FeatureVector(pB);
+        var dot = 0, nA = 0, nB = 0;
+        for (var i = 0; i < 512; i++) {
+            dot += vA[i] * vB[i];
+            nA += vA[i] * vA[i];
+            nB += vB[i] * vB[i];
+        }
+        if (nA === 0 || nB === 0) return 0.75;
+        return Math.max(0, Math.min(1, dot / (Math.sqrt(nA) * Math.sqrt(nB))));
+    }
+
+    // Compute AI Hybrid Score (0 - 100) using Admin weights (w_sim * TechnicalScore + w_beh * BehaviorScore)
+    function computeAIHybridScore(p, other) {
+        var techScore = 0.50;
+        if (p.noiseCancelling) techScore += 0.14;
+        if (p.microphone) techScore += 0.06;
+        if (p.waterResistance && p.waterResistance.toLowerCase() !== 'none') techScore += 0.08;
+        if (Number(p.batteryLife) > 0) techScore += Math.min(0.14, (Number(p.batteryLife) / 80.0) * 0.14);
+        if (Number(p.driverSize) > 0) techScore += Math.min(0.08, (Number(p.driverSize) / 50.0) * 0.08);
+        techScore = Math.min(0.98, techScore);
+
+        var ratingVal = Number(p.rating) > 0 ? Number(p.rating) / 5.0 : 0.75;
+        var revBoost = Math.min(0.10, (Number(p.reviewCount) || 0) * 0.015);
+        var behScore = Math.min(0.98, ratingVal * 0.9 + revBoost);
+
+        // Value-for-money adjustment relative to peer
+        if (other && Number(p.price) > 0 && Number(other.price) > 0 && Number(p.price) < Number(other.price)) {
+            var savingsRatio = (Number(other.price) - Number(p.price)) / Number(other.price);
+            techScore = Math.min(0.99, techScore + Math.min(0.06, savingsRatio * 0.12));
+        }
+
+        var hybrid = (aiSimWeight * techScore) + (aiBehWeight * behScore);
+        return Math.round(hybrid * 100);
+    }
+
+    // Build Pros & Cons arrays for Product `target` compared against `peer`
+    function buildProsAndCons(target, peer) {
+        var pros = [];
+        var cons = [];
+
+        var pPrice = Number(target.price) || 0;
+        var oPrice = Number(peer.price) || 0;
+        if (pPrice > 0 && oPrice > 0) {
+            if (pPrice < oPrice) {
+                var diff = oPrice - pPrice;
+                var pct = Math.round((diff / oPrice) * 100);
+                pros.push('More budget-friendly: saves <strong>' + formatVND(diff) + '</strong> (' + pct + '% cheaper) compared to ' + escapeHtml(peer.productName) + '.');
+            } else if (pPrice > oPrice) {
+                var diffMore = pPrice - oPrice;
+                var pctMore = Math.round((diffMore / oPrice) * 100);
+                cons.push('Higher price tag: costs <strong>' + formatVND(diffMore) + '</strong> (+' + pctMore + '%) more than ' + escapeHtml(peer.productName) + '.');
+            }
+        }
+
+        // Noise Cancelling
+        if (target.noiseCancelling && !peer.noiseCancelling) {
+            pros.push('Equipped with <strong>Active Noise Cancelling (ANC)</strong> for superior ambient noise isolation.');
+        } else if (!target.noiseCancelling && peer.noiseCancelling) {
+            cons.push('Lacks Active Noise Cancelling (ANC), whereas ' + escapeHtml(peer.productName) + ' supports ANC.');
+        } else if (target.noiseCancelling && peer.noiseCancelling) {
+            pros.push('Supports <strong>Active Noise Cancelling (ANC)</strong> for immersive listening.');
+        }
+
+        // Battery Life
+        var pBat = Number(target.batteryLife) || 0;
+        var oBat = Number(peer.batteryLife) || 0;
+        if (pBat > 0 && oBat > 0) {
+            if (pBat > oBat) {
+                pros.push('Longer battery endurance: <strong>' + pBat + ' hours</strong> (+' + (pBat - oBat) + ' hrs longer than ' + escapeHtml(peer.productName) + ').');
+            } else if (pBat < oBat) {
+                cons.push('Shorter battery life: <strong>' + pBat + ' hours</strong> (' + (oBat - pBat) + ' hrs less than ' + escapeHtml(peer.productName) + ').');
+            }
+        } else if (pBat > 0 && oBat === 0) {
+            pros.push('Wireless freedom with up to <strong>' + pBat + ' hours</strong> of built-in battery life.');
+        } else if (pBat === 0 && oBat > 0) {
+            pros.push('Zero-latency wired connection that never requires battery charging.');
+            cons.push('Requires a physical cable connection (no wireless battery portability).');
+        }
+
+        // Driver Size
+        var pDrv = Number(target.driverSize) || 0;
+        var oDrv = Number(peer.driverSize) || 0;
+        if (pDrv > 0 && oDrv > 0) {
+            if (pDrv > oDrv) {
+                pros.push('Larger <strong>' + pDrv + ' mm</strong> acoustic driver (vs ' + oDrv + ' mm) for deeper bass and wider soundstage.');
+            } else if (pDrv < oDrv) {
+                cons.push('Smaller <strong>' + pDrv + ' mm</strong> driver compared to ' + escapeHtml(peer.productName) + '\'s ' + oDrv + ' mm driver.');
+            }
+        }
+
+        // Weight (Lighter is more comfortable)
+        var pWt = Number(target.weight) || 0;
+        var oWt = Number(peer.weight) || 0;
+        if (pWt > 0 && oWt > 0) {
+            if (pWt < oWt) {
+                pros.push('Lighter &amp; more comfortable build at <strong>' + pWt + ' g</strong> (' + (oWt - pWt).toFixed(1).replace(/\.0$/, '') + ' g lighter for long listening sessions).');
+            } else if (pWt > oWt) {
+                cons.push('Heavier form factor at <strong>' + pWt + ' g</strong> (+' + (pWt - oWt).toFixed(1).replace(/\.0$/, '') + ' g heavier than ' + escapeHtml(peer.productName) + ').');
+            }
+        }
+
+        // Water Resistance
+        var pWater = (target.waterResistance && target.waterResistance.toLowerCase() !== 'none') ? target.waterResistance : null;
+        var oWater = (peer.waterResistance && peer.waterResistance.toLowerCase() !== 'none') ? peer.waterResistance : null;
+        if (pWater && !oWater) {
+            pros.push('Certified <strong>' + escapeHtml(pWater) + '</strong> water/sweat resistance, ideal for workouts and outdoor use.');
+        } else if (!pWater && oWater) {
+            cons.push('No water resistance rating (unlike ' + escapeHtml(peer.productName) + ' with ' + escapeHtml(oWater) + ').');
+        } else if (pWater && oWater && pWater !== oWater) {
+            pros.push('Features <strong>' + escapeHtml(pWater) + '</strong> water protection.');
+        }
+
+        // Microphone
+        if (target.microphone && !peer.microphone) {
+            pros.push('Includes a <strong>built-in microphone</strong> for voice calls and online meetings.');
+        } else if (!target.microphone && peer.microphone) {
+            cons.push('No built-in microphone for hands-free voice calls.');
+        }
+
+        // Customer Rating
+        var pRate = Number(target.rating) || 0;
+        var oRate = Number(peer.rating) || 0;
+        if (pRate > 0 && oRate > 0) {
+            if (pRate > oRate) {
+                pros.push('Higher customer satisfaction rating: <strong>' + pRate.toFixed(2) + ' ★</strong> (' + (target.reviewCount || 0) + ' reviews).');
+            } else if (pRate < oRate) {
+                cons.push('Slightly lower community rating (' + pRate.toFixed(2) + ' ★ vs ' + oRate.toFixed(2) + ' ★).');
+            }
+        }
+
+        // Fallbacks if lists are empty (e.g., identical specs)
+        if (pros.length === 0) {
+            pros.push('Reliable <strong>' + escapeHtml(target.brandName || 'Authentic') + '</strong> build quality in the ' + escapeHtml(target.categoryName || 'Headphone') + ' segment.');
+        }
+        if (cons.length === 0) {
+            cons.push('No major technical drawbacks compared to ' + escapeHtml(peer.productName) + ' in its class.');
+        }
+
+        return { pros: pros, cons: cons };
+    }
+
+    // Render AI Smart Comparison Section (Between Top Row and Filter Toolbar)
+    function renderAIComparison() {
+        var bodyContainer = document.getElementById('aiCompareBody');
+        var headerBadges = document.getElementById('aiCompareHeaderBadges');
+        if (!bodyContainer) return;
+
+        var a = currentProductA;
+        var b = currentProductB;
+
+        if (!a || !b) {
+            if (headerBadges) {
+                headerBadges.innerHTML = '<span class="ai-engine-pill"><i class="fa fa-microchip"></i> 512-D Vector Engine</span>';
+            }
+            var missingText = (!a && !b)
+                ? 'Please select <strong>Product A</strong> and <strong>Product B</strong> from the list below to generate an AI-powered Pros &amp; Cons comparison.'
+                : (!a ? 'Please select <strong>Product A</strong> to complete the AI comparison against <strong>' + escapeHtml(b.productName) + '</strong>.'
+                      : 'Please select <strong>Product B</strong> to complete the AI comparison against <strong>' + escapeHtml(a.productName) + '</strong>.');
+            bodyContainer.innerHTML =
+                '<div class="ai-empty-notice">' +
+                    '<i class="fa fa-lightbulb-o"></i>' +
+                    '<div>' + missingText + '</div>' +
+                '</div>';
+            return;
+        }
+
+        var simScore = calculateCosineSimilarity512(a, b);
+        var simPct = Math.round(simScore * 100);
+        var scoreA = computeAIHybridScore(a, b);
+        var scoreB = computeAIHybridScore(b, a);
+
+        if (headerBadges) {
+            headerBadges.innerHTML =
+                '<span class="ai-sim-pill" title="512-Dimensional Cosine Similarity">' +
+                    '<i class="fa fa-bullseye"></i> AI Vector Similarity: ' + simPct + '%' +
+                '</span>' +
+                '<span class="ai-engine-pill" title="Active Admin Hybrid Weights">' +
+                    '<i class="fa fa-sliders"></i> Weights: w<sub>sim</sub>=' + aiSimWeight.toFixed(2) + ' | w<sub>beh</sub>=' + aiBehWeight.toFixed(2) +
+                '</span>';
+        }
+
+        var analysisA = buildProsAndCons(a, b);
+        var analysisB = buildProsAndCons(b, a);
+
+        var sameCategory = (a.categoryName && b.categoryName && a.categoryName.toLowerCase() === b.categoryName.toLowerCase());
+        var segmentDesc = sameCategory
+            ? 'Both models compete directly in the <strong>' + escapeHtml(a.categoryName) + '</strong> category with a <strong>' + simPct + '%</strong> 512-D feature similarity.'
+            : 'Cross-category comparison between a <strong>' + escapeHtml(a.categoryName || 'Headphone') + '</strong> (' + escapeHtml(a.productName) + ') and a <strong>' + escapeHtml(b.categoryName || 'Headphone') + '</strong> (' + escapeHtml(b.productName) + ') with a <strong>' + simPct + '%</strong> feature similarity.';
+
+        var verdictHtml = '';
+        if (scoreA > scoreB) {
+            verdictHtml = 'Based on the active AI Hybrid Scoring model (<strong>' + scoreA + '/100</strong> vs <strong>' + scoreB + '/100</strong>), <strong>' + escapeHtml(a.productName) + '</strong> holds the overall edge. '
+                + 'Choose <strong>' + escapeHtml(a.productName) + '</strong> for its stronger overall feature-to-value balance, or pick <strong>' + escapeHtml(b.productName) + '</strong> if its specific strengths better match your listening habits.';
+        } else if (scoreB > scoreA) {
+            verdictHtml = 'Based on the active AI Hybrid Scoring model (<strong>' + scoreB + '/100</strong> vs <strong>' + scoreA + '/100</strong>), <strong>' + escapeHtml(b.productName) + '</strong> holds the overall edge. '
+                + 'Choose <strong>' + escapeHtml(b.productName) + '</strong> for its superior overall feature-to-value score, or pick <strong>' + escapeHtml(a.productName) + '</strong> if its advantages align with your personal preferences.';
+        } else {
+            verdictHtml = 'Both <strong>' + escapeHtml(a.productName) + '</strong> and <strong>' + escapeHtml(b.productName) + '</strong> are evenly matched with an identical AI Hybrid Score of <strong>' + scoreA + '/100</strong>. Your choice comes down to whether you prefer the ergonomics and sound signature of ' + escapeHtml(a.brandName || 'Product A') + ' or ' + escapeHtml(b.brandName || 'Product B') + '.';
+        }
+
+        var html = '';
+        // 1. Summary Banner
+        html += '<div class="ai-summary-banner">';
+        html += '<i class="fa fa-info-circle" style="color:#D10024; margin-right:6px;"></i> ';
+        html += segmentDesc;
+        html += '</div>';
+
+        // 2. Pros & Cons Grid (Product A vs Product B)
+        html += '<div class="ai-pros-cons-grid">';
+
+        // Column A
+        html += '<div class="ai-prod-col col-a">';
+        html += '<div class="ai-prod-col-header">';
+        html += '<h4 class="ai-prod-col-title"><span class="compare-slot-badge slot-a" style="position:static;">Prod A</span> ' + escapeHtml(a.productName) + '</h4>';
+        html += '<span class="ai-score-badge score-a">AI Score: ' + scoreA + '/100</span>';
+        html += '</div>';
+        html += '<div class="ai-list-heading pros-heading"><i class="fa fa-thumbs-up"></i> Pros (Advantages)</div>';
+        html += '<ul class="ai-point-list">';
+        analysisA.pros.forEach(function(item) {
+            html += '<li><i class="fa fa-check-circle"></i><span>' + item + '</span></li>';
+        });
+        html += '</ul>';
+        html += '<div class="ai-list-heading cons-heading"><i class="fa fa-exclamation-circle"></i> Cons (Trade-offs)</div>';
+        html += '<ul class="ai-point-list">';
+        analysisA.cons.forEach(function(item) {
+            html += '<li><i class="fa fa-minus-circle"></i><span>' + item + '</span></li>';
+        });
+        html += '</ul>';
+        html += '</div>';
+
+        // Column B
+        html += '<div class="ai-prod-col col-b">';
+        html += '<div class="ai-prod-col-header">';
+        html += '<h4 class="ai-prod-col-title"><span class="compare-slot-badge slot-b" style="position:static;">Prod B</span> ' + escapeHtml(b.productName) + '</h4>';
+        html += '<span class="ai-score-badge score-b">AI Score: ' + scoreB + '/100</span>';
+        html += '</div>';
+        html += '<div class="ai-list-heading pros-heading"><i class="fa fa-thumbs-up"></i> Pros (Advantages)</div>';
+        html += '<ul class="ai-point-list">';
+        analysisB.pros.forEach(function(item) {
+            html += '<li><i class="fa fa-check-circle"></i><span>' + item + '</span></li>';
+        });
+        html += '</ul>';
+        html += '<div class="ai-list-heading cons-heading"><i class="fa fa-exclamation-circle"></i> Cons (Trade-offs)</div>';
+        html += '<ul class="ai-point-list">';
+        analysisB.cons.forEach(function(item) {
+            html += '<li><i class="fa fa-minus-circle"></i><span>' + item + '</span></li>';
+        });
+        html += '</ul>';
+        html += '</div>';
+
+        html += '</div>';
+
+        // 3. Final Verdict Box
+        html += '<div class="ai-verdict-box">';
+        html += '<div class="ai-verdict-title"><i class="fa fa-trophy"></i> AI Buying Verdict &amp; Recommendation</div>';
+        html += '<div>' + verdictHtml + '</div>';
+        html += '</div>';
+
+        bodyContainer.innerHTML = html;
     }
 
     // Render Specs Comparison List (Right Column)
@@ -174,6 +472,7 @@
         });
 
         listContainer.innerHTML = html;
+        renderAIComparison();
         updateSearchGridBadges();
     }
 

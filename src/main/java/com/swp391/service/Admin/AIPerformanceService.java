@@ -488,6 +488,171 @@ public class AIPerformanceService {
     }
 
     /**
+     * Generates Personalized AI Hybrid Recommendations for the Home page based on Customer / Session behavior profile
+     * (UserBehaviors, Favorites/Wishlist, Past Orders) combined with 512-Vector Semantic Matching.
+     */
+    public List<Map<String, Object>> getRecommendedProductsForHome(
+            Integer customerId, String sessionId, java.util.Collection<Integer> sessionWishlistIds) {
+        syncConfigurationFromDatabase();
+        if ("PAUSED".equalsIgnoreCase(algorithmStatus) || "INACTIVE".equalsIgnoreCase(algorithmStatus)) {
+            return new ArrayList<>();
+        }
+
+        List<Map<String, Object>> allProducts = aiPerformanceDAO.getAllProductsForRecommendation();
+        if (allProducts == null || allProducts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Integer, Double> globalBehaviorScores = aiPerformanceDAO.getProductBehaviorScores();
+        Map<Integer, Double> userWeights = aiPerformanceDAO.getUserPersonalBehaviorWeights(customerId, sessionId);
+
+        if (sessionWishlistIds != null) {
+            for (Integer wid : sessionWishlistIds) {
+                if (wid != null && wid > 0) {
+                    userWeights.put(wid, userWeights.getOrDefault(wid, 0.0) + 3.5);
+                }
+            }
+        }
+
+        boolean isPersonalized = !userWeights.isEmpty();
+        String baseRecType = isPersonalized ? "PERSONALIZED" : fallbackStrategy;
+
+        // Xây dựng vector hồ sơ sở thích người dùng 512 chiều (User Preference 512-D Centroid Vector)
+        double[] userProfileVec = new double[512];
+        double totalWeight = 0.0;
+        Map<Integer, Double> categoryAffinity = new HashMap<>();
+        Map<Integer, Double> brandAffinity = new HashMap<>();
+
+        if (isPersonalized) {
+            for (Map<String, Object> p : allProducts) {
+                int pid = (int) p.get("productId");
+                Double w = userWeights.get(pid);
+                if (w != null && w > 0) {
+                    double[] pVec = parseOrGenerateVector(p);
+                    for (int i = 0; i < 512 && i < pVec.length; i++) {
+                        userProfileVec[i] += pVec[i] * w;
+                    }
+                    totalWeight += w;
+
+                    int catId = (int) p.getOrDefault("categoryId", 0);
+                    int brId = (int) p.getOrDefault("brandId", 0);
+                    categoryAffinity.put(catId, categoryAffinity.getOrDefault(catId, 0.0) + w);
+                    brandAffinity.put(brId, brandAffinity.getOrDefault(brId, 0.0) + w);
+                }
+            }
+        } else {
+            // Cold-start: Tạo centroid từ các sản phẩm có điểm hành vi toàn cục cao nhất
+            for (Map<String, Object> p : allProducts) {
+                int pid = (int) p.get("productId");
+                double w = globalBehaviorScores.getOrDefault(pid, 0.50);
+                double[] pVec = parseOrGenerateVector(p);
+                for (int i = 0; i < 512 && i < pVec.length; i++) {
+                    userProfileVec[i] += pVec[i] * w;
+                }
+                totalWeight += w;
+            }
+        }
+
+        if (totalWeight > 0) {
+            double normSq = 0.0;
+            for (int i = 0; i < 512; i++) {
+                userProfileVec[i] /= totalWeight;
+                normSq += userProfileVec[i] * userProfileVec[i];
+            }
+            double norm = Math.sqrt(normSq);
+            if (norm > 0) {
+                for (int i = 0; i < 512; i++) {
+                    userProfileVec[i] /= norm;
+                }
+            }
+        }
+
+        List<Map<String, Object>> candidates = new ArrayList<>();
+        for (Map<String, Object> p : allProducts) {
+            int pid = (int) p.get("productId");
+            int catId = (int) p.getOrDefault("categoryId", 0);
+            int brId = (int) p.getOrDefault("brandId", 0);
+
+            double[] pVec = parseOrGenerateVector(p);
+            double rawCosine = calculateCosineSimilarity(userProfileVec, pVec);
+
+            // Cộng điểm tương đồng ngữ nghĩa theo Danh mục & Thương hiệu yêu thích của người dùng
+            double catBonus = (totalWeight > 0 && categoryAffinity.containsKey(catId))
+                    ? 0.14 * (categoryAffinity.get(catId) / totalWeight) : 0.0;
+            double brandBonus = (totalWeight > 0 && brandAffinity.containsKey(brId))
+                    ? 0.10 * (brandAffinity.get(brId) / totalWeight) : 0.0;
+
+            double simScore = Math.min(0.98, Math.max(0.55, (rawCosine * 0.65) + 0.25 + catBonus + brandBonus));
+            double globalBeh = globalBehaviorScores.getOrDefault(pid, 0.55);
+            double personalBeh = userWeights.containsKey(pid)
+                    ? Math.min(1.0, 0.65 + (userWeights.get(pid) / Math.max(1.0, totalWeight)) * 0.35)
+                    : globalBeh;
+            double behScore = isPersonalized ? (0.60 * personalBeh + 0.40 * globalBeh) : globalBeh;
+
+            double finalScore = (similarityWeight * simScore) + (behaviorWeight * behScore);
+            finalScore = Math.max(0.0, Math.min(0.99, finalScore));
+
+            Map<String, Object> item = new HashMap<>(p);
+            item.put("similarityScore", round(simScore, 4));
+            item.put("behaviorScore", round(behScore, 4));
+            item.put("finalScore", round(finalScore, 4));
+            item.put("matchPercentage", Math.max(60, Math.min(99, (int) Math.round(finalScore * 100))));
+            item.put("recommendationType", baseRecType);
+            item.put("aiReason", isPersonalized
+                    ? "Based on your activity & preferences"
+                    : "Trending smart pick for you");
+            candidates.add(item);
+        }
+
+        candidates.sort((a, b) -> Double.compare((double) b.get("finalScore"), (double) a.get("finalScore")));
+
+        List<Map<String, Object>> filtered = new ArrayList<>();
+        for (Map<String, Object> c : candidates) {
+            if ((double) c.get("finalScore") >= minSimilarityThreshold) {
+                filtered.add(c);
+            }
+        }
+
+        int limit = Math.max(4, Math.min(topKLimit, 12));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 0; i < filtered.size() && i < limit; i++) {
+            result.add(filtered.get(i));
+        }
+
+        // Bổ sung dự phòng nếu số lượng sản phẩm vượt ngưỡng chưa đủ cho Carousel trang chủ
+        if (result.size() < Math.min(8, candidates.size())) {
+            for (Map<String, Object> c : candidates) {
+                if (!result.contains(c)) {
+                    if (!isPersonalized) {
+                        c.put("recommendationType", fallbackStrategy);
+                    }
+                    result.add(c);
+                    if (result.size() >= limit) break;
+                }
+            }
+        }
+
+        // Ghi nhận top 4 gợi ý đầu tiên vào bảng AIRecommendations để theo dõi hiệu năng AI
+        for (int i = 0; i < result.size(); i++) {
+            Map<String, Object> item = result.get(i);
+            if (i < 4) {
+                int pid = (int) item.get("productId");
+                double sim = (double) item.get("similarityScore");
+                double beh = (double) item.get("behaviorScore");
+                double fs = (double) item.get("finalScore");
+                String recType = (String) item.getOrDefault("recommendationType", baseRecType);
+                String reason = (String) item.getOrDefault("aiReason", "Home AI Personalized Recommender");
+                long recId = aiPerformanceDAO.recordAIRecommendation(customerId, sessionId, pid, recType, sim, beh, fs, reason);
+                item.put("recommendationId", recId);
+            } else {
+                item.put("recommendationId", 0L);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Tracks a click on an AI-recommended product.
      */
     public void trackRecommendationClick(long recId, int productId, Integer customerId, String sessionId) {
