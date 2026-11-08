@@ -721,4 +721,32 @@ public class AIPerformanceDAO {
 
         return weights;
     }
+
+    /**
+     * Records a SEARCH behavior event into UserBehaviors when user queries the AI Shopping Assistant.
+     */
+    public void recordSearchBehavior(Integer customerId, String sessionId, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) return;
+        String cleanKw = keyword.trim();
+        if (cleanKw.length() > 250) {
+            cleanKw = cleanKw.substring(0, 250);
+        }
+        String sql = """
+                INSERT INTO UserBehaviors (CustomerID, ProductID, BehaviorType, SearchKeyword, SessionID, CreatedAt)
+                VALUES (?, NULL, 'SEARCH', ?, ?, GETDATE())
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (customerId != null) {
+                ps.setInt(1, customerId);
+            } else {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            }
+            ps.setString(2, cleanKw);
+            ps.setString(3, sessionId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error inserting SEARCH into UserBehaviors", e);
+        }
+    }
 }

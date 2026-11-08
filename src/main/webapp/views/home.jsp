@@ -1109,7 +1109,7 @@
                     <script>window.__contextPath = '${pageContext.request.contextPath}';</script>
                     <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
 
-
+                    <jsp:include page="/assets/components/aiChatbot.jsp" />
                 </body>
 
                 </html>

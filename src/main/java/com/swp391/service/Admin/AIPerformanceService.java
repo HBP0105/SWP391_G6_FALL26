@@ -658,4 +658,290 @@ public class AIPerformanceService {
     public void trackRecommendationClick(long recId, int productId, Integer customerId, String sessionId) {
         aiPerformanceDAO.trackRecommendationClick(recId, productId, customerId, sessionId);
     }
+
+    /**
+     * Natural Language AI Shopping Assistant: parses user query for intent, category, brand, features, and budget,
+     * scores products using 512-Vector Semantic Matching + Hybrid Behavior Scoring, and returns AI response + product cards.
+     */
+    public Map<String, Object> askAIShoppingAssistant(String rawQuery, Integer customerId, String sessionId) {
+        syncConfigurationFromDatabase();
+        Map<String, Object> responseMap = new HashMap<>();
+        String query = rawQuery != null ? rawQuery.trim() : "";
+        String qLower = query.toLowerCase(java.util.Locale.ROOT);
+
+        List<Map<String, Object>> allProducts = aiPerformanceDAO.getAllProductsForRecommendation();
+        if (allProducts == null || allProducts.isEmpty()) {
+            responseMap.put("reply", "I'm sorry, our product catalog is currently unavailable. Please try again shortly!");
+            responseMap.put("products", new ArrayList<Map<String, Object>>());
+            return responseMap;
+        }
+
+        // Record search behavior event
+        if (!query.isEmpty() && query.length() >= 2) {
+            aiPerformanceDAO.recordSearchBehavior(customerId, sessionId, query);
+        }
+
+        Map<Integer, Double> behaviorScores = aiPerformanceDAO.getProductBehaviorScores();
+
+        // 1. Check if greeting / general help
+        boolean isGreeting = qLower.matches("^(hi|hello|hey|greetings|help|what can you do|who are you|xin chao|chao|hi ai|hello ai)[\\?!.\\s]*$");
+
+        // 2. Extract semantic intents from query
+        boolean wantHeadphone = qLower.contains("headphone") || qLower.contains("over-ear") || qLower.contains("over ear")
+                || qLower.contains("on-ear") || qLower.contains("headset") || qLower.contains("studio") || qLower.contains("chụp tai");
+        boolean wantEarbud = qLower.contains("earbud") || qLower.contains("in-ear") || qLower.contains("in ear")
+                || qLower.contains("tws") || qLower.contains("earphone") || qLower.contains("airpod") || qLower.contains("nhét tai");
+
+        boolean wantANC = qLower.contains("anc") || qLower.contains("noise") || qLower.contains("quiet")
+                || qLower.contains("study") || qLower.contains("flight") || qLower.contains("airplane")
+                || qLower.contains("office") || qLower.contains("isolation") || qLower.contains("chống ồn");
+        boolean wantBattery = qLower.contains("battery") || qLower.contains("long life") || qLower.contains("hours")
+                || qLower.contains("all day") || qLower.contains("travel") || qLower.contains("pin");
+        boolean wantSport = qLower.contains("sport") || qLower.contains("gym") || qLower.contains("run")
+                || qLower.contains("workout") || qLower.contains("exercise") || qLower.contains("water")
+                || qLower.contains("sweat") || qLower.contains("ipx") || qLower.contains("thể thao");
+        boolean wantGamingOrCalls = qLower.contains("game") || qLower.contains("gaming") || qLower.contains("mic")
+                || qLower.contains("call") || qLower.contains("meeting") || qLower.contains("zoom") || qLower.contains("voice");
+        boolean wantWireless = qLower.contains("wireless") || qLower.contains("bluetooth") || qLower.contains("cordless") || qLower.contains("không dây");
+        boolean wantWired = qLower.contains("wired") || qLower.contains("cable") || qLower.contains("3.5mm") || qLower.contains("có dây");
+        boolean wantBudget = qLower.contains("cheap") || qLower.contains("budget") || qLower.contains("affordable")
+                || qLower.contains("low price") || qLower.contains("inexpensive") || qLower.contains("giá rẻ");
+        boolean wantPremium = qLower.contains("premium") || qLower.contains("luxury") || qLower.contains("high-end")
+                || qLower.contains("high end") || qLower.contains("flagship") || qLower.contains("best") || qLower.contains("pro") || qLower.contains("cao cấp");
+
+        // Extract price limit if mentioned (e.g. "under 3000000", "below 2m", "under 2.5 million", "< 1500k")
+        Double maxPriceLimit = extractPriceConstraint(qLower, true);
+        Double minPriceLimit = extractPriceConstraint(qLower, false);
+
+        // Extract brand if mentioned
+        String matchedBrand = null;
+        for (Map<String, Object> p : allProducts) {
+            String bName = (String) p.get("brandName");
+            if (bName != null && !bName.isEmpty() && qLower.contains(bName.toLowerCase(java.util.Locale.ROOT))) {
+                matchedBrand = bName;
+                break;
+            }
+        }
+
+        // Tokenize query for keyword matching
+        String[] rawTokens = qLower.replaceAll("[^a-z0-9\\u00C0-\\u1EF9\\s]", " ").split("\\s+");
+        List<String> keywords = new ArrayList<>();
+        List<String> stopWords = java.util.Arrays.asList(
+                "i", "want", "need", "looking", "for", "a", "an", "the", "me", "find", "show", "recommend",
+                "suggest", "some", "good", "with", "and", "or", "to", "in", "on", "of", "under", "below",
+                "over", "above", "around", "about", "can", "you", "please", "what", "is", "are", "which", "buy"
+        );
+        for (String tk : rawTokens) {
+            if (tk.length() >= 2 && !stopWords.contains(tk) && !tk.matches("^\\d+$")) {
+                keywords.add(tk);
+            }
+        }
+
+        // Construct synthetic query product map to generate 512-D Query Vector
+        Map<String, Object> syntheticQueryMap = new HashMap<>();
+        syntheticQueryMap.put("productName", query);
+        syntheticQueryMap.put("brandName", matchedBrand != null ? matchedBrand : "");
+        syntheticQueryMap.put("categoryName", wantHeadphone ? "Headphones" : (wantEarbud ? "Earbuds" : "Audio"));
+        syntheticQueryMap.put("connectionType", wantWired ? "Wired" : "Wireless Bluetooth");
+        syntheticQueryMap.put("noiseCancelling", wantANC);
+        syntheticQueryMap.put("batteryLife", wantBattery ? 40 : 24);
+        syntheticQueryMap.put("price", maxPriceLimit != null ? maxPriceLimit.longValue() : 2000000);
+        syntheticQueryMap.put("description", query);
+        double[] queryVec = generateProduct512Vector(syntheticQueryMap);
+
+        // Score all candidate products
+        List<Map<String, Object>> scoredProducts = new ArrayList<>();
+        for (Map<String, Object> p : allProducts) {
+            int pid = (int) p.get("productId");
+            String pName = ((String) p.getOrDefault("productName", "")).toLowerCase(java.util.Locale.ROOT);
+            String pCat = ((String) p.getOrDefault("categoryName", "")).toLowerCase(java.util.Locale.ROOT);
+            String pBrand = ((String) p.getOrDefault("brandName", "")).toLowerCase(java.util.Locale.ROOT);
+            String pConn = ((String) p.getOrDefault("connectionType", "")).toLowerCase(java.util.Locale.ROOT);
+            String pDesc = ((String) p.getOrDefault("description", "")).toLowerCase(java.util.Locale.ROOT);
+            boolean pAnc = Boolean.TRUE.equals(p.get("noiseCancelling"));
+            int pBattery = p.get("batteryLife") instanceof Number ? ((Number) p.get("batteryLife")).intValue() : 0;
+            double pPrice = p.get("price") instanceof Number ? ((Number) p.get("price")).doubleValue() : 0.0;
+
+            // Price constraint filtering
+            if (maxPriceLimit != null && pPrice > maxPriceLimit * 1.05) {
+                continue;
+            }
+            if (minPriceLimit != null && pPrice < minPriceLimit * 0.95) {
+                continue;
+            }
+
+            // Category constraint filtering if strongly specified
+            if (wantHeadphone && !wantEarbud && (pCat.contains("earbud") || pCat.contains("in-ear"))) {
+                continue;
+            }
+            if (wantEarbud && !wantHeadphone && (pCat.contains("headphone") || pCat.contains("over-ear"))) {
+                continue;
+            }
+
+            // Brand constraint filtering if specified
+            if (matchedBrand != null && !pBrand.equalsIgnoreCase(matchedBrand)) {
+                continue;
+            }
+
+            double[] pVec = parseOrGenerateVector(p);
+            double vectorSim = calculateCosineSimilarity(queryVec, pVec);
+
+            // Calculate semantic feature & keyword match score
+            double intentScore = 0.55;
+            if (matchedBrand != null && pBrand.equalsIgnoreCase(matchedBrand)) intentScore += 0.25;
+            if (wantHeadphone && pCat.contains("headphone")) intentScore += 0.18;
+            if (wantEarbud && pCat.contains("earbud")) intentScore += 0.18;
+            if (wantANC) {
+                intentScore += pAnc ? 0.22 : -0.15;
+            }
+            if (wantBattery) {
+                intentScore += (pBattery >= 30) ? 0.18 : (pBattery >= 20 ? 0.08 : -0.05);
+            }
+            if (wantSport && (pCat.contains("earbud") || pDesc.contains("water") || pDesc.contains("sport") || pDesc.contains("ipx"))) {
+                intentScore += 0.18;
+            }
+            if (wantGamingOrCalls && (pDesc.contains("mic") || pDesc.contains("call") || pDesc.contains("game") || pName.contains("gaming"))) {
+                intentScore += 0.15;
+            }
+            if (wantWireless && (pConn.contains("wireless") || pConn.contains("bluetooth"))) intentScore += 0.12;
+            if (wantWired && pConn.contains("wired")) intentScore += 0.18;
+            if (wantBudget && pPrice <= 2000000) intentScore += 0.16;
+            if (wantPremium && pPrice >= 3000000) intentScore += 0.16;
+
+            int matchedKwCount = 0;
+            for (String kw : keywords) {
+                if (pName.contains(kw)) {
+                    intentScore += 0.22;
+                    matchedKwCount++;
+                } else if (pBrand.contains(kw) || pCat.contains(kw)) {
+                    intentScore += 0.14;
+                    matchedKwCount++;
+                } else if (pDesc.contains(kw)) {
+                    intentScore += 0.08;
+                    matchedKwCount++;
+                }
+            }
+
+            double combinedSim = Math.min(0.99, Math.max(0.50, (vectorSim * 0.35) + (Math.min(1.0, intentScore) * 0.65)));
+            double behScore = behaviorScores.getOrDefault(pid, 0.55);
+            double finalScore = (similarityWeight * combinedSim) + (behaviorWeight * behScore);
+            finalScore = Math.max(0.50, Math.min(0.99, finalScore));
+
+            Map<String, Object> item = new HashMap<>(p);
+            item.put("similarityScore", round(combinedSim, 4));
+            item.put("behaviorScore", round(behScore, 4));
+            item.put("finalScore", round(finalScore, 4));
+            item.put("matchPercentage", Math.max(65, Math.min(99, (int) Math.round(finalScore * 100))));
+            item.put("matchedKwCount", matchedKwCount);
+            scoredProducts.add(item);
+        }
+
+        // Fallback if strict constraints filtered everything out
+        boolean usedRelaxedFallback = false;
+        if (scoredProducts.isEmpty()) {
+            usedRelaxedFallback = true;
+            for (Map<String, Object> p : allProducts) {
+                int pid = (int) p.get("productId");
+                double[] pVec = parseOrGenerateVector(p);
+                double sim = Math.max(0.60, calculateCosineSimilarity(queryVec, pVec));
+                double beh = behaviorScores.getOrDefault(pid, 0.55);
+                double fs = (similarityWeight * sim) + (behaviorWeight * beh);
+                Map<String, Object> item = new HashMap<>(p);
+                item.put("similarityScore", round(sim, 4));
+                item.put("behaviorScore", round(beh, 4));
+                item.put("finalScore", round(fs, 4));
+                item.put("matchPercentage", Math.max(65, Math.min(95, (int) Math.round(fs * 100))));
+                scoredProducts.add(item);
+            }
+        }
+
+        // Sort by budget/premium preference if requested, otherwise by finalScore descending
+        scoredProducts.sort((a, b) -> {
+            int cmp = Double.compare((double) b.get("finalScore"), (double) a.get("finalScore"));
+            if (cmp != 0) return cmp;
+            double pa = ((Number) a.get("price")).doubleValue();
+            double pb = ((Number) b.get("price")).doubleValue();
+            return wantBudget ? Double.compare(pa, pb) : Double.compare(pb, pa);
+        });
+
+        int limit = Math.min(4, scoredProducts.size());
+        List<Map<String, Object>> topPicks = new ArrayList<>();
+        for (int i = 0; i < limit; i++) {
+            Map<String, Object> item = scoredProducts.get(i);
+            int pid = (int) item.get("productId");
+            double sim = (double) item.get("similarityScore");
+            double beh = (double) item.get("behaviorScore");
+            double fs = (double) item.get("finalScore");
+            long recId = aiPerformanceDAO.recordAIRecommendation(
+                    customerId, sessionId, pid, "AI_CHAT", sim, beh, fs,
+                    "AI Chatbot Query: " + (query.length() > 80 ? query.substring(0, 80) : query));
+            item.put("recommendationId", recId);
+            topPicks.add(item);
+        }
+
+        // Build natural English AI response
+        StringBuilder reply = new StringBuilder();
+        if (isGreeting || query.isEmpty()) {
+            reply.append("Hello! I'm your AI Audio Shopping Assistant. Tell me what you're looking for (e.g., \"wireless earbuds with ANC under 3,000,000 VND\", \"Sony headphones for office calls\", or \"long battery headphones\"). Here are some top-rated picks for you right now:");
+        } else if (usedRelaxedFallback) {
+            reply.append("I couldn't find an exact match for all of those specific constraints, but based on our 512-D semantic analysis, here are the closest headphones and earbuds you might love:");
+        } else {
+            List<String> criteriaParts = new ArrayList<>();
+            if (matchedBrand != null) criteriaParts.add(matchedBrand);
+            if (wantHeadphone && !wantEarbud) criteriaParts.add("over-ear/on-ear headphones");
+            else if (wantEarbud && !wantHeadphone) criteriaParts.add("compact earbuds");
+            else criteriaParts.add("audio products");
+
+            if (wantANC) criteriaParts.add("with Active Noise Cancelling (ANC)");
+            if (wantBattery) criteriaParts.add("with long battery life");
+            if (wantSport) criteriaParts.add("great for workouts & sports");
+            if (wantGamingOrCalls) criteriaParts.add("ideal for calls & gaming");
+            if (maxPriceLimit != null) {
+                criteriaParts.add("under " + String.format("%,d", maxPriceLimit.longValue()) + " VND");
+            } else if (wantBudget) {
+                criteriaParts.add("at a budget-friendly price");
+            } else if (wantPremium) {
+                criteriaParts.add("in our premium lineup");
+            }
+
+            reply.append("Based on your request, I analyzed our catalog and found the best ")
+                 .append(String.join(" ", criteriaParts))
+                 .append(" for you:");
+        }
+
+        responseMap.put("reply", reply.toString());
+        responseMap.put("products", topPicks);
+        return responseMap;
+    }
+
+    private Double extractPriceConstraint(String qLower, boolean isMaxLimit) {
+        // Detects patterns like "under 3m", "below 2,000,000", "less than 1.5tr", "over 3000000"
+        String regex = isMaxLimit
+                ? "(?:under|below|less than|max|up to|budget|around|duoi|<|<=)\\s*([0-9]+(?:[.,][0-9]+)*)\\s*(m|million|tr|trieu|k|thousand|vnd|d)?"
+                : "(?:over|above|more than|min|from|tren|>|>=)\\s*([0-9]+(?:[.,][0-9]+)*)\\s*(m|million|tr|trieu|k|thousand|vnd|d)?";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(regex).matcher(qLower);
+        if (m.find()) {
+            try {
+                String numStr = m.group(1);
+                String unit = m.group(2) != null ? m.group(2).trim() : "";
+                double val;
+                if (unit.startsWith("m") || unit.startsWith("tr")) {
+                    val = Double.parseDouble(numStr.replace(",", ".")) * 1_000_000.0;
+                } else if (unit.startsWith("k") || unit.startsWith("th")) {
+                    val = Double.parseDouble(numStr.replace(",", ".")) * 1_000.0;
+                } else {
+                    String digitsOnly = numStr.replaceAll("[.,]", "");
+                    val = Double.parseDouble(digitsOnly);
+                    if (val < 100) {
+                        val *= 1_000_000.0;
+                    } else if (val < 10000) {
+                        val *= 1_000.0;
+                    }
+                }
+                return val > 0 ? val : null;
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
 }
