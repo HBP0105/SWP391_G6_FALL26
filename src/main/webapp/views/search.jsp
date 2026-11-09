@@ -363,26 +363,55 @@
                                                 <span class="store-qty">Showing ${fromIndex}-${toIndex} of
                                                     ${totalResults} products</span>
                                                 <c:if test="${totalPages > 1}">
-                                                    <ul class="store-pagination">
-                                                        <c:if test="${currentPage > 1}">
-                                                            <li><a href="${pageBaseUrl}&page=${currentPage - 1}"><i
-                                                                        class="fa fa-angle-left"></i></a></li>
-                                                        </c:if>
-                                                        <c:forEach var="i" begin="1" end="${totalPages}">
-                                                            <c:choose>
-                                                                <c:when test="${i == currentPage}">
-                                                                    <li class="active">${i}</li>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <li><a href="${pageBaseUrl}&page=${i}">${i}</a></li>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </c:forEach>
-                                                        <c:if test="${currentPage < totalPages}">
-                                                            <li><a href="${pageBaseUrl}&page=${currentPage + 1}"><i
-                                                                        class="fa fa-angle-right"></i></a></li>
-                                                        </c:if>
-                                                    </ul>
+                                                    <c:set var="startPage" value="${currentPage - 2 > 1 ? currentPage - 2 : 1}" />
+                                                    <c:set var="endPage" value="${startPage + 4 < totalPages ? startPage + 4 : totalPages}" />
+                                                    <c:if test="${endPage - startPage < 4}">
+                                                        <c:set var="startPage" value="${endPage - 4 > 1 ? endPage - 4 : 1}" />
+                                                    </c:if>
+                                                    <div class="store-pagination-wrap">
+                                                        <ul class="store-pagination">
+                                                            <c:if test="${currentPage > 1}">
+                                                                <li><a href="${pageBaseUrl}&page=1" title="First Page"><i
+                                                                            class="fa fa-angle-double-left"></i></a></li>
+                                                                <li><a href="${pageBaseUrl}&page=${currentPage - 1}" title="Previous Page"><i
+                                                                            class="fa fa-angle-left"></i></a></li>
+                                                            </c:if>
+                                                            <c:forEach var="i" begin="${startPage}" end="${endPage}">
+                                                                <c:choose>
+                                                                    <c:when test="${i == currentPage}">
+                                                                        <li class="active">${i}</li>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <li><a href="${pageBaseUrl}&page=${i}">${i}</a></li>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </c:forEach>
+                                                            <c:if test="${currentPage < totalPages}">
+                                                                <li><a href="${pageBaseUrl}&page=${currentPage + 1}" title="Next Page"><i
+                                                                            class="fa fa-angle-right"></i></a></li>
+                                                                <li><a href="${pageBaseUrl}&page=${totalPages}" title="Last Page"><i
+                                                                            class="fa fa-angle-double-right"></i></a></li>
+                                                            </c:if>
+                                                        </ul>
+                                                        <div class="pagination-jump-box">
+                                                            <input type="number" id="searchJumpPageInput" class="pagination-jump-input"
+                                                                min="1" max="${totalPages}" value="${currentPage}" placeholder="Page"
+                                                                onkeydown="if(event.key==='Enter'){event.preventDefault();jumpToSearchPage(${totalPages});}">
+                                                            <button type="button" class="pagination-jump-btn"
+                                                                onclick="jumpToSearchPage(${totalPages})">Go</button>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        function jumpToSearchPage(maxPages) {
+                                                            var inp = document.getElementById('searchJumpPageInput');
+                                                            if (!inp) return;
+                                                            var val = parseInt(inp.value, 10);
+                                                            if (isNaN(val)) return;
+                                                            if (val < 1) val = 1;
+                                                            if (val > maxPages) val = maxPages;
+                                                            window.location.href = '${pageBaseUrl}&page=' + val;
+                                                        }
+                                                    </script>
                                                 </c:if>
                                             </div>
                                         </c:if>

@@ -625,6 +625,16 @@
         }, delay);
     }
 
+    window.jumpToComparePage = function(maxPages) {
+        var inp = document.getElementById('compareJumpPageInput');
+        if (!inp) return;
+        var val = parseInt(inp.value, 10);
+        if (isNaN(val)) return;
+        if (val < 1) val = 1;
+        if (val > maxPages) val = maxPages;
+        window.goToComparePage(val);
+    };
+
     // Render Pagination Bar
     function renderPagination(data) {
         var container = document.getElementById('comparePaginationContainer');
@@ -647,11 +657,19 @@
         html += '</span>';
 
         if (totalPages > 1) {
+            var startPage = curPage - 2 > 1 ? curPage - 2 : 1;
+            var endPage = startPage + 4 < totalPages ? startPage + 4 : totalPages;
+            if (endPage - startPage < 4) {
+                startPage = endPage - 4 > 1 ? endPage - 4 : 1;
+            }
+
+            html += '<div class="store-pagination-wrap">';
             html += '<ul class="store-pagination">';
             if (curPage > 1) {
-                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(' + (curPage - 1) + ')"><i class="fa fa-angle-left"></i></a></li>';
+                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(1)" title="First Page"><i class="fa fa-angle-double-left"></i></a></li>';
+                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(' + (curPage - 1) + ')" title="Previous Page"><i class="fa fa-angle-left"></i></a></li>';
             }
-            for (var i = 1; i <= totalPages; i++) {
+            for (var i = startPage; i <= endPage; i++) {
                 if (i === curPage) {
                     html += '<li class="active"><span>' + i + '</span></li>';
                 } else {
@@ -659,9 +677,15 @@
                 }
             }
             if (curPage < totalPages) {
-                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(' + (curPage + 1) + ')"><i class="fa fa-angle-right"></i></a></li>';
+                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(' + (curPage + 1) + ')" title="Next Page"><i class="fa fa-angle-right"></i></a></li>';
+                html += '<li><a href="javascript:void(0)" onclick="goToComparePage(' + totalPages + ')" title="Last Page"><i class="fa fa-angle-double-right"></i></a></li>';
             }
             html += '</ul>';
+            html += '<div class="pagination-jump-box">';
+            html += '<input type="number" id="compareJumpPageInput" class="pagination-jump-input" min="1" max="' + totalPages + '" value="' + curPage + '" placeholder="Page" onkeydown="if(event.key===\'Enter\'){event.preventDefault();jumpToComparePage(' + totalPages + ');}">';
+            html += '<button type="button" class="pagination-jump-btn" onclick="jumpToComparePage(' + totalPages + ')">Go</button>';
+            html += '</div>';
+            html += '</div>';
         }
         html += '</div>';
 

@@ -64,3 +64,73 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     color: #999;
     font-size: 13px;
 }
+
+/* ===== PAGINATION & JUMP TO PAGE ===== */
+.store-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.store-filter:before,
+.store-filter:after {
+    display: none;
+}
+.store-pagination-wrap {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-left: auto;
+}
+.store-pagination {
+    float: none !important;
+    margin: 0 !important;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.store-pagination li + li {
+    margin-left: 0 !important;
+}
+.pagination-jump-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.pagination-jump-input {
+    width: 68px;
+    height: 40px;
+    padding: 0 8px;
+    border: 1px solid #E4E7ED;
+    background-color: #FFF;
+    color: #2B2D42;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.pagination-jump-input:focus {
+    border-color: #D10024;
+}
+.pagination-jump-btn {
+    height: 40px;
+    padding: 0 14px;
+    background-color: #D10024;
+    color: #FFF;
+    border: 1px solid #D10024;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.pagination-jump-btn:hover {
+    background-color: #b5001f;
+    border-color: #b5001f;
+}
+

@@ -341,6 +341,8 @@ public class AIPerformanceService {
 
     /**
      * Dynamically generates an L2-normalized 512-dimension feature vector from product specifications.
+     * Primary: Google Gemini Embedding API (text-embedding-004, 512-D).
+     * Fallback: Local L2-normalized 512-D feature hash vector.
      */
     public double[] generateProduct512Vector(Map<String, Object> p) {
         String text = String.format("Product: %s. Brand: %s. Category: %s. Connection: %s. ANC: %s. Battery: %s hrs. Price: %s. %s",
@@ -352,6 +354,11 @@ public class AIPerformanceService {
                 p.getOrDefault("batteryLife", "30"),
                 p.getOrDefault("price", "0"),
                 p.getOrDefault("description", ""));
+
+        double[] geminiVec = com.swp391.util.GeminiClient.generateEmbedding512(text);
+        if (geminiVec != null && geminiVec.length == 512) {
+            return geminiVec;
+        }
 
         double[] vec = new double[512];
         double sumSq = 0.0;
@@ -683,8 +690,48 @@ public class AIPerformanceService {
 
         Map<Integer, Double> behaviorScores = aiPerformanceDAO.getProductBehaviorScores();
 
-        // 1. Check if greeting / general help
-        boolean isGreeting = qLower.matches("^(hi|hello|hey|greetings|help|what can you do|who are you|xin chao|chao|hi ai|hello ai)[\\?!.\\s]*$");
+        // 0. Try Google Gemini AI first (RAG over active product catalog)
+        if (!query.isEmpty()) {
+            Map<String, Object> geminiRes = com.swp391.util.GeminiClient.askShoppingAssistantWithGemini(query, allProducts);
+            if (geminiRes != null && geminiRes.get("reply") != null) {
+                @SuppressWarnings("unchecked")
+                List<Integer> geminiIds = (List<Integer>) geminiRes.get("productIds");
+                List<Map<String, Object>> geminiPicks = new ArrayList<>();
+                if (geminiIds != null && !geminiIds.isEmpty()) {
+                    for (Integer gid : geminiIds) {
+                        for (Map<String, Object> p : allProducts) {
+                            if (gid.equals(p.get("productId"))) {
+                                Map<String, Object> item = new HashMap<>(p);
+                                double sim = 0.92;
+                                double beh = behaviorScores.getOrDefault(gid, 0.75);
+                                double fs = Math.min(0.99, (similarityWeight * sim) + (behaviorWeight * beh));
+                                item.put("similarityScore", round(sim, 4));
+                                item.put("behaviorScore", round(beh, 4));
+                                item.put("finalScore", round(fs, 4));
+                                item.put("matchPercentage", Math.max(80, Math.min(99, (int) Math.round(fs * 100))));
+                                long recId = aiPerformanceDAO.recordAIRecommendation(
+                                        customerId, sessionId, gid, "AI_CHAT", sim, beh, fs,
+                                        "Gemini AI Assistant: " + (query.length() > 80 ? query.substring(0, 80) : query));
+                                item.put("recommendationId", recId);
+                                geminiPicks.add(item);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Return Gemini response (even if product list is empty because user query is out of scope)
+                responseMap.put("reply", geminiRes.get("reply"));
+                responseMap.put("products", geminiPicks);
+                return responseMap;
+            }
+        }
+
+        // 1. Guard against empty / gibberish / small talk / off-topic queries in local fallback
+        if (isOutOfScopeOrGibberish(query, qLower)) {
+            responseMap.put("reply", "I am an AI shopping assistant dedicated to audio products. I cannot answer social, off-topic, or non-shopping inquiries. Please ask me about buying headphones, earbuds, or audio gear (e.g., budget, noise cancelling, battery life, brand).");
+            responseMap.put("products", new ArrayList<Map<String, Object>>());
+            return responseMap;
+        }
 
         // 2. Extract semantic intents from query
         boolean wantHeadphone = qLower.contains("headphone") || qLower.contains("over-ear") || qLower.contains("over ear")
@@ -881,9 +928,7 @@ public class AIPerformanceService {
 
         // Build natural English AI response
         StringBuilder reply = new StringBuilder();
-        if (isGreeting || query.isEmpty()) {
-            reply.append("Hello! I'm your AI Audio Shopping Assistant. Tell me what you're looking for (e.g., \"wireless earbuds with ANC under 3,000,000 VND\", \"Sony headphones for office calls\", or \"long battery headphones\"). Here are some top-rated picks for you right now:");
-        } else if (usedRelaxedFallback) {
+        if (usedRelaxedFallback) {
             reply.append("I couldn't find an exact match for all of those specific constraints, but based on our 512-D semantic analysis, here are the closest headphones and earbuds you might love:");
         } else {
             List<String> criteriaParts = new ArrayList<>();
@@ -912,6 +957,60 @@ public class AIPerformanceService {
         responseMap.put("reply", reply.toString());
         responseMap.put("products", topPicks);
         return responseMap;
+    }
+
+    /**
+     * Determines whether a user message is gibberish, keyboard spam, small talk, or completely off-topic.
+     */
+    private boolean isOutOfScopeOrGibberish(String raw, String qLower) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return true;
+        }
+        String trimmed = raw.trim();
+        // Too short or no letters
+        if (trimmed.length() < 2 || !trimmed.matches(".*[a-zA-Z\\u00C0-\\u1EF9].*")) {
+            return true;
+        }
+
+        // 1. Exact or common greeting / small talk patterns
+        if (qLower.matches("^(hi|hello|hey|hey there|greetings|good morning|good afternoon|good evening|how are you|who are you|what can you do|help|alo|chao|xin chao|chao ban|hi ban|hello shop)[\\?!.\\s]*$")) {
+            return true;
+        }
+
+        // 2. Pure off-topic chit-chat / question words without audio intent
+        if (qLower.matches("^(what is your name|how are you doing|are you a robot|tell me a joke|sing a song|write code|who made you|where are you from|weather today|thoi tiet|an com chua)[\\?!.\\s]*$")) {
+            return true;
+        }
+
+        // 3. Gibberish / keyboard mash detection (e.g. "asdfgh", "qwerty", repeated characters "aaaaaa")
+        if (qLower.matches(".*([a-z])\\1{3,}.*")) { // same character repeated 4+ times
+            return true;
+        }
+        if (qLower.matches("^(asdf|qwer|zxcv|jkl;|1234|abcd).*")) {
+            return true;
+        }
+
+        // 4. Must contain at least one shopping or audio-related keyword/signal
+        boolean hasAudioOrShoppingSignal =
+                qLower.contains("tai nghe") || qLower.contains("headphone") || qLower.contains("earbud")
+                || qLower.contains("earphone") || qLower.contains("airpod") || qLower.contains("headset")
+                || qLower.contains("chống ồn") || qLower.contains("anc") || qLower.contains("bass")
+                || qLower.contains("treble") || qLower.contains("mic") || qLower.contains("bluetooth")
+                || qLower.contains("wireless") || qLower.contains("pin") || qLower.contains("battery")
+                || qLower.contains("sony") || qLower.contains("apple") || qLower.contains("bose")
+                || qLower.contains("jbl") || qLower.contains("sennheiser") || qLower.contains("razer")
+                || qLower.contains("hyperx") || qLower.contains("marshall") || qLower.contains("soundcore")
+                || qLower.contains("audio-technica") || qLower.contains("mua") || qLower.contains("giá")
+                || qLower.contains("tư vấn") || qLower.contains("tìm") || qLower.contains("buy")
+                || qLower.contains("price") || qLower.contains("under") || qLower.contains("cheap")
+                || qLower.contains("best") || qLower.contains("recommend") || qLower.contains("suggest")
+                || qLower.contains("budget") || qLower.contains("call") || qLower.contains("game")
+                || qLower.contains("gaming") || qLower.contains("gym") || qLower.contains("sport")
+                || qLower.contains("sound") || qLower.contains("audio") || qLower.contains("wired")
+                || qLower.contains("over-ear") || qLower.contains("in-ear") || qLower.contains("tws")
+                || qLower.contains("dưới") || qLower.contains("triệu") || qLower.contains("vnd");
+
+        return !hasAudioOrShoppingSignal;
     }
 
     private Double extractPriceConstraint(String qLower, boolean isMaxLimit) {

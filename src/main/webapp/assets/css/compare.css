@@ -754,6 +754,58 @@
     height: 100%;
 }
 
+.compare-pagination-wrapper .store-pagination-wrap {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.compare-pagination-wrapper .pagination-jump-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.compare-pagination-wrapper .pagination-jump-input {
+    width: 68px;
+    height: 38px;
+    padding: 0 8px;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    color: #2B2D42;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.compare-pagination-wrapper .pagination-jump-input:focus {
+    border-color: #D10024;
+}
+
+.compare-pagination-wrapper .pagination-jump-btn {
+    height: 38px;
+    padding: 0 14px;
+    background-color: #D10024;
+    color: #FFFFFF;
+    border: 1px solid #D10024;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.compare-pagination-wrapper .pagination-jump-btn:hover {
+    background-color: #b5001f;
+    border-color: #b5001f;
+}
+
 /* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */

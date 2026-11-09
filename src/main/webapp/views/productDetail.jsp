@@ -23,7 +23,7 @@
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/nouislider.min.css" />
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/font-awesome.min.css">
         <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
-        <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/productDetail.css?v=1.2" />
+        <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/productDetail.css?v=1.3" />
     </head>
 
     <body>
@@ -530,62 +530,80 @@
 
         <!-- AI RECOMMENDATIONS SECTION -->
         <c:if test="${not empty aiRecommendations}">
-            <div class="section" style="background-color: #fbfbfb; border-top: 1px solid #eaeaea; padding-top: 40px; padding-bottom: 40px;">
+            <div class="section">
                 <div class="container">
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="section-title">
-                                <h3 class="title" style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px;">
-                                        <i class="fa fa-magic"></i>
-                                    </span>
-                                    <span>Gợi ý tương đồng bằng AI <small style="font-size: 14px; color: #6b7280; font-weight: normal;">(512-Vector Semantic Recommender)</small></span>
+                            <div class="section-title text-center">
+                                <h3 class="title">
+                                    Similar AI Recommendations
+                                    <span class="ai-title-badge"><i class="fa fa-magic"></i> AI Powered</span>
                                 </h3>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <c:forEach var="item" items="${aiRecommendations}">
-                            <div class="col-md-3 col-sm-6 col-xs-6" style="margin-bottom: 20px;">
-                                <div class="product" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
-                                    <div class="product-img" style="position: relative; height: 190px; display: flex; align-items: center; justify-content: center; padding: 15px; background: #fff;">
+
+                        <c:forEach var="item" items="${aiRecommendations}" varStatus="st">
+                            <div class="col-md-3 col-xs-6">
+                                <div class="product">
+                                    <div class="product-img">
                                         <c:set var="itemImg" value="${item.imageUrl}"/>
-                                        <c:choose>
-                                            <c:when test="${itemImg.startsWith('http')}">
-                                                <img src="${itemImg}" alt="${item.productName}" style="max-height: 160px; max-width: 100%; object-fit: contain;">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <img src="${pageContext.request.contextPath}/${itemImg}" alt="${item.productName}" style="max-height: 160px; max-width: 100%; object-fit: contain;">
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <div class="product-label" style="position: absolute; top: 10px; right: 10px;">
-                                            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: 700;">
-                                                <i class="fa fa-bolt"></i> Match ${item.matchPercentage}%
-                                            </span>
+                                        <img src="${itemImg.startsWith('http') ? itemImg : pageContext.request.contextPath.concat('/').concat(itemImg)}" alt="${item.productName}">
+                                        <div class="product-label">
+                                            <span class="sale ai-match"><i class="fa fa-bolt"></i> ${item.matchPercentage}% MATCH</span>
+                                            <span class="new">AI PICK</span>
                                         </div>
                                     </div>
-                                    <div class="product-body" style="padding: 15px; text-align: left;">
-                                        <p class="product-category" style="font-size: 11px; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">${item.brandName} • ${item.categoryName}</p>
-                                        <h3 class="product-name" style="font-size: 14px; font-weight: 700; height: 38px; overflow: hidden; margin-bottom: 8px;">
-                                            <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}" title="${item.productName}">
+                                    <div class="product-body">
+                                        <p class="product-category">${item.categoryName}</p>
+                                        <h3 class="product-name">
+                                            <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}">
                                                 ${item.productName}
                                             </a>
                                         </h3>
-                                        <h4 class="product-price" style="font-size: 15px; color: #D10024; font-weight: 700; margin-bottom: 8px;">
-                                            <fmt:formatNumber value="${item.price}" pattern="#,###"/> &#8363;
+                                        <c:if test="${not empty item.aiReason}">
+                                            <p class="ai-reason-hint"><i class="fa fa-magic"></i> ${item.aiReason}</p>
+                                        </c:if>
+                                        <h4 class="product-price">
+                                            <fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> &#8363;
                                         </h4>
-                                        <div style="font-size: 11px; color: #6b7280; display: flex; justify-content: space-between; border-top: 1px dashed #e5e7eb; padding-top: 6px;">
-                                            <span><i class="fa fa-check-circle text-success"></i> ANC: ${item.noiseCancelling ? 'Có' : 'Không'}</span>
-                                            <span><i class="fa fa-battery-three-quarters text-primary"></i> ${item.batteryLife}h pin</span>
+                                        <div class="product-rating">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div>
+                                        <div class="product-btns">
+                                            <c:set var="inWishlist" value="${sessionScope.wishlistProductIds != null && sessionScope.wishlistProductIds.contains(item.productId)}" />
+                                            <button type="button" class="add-to-wishlist ${inWishlist ? 'in-wishlist' : ''}" data-product-id="${item.productId}" title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}">
+                                                <i class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}" ${inWishlist ? 'style="color: #D10024;"' : ''}></i>
+                                                <span class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span>
+                                            </button>
+                                            <button type="button" class="add-to-compare" data-product-id="${item.productId}">
+                                                <i class="fa fa-exchange"></i>
+                                                <span class="tooltipp">add to compare</span>
+                                            </button>
+                                            <button class="quick-view" onclick="location.href = '${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}'">
+                                                <i class="fa fa-eye"></i>
+                                                <span class="tooltipp">quick view</span>
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="add-to-cart" style="padding: 10px 15px; background: #fafafa; border-top: 1px solid #f3f4f6; text-align: center;">
-                                        <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}&recId=${item.recommendationId}" class="btn btn-sm btn-outline-danger" style="width: 100%; border: 1px solid #D10024; color: #D10024; border-radius: 4px; font-weight: 600; padding: 6px 12px; display: inline-block;">
-                                            <i class="fa fa-eye"></i> Xem tai nghe này
-                                        </a>
+                                    <div class="add-to-cart">
+                                        <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="productId" value="${item.productId}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="add-to-cart-btn">
+                                                <i class="fa fa-shopping-cart"></i> add to cart
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
+                            <c:if test="${st.count % 2 == 0}">
+                                <div class="clearfix visible-sm visible-xs"></div>
+                            </c:if>
                         </c:forEach>
                     </div>
                 </div>
