@@ -1,0 +1,78 @@
+/* addressRepository.css - Custom styling for the Address Repository page */
+
+.address-repo-section {
+    padding-top: 30px;
+    padding-bottom: 60px;
+}
+
+.address-heading {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.address-box {
+    background: #fff;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.address-box.default-address {
+    border-left: 3px solid #D10024;
+}
+
+.default-tag {
+    display: inline-block;
+    border: 1px solid #D10024;
+    color: #D10024;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    margin-left: 8px;
+}
+
+.default-checkbox {
+    margin-bottom: 15px;
+}
+
+.btn-save-address {
+    width: 100%;
+    border: none;
+    border-radius: 4px;
+}
+
+.empty-address-box {
+    padding: 40px 20px;
+}
+
+.empty-address-text {
+    margin: 0;
+}
+
+.address-receiver-row {
+    margin-bottom: 6px;
+}
+
+.address-divider {
+    color: #999;
+    margin: 0 6px;
+}
+
+.address-full-text {
+    margin: 0;
+    color: #555;
+    font-size: 13px;
+}
+
+.address-actions-top {
+    margin-bottom: 6px;
+}
+
+.address-form-clean {
+    margin: 0;
+}
+
+.modal-confirm-text {
+    margin: 0;
+}

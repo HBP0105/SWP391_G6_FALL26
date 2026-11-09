@@ -8,6 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +29,11 @@ public class Report extends HttpServlet {
             throws ServletException, IOException {
 
         request.setAttribute("activePage", "reports");
+        request.setAttribute("today", LocalDate.now().toString());
 
-        String tab = request.getParameter("tab");
-        if (tab == null || tab.trim().isEmpty()) {
+        String tab = normalize(request.getParameter("tab"));
+        if (tab.isEmpty()) {
             tab = "overview";
-        } else {
-            tab = tab.trim().toLowerCase();
         }
 
         switch (tab) {
@@ -42,31 +44,70 @@ public class Report extends HttpServlet {
         }
     }
 
-
     private void handleOverviewTab(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String period = request.getParameter("period");
-        String startDate = request.getParameter("startDate");
-        String endDate = request.getParameter("endDate");
-        String status = request.getParameter("status");
+        String rawStartDate = request.getParameter("startDate");
+        String rawEndDate = request.getParameter("endDate");
+        String rawStatus = request.getParameter("status");
         String yearStr = request.getParameter("year");
+        String tableKeyword = request.getParameter("tableKeyword");
+        String tableStatusRaw = request.getParameter("tableStatus");
+        String tablePaymentRaw = request.getParameter("tablePaymentMethod");
+        String tableSortRaw = request.getParameter("tableSort");
+        int tablePage = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
+        int tablePageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
 
-        Map<String, Object> filters = reportService.resolveFilters(
-                period, startDate, endDate, status, yearStr
-        );
+        Map<String, Object> overviewStats = new HashMap<>();
+        List<Map<String, Object>> monthlyRevenue = Collections.emptyList();
+        Map<String, Object> statusDistribution = new HashMap<>();
+        List<Map<String, Object>> topProducts = Collections.emptyList();
+        List<Map<String, Object>> categorySales = Collections.emptyList();
+        List<Map<String, Object>> ordersReport = Collections.emptyList();
+        int tableTotalItems = 0;
+        int tableTotalPages = 1;
+        String tableStatus = "ALL";
+        String tablePaymentMethod = "ALL";
+        String tableSort = "date_desc";
 
-        startDate = (String) filters.get("startDate");
-        endDate = (String) filters.get("endDate");
-        status = (String) filters.get("status");
-        int currentYear = (int) filters.get("currentYear");
+        String startDate = valueOrEmpty(rawStartDate);
+        String endDate = valueOrEmpty(rawEndDate);
+        String status = valueOrDefault(rawStatus, "ALL").toUpperCase();
+        String selectedPeriod = valueOrDefault(period, "all");
+        int currentYear = LocalDate.now().getYear();
 
-        Map<String, Object> overviewStats = reportService.getOverviewStats(startDate, endDate, status);
-        List<Map<String, Object>> monthlyRevenue = reportService.getMonthlyRevenue(currentYear);
-        Map<String, Object> statusDistribution = reportService.getOrderStatusDistribution(startDate, endDate);
-        List<Map<String, Object>> topProducts = reportService.getTopSellingProducts(5, startDate, endDate);
-        List<Map<String, Object>> categorySales = reportService.getCategorySales(startDate, endDate);
-        List<Map<String, Object>> ordersReport = reportService.getOrdersReport(startDate, endDate, status);
+        try {
+            Map<String, Object> filters = reportService.resolveFilters(
+                    period, rawStartDate, rawEndDate, rawStatus, yearStr
+            );
+
+            startDate = (String) filters.get("startDate");
+            endDate = (String) filters.get("endDate");
+            status = (String) filters.get("status");
+            selectedPeriod = (String) filters.get("period");
+            currentYear = (int) filters.get("currentYear");
+
+            overviewStats = reportService.getOverviewStats(startDate, endDate, status);
+            monthlyRevenue = reportService.getMonthlyRevenue(currentYear);
+            statusDistribution = reportService.getOrderStatusDistribution(startDate, endDate);
+            topProducts = reportService.getTopSellingProducts(5, startDate, endDate);
+            categorySales = reportService.getCategorySales(startDate, endDate);
+            tableStatus = reportService.normalizeOrderStatus(tableStatusRaw);
+            tablePaymentMethod = reportService.normalizePaymentMethod(tablePaymentRaw);
+            tableSort = reportService.normalizeOrderSort(tableSortRaw);
+            tableTotalItems = reportService.countDetailedOrders(
+                    startDate, endDate, tableStatus, tablePaymentMethod, tableKeyword
+            );
+            tableTotalPages = reportService.getTotalPages(tableTotalItems, tablePageSize);
+            tablePage = Math.min(tablePage, tableTotalPages);
+            ordersReport = reportService.getDetailedOrdersPaginated(
+                    startDate, endDate, tableStatus, tablePaymentMethod, tableKeyword,
+                    tableSort, tablePage, tablePageSize
+            );
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("reportFilterError", e.getMessage());
+        }
 
         request.setAttribute("currentTab", "overview");
         request.setAttribute("overviewStats", overviewStats);
@@ -75,128 +116,147 @@ public class Report extends HttpServlet {
         request.setAttribute("topProducts", topProducts);
         request.setAttribute("categorySales", categorySales);
         request.setAttribute("ordersReport", ordersReport);
-
-        request.setAttribute("selectedPeriod", period != null && !period.trim().isEmpty() ? period.trim() : "all");
+        request.setAttribute("selectedPeriod", selectedPeriod);
         request.setAttribute("selectedStatus", status);
-        request.setAttribute("startDate", startDate != null ? startDate : "");
-        request.setAttribute("endDate", endDate != null ? endDate : "");
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
         request.setAttribute("currentYear", currentYear);
+        request.setAttribute("tableKeyword", valueOrEmpty(tableKeyword));
+        request.setAttribute("tableStatus", tableStatus);
+        request.setAttribute("tablePaymentMethod", tablePaymentMethod);
+        request.setAttribute("tableSort", tableSort);
+        request.setAttribute("tablePage", tablePage);
+        request.setAttribute("tablePageSize", tablePageSize);
+        request.setAttribute("tableTotalItems", tableTotalItems);
+        request.setAttribute("tableTotalPages", tableTotalPages);
 
         request.getRequestDispatcher("/views/Manager/report.jsp").forward(request, response);
     }
-
 
     private void handleRevenueTab(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String period = request.getParameter("period");
-        String startDate = request.getParameter("startDate");
-        String endDate = request.getParameter("endDate");
-        String groupBy = request.getParameter("groupBy");
+        String rawStartDate = request.getParameter("startDate");
+        String rawEndDate = request.getParameter("endDate");
+        String rawGroupBy = request.getParameter("groupBy");
         String yearStr = request.getParameter("year");
+        String tableKeyword = request.getParameter("tableKeyword");
+        String tableSort = reportService.normalizeRevenueSort(request.getParameter("tableSort"));
 
-        if (groupBy == null || groupBy.trim().isEmpty()) {
-            groupBy = "month";
-        } else {
-            groupBy = groupBy.trim().toLowerCase();
+        Map<String, Object> revenueStats = new HashMap<>();
+        List<Map<String, Object>> revenueTrend = Collections.emptyList();
+        List<Map<String, Object>> revenueTable = Collections.emptyList();
+        List<Map<String, Object>> paymentBreakdown = Collections.emptyList();
+
+        String startDate = valueOrEmpty(rawStartDate);
+        String endDate = valueOrEmpty(rawEndDate);
+        String groupBy = valueOrDefault(rawGroupBy, "month").toLowerCase();
+        String selectedPeriod = valueOrDefault(period, "all");
+        int currentYear = LocalDate.now().getYear();
+
+        try {
+            groupBy = reportService.normalizeGroupBy(rawGroupBy);
+            Map<String, Object> filters = reportService.resolveFilters(
+                    period, rawStartDate, rawEndDate, null, yearStr
+            );
+
+            startDate = (String) filters.get("startDate");
+            endDate = (String) filters.get("endDate");
+            selectedPeriod = (String) filters.get("period");
+            currentYear = (int) filters.get("currentYear");
+
+            revenueStats = reportService.getRevenueAnalysisStats(startDate, endDate);
+            revenueTrend = reportService.getRevenueTrend(startDate, endDate, groupBy, currentYear);
+            revenueTable = reportService.filterRevenueTrend(revenueTrend, tableKeyword, tableSort);
+            paymentBreakdown = reportService.getRevenuePaymentMethodBreakdown(startDate, endDate);
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("reportFilterError", e.getMessage());
         }
-
-        Map<String, Object> filters = reportService.resolveFilters(
-                period, startDate, endDate, null, yearStr
-        );
-
-        startDate = (String) filters.get("startDate");
-        endDate = (String) filters.get("endDate");
-        int currentYear = (int) filters.get("currentYear");
-
-        Map<String, Object> revenueStats = reportService.getRevenueAnalysisStats(startDate, endDate);
-        List<Map<String, Object>> revenueTrend = reportService.getRevenueTrend(startDate, endDate, groupBy, currentYear);
-        List<Map<String, Object>> paymentBreakdown = reportService.getRevenuePaymentMethodBreakdown(startDate, endDate);
 
         request.setAttribute("currentTab", "revenue");
         request.setAttribute("revenueStats", revenueStats);
         request.setAttribute("revenueTrend", revenueTrend);
+        request.setAttribute("revenueTable", revenueTable);
         request.setAttribute("paymentBreakdown", paymentBreakdown);
-
-        request.setAttribute("selectedPeriod", period != null && !period.trim().isEmpty() ? period.trim() : "all");
-        request.setAttribute("startDate", startDate != null ? startDate : "");
-        request.setAttribute("endDate", endDate != null ? endDate : "");
+        request.setAttribute("selectedPeriod", selectedPeriod);
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
         request.setAttribute("groupBy", groupBy);
         request.setAttribute("currentYear", currentYear);
+        request.setAttribute("tableKeyword", valueOrEmpty(tableKeyword));
+        request.setAttribute("tableSort", tableSort);
 
         request.getRequestDispatcher("/views/Manager/reportRevenue.jsp").forward(request, response);
     }
-
 
     private void handleProductsTab(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String period = request.getParameter("period");
-        String startDate = request.getParameter("startDate");
-        String endDate = request.getParameter("endDate");
-        String categoryIdStr = request.getParameter("categoryId");
-        String brandIdStr = request.getParameter("brandId");
-        String keyword = request.getParameter("keyword");
-        String sort = request.getParameter("sort");
-        String pageStr = request.getParameter("page");
-        String pageSizeStr = request.getParameter("pageSize");
+        String rawStartDate = request.getParameter("startDate");
+        String rawEndDate = request.getParameter("endDate");
+        String keyword = request.getParameter("tableKeyword");
+        String rawSort = request.getParameter("tableSort");
 
-        if (sort == null || sort.trim().isEmpty()) {
-            sort = "revenue_desc";
-        } else {
-            sort = sort.trim().toLowerCase();
+        int page = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
+        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
+        Integer categoryId = parsePositiveInteger(request.getParameter("tableCategoryId"));
+        Integer brandId = parsePositiveInteger(request.getParameter("tableBrandId"));
+
+        String startDate = valueOrEmpty(rawStartDate);
+        String endDate = valueOrEmpty(rawEndDate);
+        String sort = reportService.normalizeProductSort(rawSort);
+        String selectedPeriod = valueOrDefault(period, "all");
+
+        List<Map<String, Object>> productList = Collections.emptyList();
+        Map<String, Object> summary = new HashMap<>();
+        int totalItems = 0;
+        int totalPages = 1;
+
+        try {
+            Map<String, Object> filters = reportService.resolveFilters(
+                    period, rawStartDate, rawEndDate, null, null
+            );
+            startDate = (String) filters.get("startDate");
+            endDate = (String) filters.get("endDate");
+            selectedPeriod = (String) filters.get("period");
+
+            totalItems = reportService.countProductPerformance(
+                    startDate, endDate, categoryId, brandId, keyword
+            );
+            totalPages = reportService.getTotalPages(totalItems, pageSize);
+            if (page > totalPages) {
+                page = totalPages;
+            }
+
+            productList = reportService.getProductPerformanceList(
+                    startDate, endDate, categoryId, brandId, keyword, sort, page, pageSize
+            );
+            summary = reportService.getProductPerformanceSummary(
+                    startDate, endDate, null, null, ""
+            );
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("reportFilterError", e.getMessage());
+            page = 1;
         }
-
-        int page = parseInt(pageStr, 1);
-        int pageSize = parseInt(pageSizeStr, 10);
-        if (pageSize < 5) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
-
-        Integer categoryId = parseInteger(categoryIdStr);
-        Integer brandId = parseInteger(brandIdStr);
-
-        Map<String, Object> filters = reportService.resolveFilters(
-                period, startDate, endDate, null, null
-        );
-
-        startDate = (String) filters.get("startDate");
-        endDate = (String) filters.get("endDate");
-
-        List<Map<String, Object>> productList = reportService.getProductPerformanceList(
-                startDate, endDate, categoryId, brandId, keyword, sort, page, pageSize
-        );
-        int totalItems = reportService.countProductPerformance(
-                startDate, endDate, categoryId, brandId, keyword
-        );
-        Map<String, Object> summary = reportService.getProductPerformanceSummary(
-                startDate, endDate, categoryId, brandId, keyword
-        );
-
-        List<Map<String, Object>> categories = reportService.getAllCategories();
-        List<Map<String, Object>> brands = reportService.getAllBrands();
-
-        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
 
         request.setAttribute("currentTab", "products");
         request.setAttribute("productList", productList);
         request.setAttribute("summary", summary);
-        request.setAttribute("categories", categories);
-        request.setAttribute("brands", brands);
-
+        request.setAttribute("categories", reportService.getAllCategories());
+        request.setAttribute("brands", reportService.getAllBrands());
         request.setAttribute("currentPage", page);
         request.setAttribute("pageSize", pageSize);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
-
-        request.setAttribute("selectedPeriod", period != null && !period.trim().isEmpty() ? period.trim() : "all");
-        request.setAttribute("startDate", startDate != null ? startDate : "");
-        request.setAttribute("endDate", endDate != null ? endDate : "");
-        request.setAttribute("selectedCategory", categoryId);
-        request.setAttribute("selectedBrand", brandId);
-        request.setAttribute("keyword", keyword != null ? keyword.trim() : "");
-        request.setAttribute("selectedSort", sort);
+        request.setAttribute("selectedPeriod", selectedPeriod);
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
+        request.setAttribute("tableCategoryId", categoryId);
+        request.setAttribute("tableBrandId", brandId);
+        request.setAttribute("tableKeyword", valueOrEmpty(keyword));
+        request.setAttribute("tableSort", sort);
 
         request.getRequestDispatcher("/views/Manager/reportProducts.jsp").forward(request, response);
     }
@@ -205,69 +265,76 @@ public class Report extends HttpServlet {
             throws ServletException, IOException {
 
         String period = request.getParameter("period");
-        String startDate = request.getParameter("startDate");
-        String endDate = request.getParameter("endDate");
-        String status = request.getParameter("status");
-        String paymentMethod = request.getParameter("paymentMethod");
-        String keyword = request.getParameter("keyword");
-        String pageStr = request.getParameter("page");
-        String pageSizeStr = request.getParameter("pageSize");
+        String rawStartDate = request.getParameter("startDate");
+        String rawEndDate = request.getParameter("endDate");
+        String rawStatus = request.getParameter("tableStatus");
+        String rawPaymentMethod = request.getParameter("tablePaymentMethod");
+        String keyword = request.getParameter("tableKeyword");
+        String rawSort = request.getParameter("tableSort");
 
-        if (status == null || status.trim().isEmpty()) {
-            status = "ALL";
-        } else {
-            status = status.trim().toUpperCase();
+        int page = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
+        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
+
+        String startDate = valueOrEmpty(rawStartDate);
+        String endDate = valueOrEmpty(rawEndDate);
+        String status = valueOrDefault(rawStatus, "ALL").toUpperCase();
+        String paymentMethod = valueOrDefault(rawPaymentMethod, "ALL").toUpperCase();
+        String selectedPeriod = valueOrDefault(period, "all");
+        String sort = reportService.normalizeOrderSort(rawSort);
+
+        Map<String, Object> orderStats = new HashMap<>();
+        List<Map<String, Object>> paymentStats = Collections.emptyList();
+        List<Map<String, Object>> ordersList = Collections.emptyList();
+        int totalOrders = 0;
+        int totalPages = 1;
+
+        try {
+            status = reportService.normalizeOrderStatus(rawStatus);
+            paymentMethod = reportService.normalizePaymentMethod(rawPaymentMethod);
+
+            Map<String, Object> filters = reportService.resolveFilters(
+                    period, rawStartDate, rawEndDate, status, null
+            );
+            startDate = (String) filters.get("startDate");
+            endDate = (String) filters.get("endDate");
+            selectedPeriod = (String) filters.get("period");
+            status = (String) filters.get("status");
+
+            totalOrders = reportService.countDetailedOrders(
+                    startDate, endDate, status, paymentMethod, keyword
+            );
+            totalPages = reportService.getTotalPages(totalOrders, pageSize);
+            if (page > totalPages) {
+                page = totalPages;
+            }
+
+            orderStats = reportService.getOrderAnalysisStats(
+                    startDate, endDate, "ALL", "ALL"
+            );
+            paymentStats = reportService.getOrderPaymentMethods(startDate, endDate);
+            ordersList = reportService.getDetailedOrdersPaginated(
+                    startDate, endDate, status, paymentMethod, keyword, sort, page, pageSize
+            );
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("reportFilterError", e.getMessage());
+            page = 1;
         }
-
-        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-            paymentMethod = "ALL";
-        } else {
-            paymentMethod = paymentMethod.trim().toUpperCase();
-        }
-
-        int page = parseInt(pageStr, 1);
-        int pageSize = parseInt(pageSizeStr, 10);
-        if (pageSize < 5) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
-
-        Map<String, Object> filters = reportService.resolveFilters(
-                period, startDate, endDate, status, null
-        );
-
-        startDate = (String) filters.get("startDate");
-        endDate = (String) filters.get("endDate");
-
-        Map<String, Object> orderStats = reportService.getOrderAnalysisStats(
-                startDate, endDate, status, paymentMethod
-        );
-        List<Map<String, Object>> paymentStats = reportService.getOrderPaymentMethods(startDate, endDate);
-        List<Map<String, Object>> ordersList = reportService.getDetailedOrdersPaginated(
-                startDate, endDate, status, paymentMethod, keyword, page, pageSize
-        );
-        int totalOrders = reportService.countDetailedOrders(
-                startDate, endDate, status, paymentMethod, keyword
-        );
-
-        int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
 
         request.setAttribute("currentTab", "orders");
         request.setAttribute("orderStats", orderStats);
         request.setAttribute("paymentStats", paymentStats);
         request.setAttribute("ordersList", ordersList);
-
         request.setAttribute("currentPage", page);
         request.setAttribute("pageSize", pageSize);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalOrders", totalOrders);
-
-        request.setAttribute("selectedPeriod", period != null && !period.trim().isEmpty() ? period.trim() : "all");
-        request.setAttribute("startDate", startDate != null ? startDate : "");
-        request.setAttribute("endDate", endDate != null ? endDate : "");
-        request.setAttribute("selectedStatus", status);
-        request.setAttribute("selectedPaymentMethod", paymentMethod);
-        request.setAttribute("keyword", keyword != null ? keyword.trim() : "");
+        request.setAttribute("selectedPeriod", selectedPeriod);
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
+        request.setAttribute("tableStatus", status);
+        request.setAttribute("tablePaymentMethod", paymentMethod);
+        request.setAttribute("tableKeyword", valueOrEmpty(keyword));
+        request.setAttribute("tableSort", sort);
 
         request.getRequestDispatcher("/views/Manager/reportOrders.jsp").forward(request, response);
     }
@@ -278,22 +345,40 @@ public class Report extends HttpServlet {
         doGet(request, response);
     }
 
-    private int parseInt(String str, int defaultValue) {
-        if (str == null || str.trim().isEmpty()) return defaultValue;
+    private int parseInt(String value, int defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
         try {
-            int val = Integer.parseInt(str.trim());
-            return val > 0 ? val : defaultValue;
+            int parsed = Integer.parseInt(value.trim());
+            return parsed > 0 ? parsed : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
 
-    private Integer parseInteger(String str) {
-        if (str == null || str.trim().isEmpty()) return null;
+    private Integer parsePositiveInteger(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
         try {
-            return Integer.parseInt(str.trim());
+            int parsed = Integer.parseInt(value.trim());
+            return parsed > 0 ? parsed : null;
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
+
+    private String valueOrEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String valueOrDefault(String value, String defaultValue) {
+        String normalized = valueOrEmpty(value);
+        return normalized.isEmpty() ? defaultValue : normalized;
     }
 }

@@ -43,6 +43,18 @@
     border-radius: 4px;
 }
 
+.cart-qty-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 0;
+}
+
+.cart-remove-form {
+    margin: 0;
+}
+
 .remove-btn {
     color: #D10024;
     background: none;
@@ -79,8 +91,8 @@
 }
 
 .summary-total {
-    border-top: 1px solid #E4E7ED;
-    padding-top: 15px;
+    border-top: none;
+    padding-top: 0;
     font-size: 20px;
     font-weight: 700;
     color: #D10024;

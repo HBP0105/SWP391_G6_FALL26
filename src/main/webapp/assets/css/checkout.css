@@ -123,3 +123,66 @@
     font-size: 18px;
     text-transform: uppercase;
 }
+
+.form-control[readonly] {
+    background-color: #f5f5f5;
+}
+
+.saved-address-box {
+    background: #f9f9f9;
+    border: 1px solid #E4E7ED;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.saved-address-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.saved-address-header label {
+    margin: 0;
+}
+
+.saved-address-select {
+    height: 38px;
+    cursor: pointer;
+}
+
+.saved-address-empty {
+    margin: 0;
+    font-size: 13px;
+}
+
+.brand-link {
+    color: #D10024;
+}
+
+.voucher-group {
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.voucher-input-wrap {
+    display: flex;
+}
+
+.voucher-input {
+    border-radius: 4px 0 0 4px;
+    border: 1px solid #E4E7ED;
+    padding: 10px;
+}
+
+.voucher-btn {
+    border-radius: 0 4px 4px 0;
+    border: none;
+    padding: 0 15px;
+}
+
+.payment-method-select {
+    height: 40px;
+    cursor: pointer;
+}

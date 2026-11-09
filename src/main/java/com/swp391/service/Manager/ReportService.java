@@ -4,20 +4,41 @@ import com.swp391.dao.Manager.ReportDAO;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * Service layer for Reports.
- * Handles date resolution and business logic for:
- * 1. Overview
- * 2. Revenue Analysis
- * 3. Product Performance
- * 4. Order Analysis
- */
 public class ReportService {
+
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final Set<String> ORDER_STATUSES = Set.of(
+            "ALL", "PENDING", "CONFIRMED", "SHIPPING", "DELIVERED", "CANCELLED"
+    );
+    private static final Set<String> PAYMENT_METHODS = Set.of(
+            "ALL", "COD", "VNPAY", "BANK_TRANSFER"
+    );
+    private static final Set<String> GROUP_BY_VALUES = Set.of("day", "month");
+    private static final Set<String> PRODUCT_SORTS = Set.of(
+            "revenue_desc", "revenue_asc",
+            "units_desc", "units_asc",
+            "orders_desc", "orders_asc",
+            "name_asc", "name_desc",
+            "id_desc", "id_asc"
+    );
+    private static final Set<String> ORDER_SORTS = Set.of(
+            "date_desc", "date_asc", "amount_desc", "amount_asc", "id_desc", "id_asc"
+    );
+    private static final Set<String> REVENUE_SORTS = Set.of(
+            "period_asc", "period_desc", "revenue_desc", "revenue_asc", "orders_desc", "orders_asc"
+    );
 
     private final ReportDAO reportDAO;
 
@@ -25,9 +46,6 @@ public class ReportService {
         this.reportDAO = new ReportDAO();
     }
 
-    /**
-     * Resolves period shortcuts into concrete start/end date strings.
-     */
     public Map<String, Object> resolveFilters(
             String period,
             String startDate,
@@ -36,72 +54,161 @@ public class ReportService {
             String yearStr) {
 
         Map<String, Object> filters = new HashMap<>();
-
         LocalDate today = LocalDate.now();
-        int currentYear = today.getYear();
+        int currentYear = normalizeYear(yearStr, today.getYear());
+        String rawPeriod = normalizeText(period);
+        String normalizedPeriod;
+        if (rawPeriod.isEmpty()) {
+            normalizedPeriod = normalizeText(startDate).isEmpty() && normalizeText(endDate).isEmpty()
+                    ? "all"
+                    : "custom";
+        } else {
+            normalizedPeriod = normalizePeriod(rawPeriod);
+        }
 
-        if (yearStr != null && !yearStr.trim().isEmpty()) {
-            try {
-                currentYear = Integer.parseInt(yearStr.trim());
-            } catch (NumberFormatException ignored) {
+        switch (normalizedPeriod) {
+            case "today" -> {
+                startDate = today.toString();
+                endDate = today.toString();
+            }
+            case "last_7_days" -> {
+                startDate = today.minusDays(6).toString();
+                endDate = today.toString();
+            }
+            case "this_week" -> {
+                startDate = today.with(DayOfWeek.MONDAY).toString();
+                endDate = today.toString();
+            }
+            case "this_month" -> {
+                startDate = today.with(TemporalAdjusters.firstDayOfMonth()).toString();
+                endDate = today.toString();
+            }
+            case "this_year" -> {
+                startDate = LocalDate.of(today.getYear(), 1, 1).toString();
+                endDate = today.toString();
+                currentYear = today.getYear();
+            }
+            case "last_30_days" -> {
+                startDate = today.minusDays(29).toString();
+                endDate = today.toString();
+            }
+            case "last_90_days" -> {
+                startDate = today.minusDays(89).toString();
+                endDate = today.toString();
+            }
+            case "all" -> {
+                startDate = "";
+                endDate = "";
+            }
+            case "custom" -> {
+                // Keep the user-provided date range unchanged.
+            }
+            default -> {
             }
         }
 
-        if (period != null && !period.trim().isEmpty()) {
-            switch (period.toLowerCase().trim()) {
-                case "today":
-                    startDate = today.toString();
-                    endDate = today.toString();
-                    break;
-                case "last_7_days":
-                    startDate = today.minusDays(7).toString();
-                    endDate = today.toString();
-                    break;
-                case "this_week":
-                    startDate = today.with(DayOfWeek.MONDAY).toString();
-                    endDate = today.with(DayOfWeek.SUNDAY).toString();
-                    break;
-                case "this_month":
-                    startDate = today.with(TemporalAdjusters.firstDayOfMonth()).toString();
-                    endDate = today.with(TemporalAdjusters.lastDayOfMonth()).toString();
-                    break;
-                case "this_year":
-                    startDate = LocalDate.of(currentYear, 1, 1).toString();
-                    endDate = LocalDate.of(currentYear, 12, 31).toString();
-                    break;
-                case "last_30_days":
-                    startDate = today.minusDays(30).toString();
-                    endDate = today.toString();
-                    break;
-                case "last_90_days":
-                    startDate = today.minusDays(90).toString();
-                    endDate = today.toString();
-                    break;
-                case "all":
-                    startDate = "";
-                    endDate = "";
-                    break;
-                default:
-                    break;
-            }
-        }
+        startDate = normalizeText(startDate);
+        endDate = normalizeText(endDate);
+        validateReportDateRange(startDate, endDate);
 
-        if (status == null || status.trim().isEmpty()) {
-            status = "ALL";
-        }
-
-        filters.put("startDate", startDate != null ? startDate.trim() : "");
-        filters.put("endDate", endDate != null ? endDate.trim() : "");
-        filters.put("status", status.trim());
+        filters.put("startDate", startDate);
+        filters.put("endDate", endDate);
+        filters.put("status", normalizeOrderStatus(status));
         filters.put("currentYear", currentYear);
-        filters.put("period", period != null ? period.trim() : "all");
-
+        filters.put("period", normalizedPeriod);
         return filters;
     }
 
-    // ==========================================
-    // 1. OVERVIEW METHODS
-    // ==========================================
+    public void validateReportDateRange(String startDate, String endDate) {
+        LocalDate start = parseDate(startDate, "Start date");
+        LocalDate end = parseDate(endDate, "End date");
+        LocalDate today = LocalDate.now();
+
+        if (start != null && start.isAfter(today)) {
+            throw new IllegalArgumentException("Start date cannot be in the future.");
+        }
+        if (end != null && end.isAfter(today)) {
+            throw new IllegalArgumentException("End date cannot be in the future.");
+        }
+        if (start != null && end != null && start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date cannot be after End date.");
+        }
+    }
+
+    public String normalizeOrderStatus(String status) {
+        String value = normalizeUpper(status, "ALL");
+        if (!ORDER_STATUSES.contains(value)) {
+            throw new IllegalArgumentException("Invalid order status filter.");
+        }
+        return value;
+    }
+
+    public String normalizePaymentMethod(String paymentMethod) {
+        String value = normalizeUpper(paymentMethod, "ALL");
+        if (!PAYMENT_METHODS.contains(value)) {
+            throw new IllegalArgumentException("Invalid payment method filter.");
+        }
+        return value;
+    }
+
+    public String normalizeGroupBy(String groupBy) {
+        String value = normalizeText(groupBy).toLowerCase();
+        if (value.isEmpty()) {
+            return "month";
+        }
+        if (!GROUP_BY_VALUES.contains(value)) {
+            throw new IllegalArgumentException("Invalid revenue grouping option.");
+        }
+        return value;
+    }
+
+    public String normalizeProductSort(String sort) {
+        String value = normalizeText(sort).toLowerCase();
+        if (value.isEmpty()) {
+            return "revenue_desc";
+        }
+        if (!PRODUCT_SORTS.contains(value)) {
+            return "revenue_desc";
+        }
+        return value;
+    }
+
+    public String normalizeOrderSort(String sort) {
+        String value = normalizeText(sort).toLowerCase();
+        return ORDER_SORTS.contains(value) ? value : "date_desc";
+    }
+
+    public String normalizeRevenueSort(String sort) {
+        String value = normalizeText(sort).toLowerCase();
+        return REVENUE_SORTS.contains(value) ? value : "period_asc";
+    }
+
+    public String normalizeSearchKeyword(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return "";
+        }
+        return keyword.replaceAll("\\s+", "").trim().toLowerCase();
+    }
+
+    public Integer normalizePositiveId(Integer value) {
+        return value != null && value > 0 ? value : null;
+    }
+
+    public int normalizePage(int page) {
+        return Math.max(page, 1);
+    }
+
+    public int normalizePageSize(int pageSize) {
+        if (pageSize <= 0) {
+            return DEFAULT_PAGE_SIZE;
+        }
+        return Math.min(pageSize, MAX_PAGE_SIZE);
+    }
+
+    public int getTotalPages(int totalItems, int pageSize) {
+        int normalizedPageSize = normalizePageSize(pageSize);
+        return totalItems <= 0 ? 1 : (int) Math.ceil((double) totalItems / normalizedPageSize);
+    }
 
     public Map<String, Object> getOverviewStats(String startDate, String endDate, String status) {
         return reportDAO.getOverviewStats(startDate, endDate, status);
@@ -127,10 +234,6 @@ public class ReportService {
         return reportDAO.getOrdersReport(startDate, endDate, status);
     }
 
-    // ==========================================
-    // 2. REVENUE ANALYSIS METHODS
-    // ==========================================
-
     public Map<String, Object> getRevenueAnalysisStats(String startDate, String endDate) {
         return reportDAO.getRevenueAnalysisStats(startDate, endDate);
     }
@@ -143,10 +246,6 @@ public class ReportService {
         return reportDAO.getRevenuePaymentMethodBreakdown(startDate, endDate);
     }
 
-    // ==========================================
-    // 3. PRODUCT PERFORMANCE METHODS
-    // ==========================================
-
     public List<Map<String, Object>> getProductPerformanceList(
             String startDate,
             String endDate,
@@ -157,9 +256,12 @@ public class ReportService {
             int page,
             int pageSize) {
 
-        int offset = Math.max(0, (page - 1) * pageSize);
+        page = normalizePage(page);
+        pageSize = normalizePageSize(pageSize);
+        int offset = (page - 1) * pageSize;
         return reportDAO.getProductPerformanceList(
-                startDate, endDate, categoryId, brandId, keyword, sort, offset, pageSize
+                startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId),
+                normalizeSearchKeyword(keyword), normalizeProductSort(sort), offset, pageSize
         );
     }
 
@@ -170,7 +272,9 @@ public class ReportService {
             Integer brandId,
             String keyword) {
 
-        return reportDAO.countProductPerformance(startDate, endDate, categoryId, brandId, keyword);
+        return reportDAO.countProductPerformance(
+                startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId), normalizeSearchKeyword(keyword)
+        );
     }
 
     public Map<String, Object> getProductPerformanceSummary(
@@ -180,7 +284,9 @@ public class ReportService {
             Integer brandId,
             String keyword) {
 
-        return reportDAO.getProductPerformanceSummary(startDate, endDate, categoryId, brandId, keyword);
+        return reportDAO.getProductPerformanceSummary(
+                startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId), normalizeText(keyword)
+        );
     }
 
     public List<Map<String, Object>> getAllCategories() {
@@ -191,17 +297,15 @@ public class ReportService {
         return reportDAO.getAllBrands();
     }
 
-    // ==========================================
-    // 4. ORDER ANALYSIS METHODS
-    // ==========================================
-
     public Map<String, Object> getOrderAnalysisStats(
             String startDate,
             String endDate,
             String status,
             String paymentMethod) {
 
-        return reportDAO.getOrderAnalysisStats(startDate, endDate, status, paymentMethod);
+        return reportDAO.getOrderAnalysisStats(
+                startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod)
+        );
     }
 
     public List<Map<String, Object>> getOrderPaymentMethods(String startDate, String endDate) {
@@ -214,12 +318,16 @@ public class ReportService {
             String status,
             String paymentMethod,
             String keyword,
+            String sort,
             int page,
             int pageSize) {
 
-        int offset = Math.max(0, (page - 1) * pageSize);
+        page = normalizePage(page);
+        pageSize = normalizePageSize(pageSize);
+        int offset = (page - 1) * pageSize;
         return reportDAO.getDetailedOrdersPaginated(
-                startDate, endDate, status, paymentMethod, keyword, offset, pageSize
+                startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod),
+                normalizeSearchKeyword(keyword), normalizeOrderSort(sort), offset, pageSize
         );
     }
 
@@ -230,6 +338,100 @@ public class ReportService {
             String paymentMethod,
             String keyword) {
 
-        return reportDAO.countDetailedOrders(startDate, endDate, status, paymentMethod, keyword);
+        return reportDAO.countDetailedOrders(
+                startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod), normalizeSearchKeyword(keyword)
+        );
+    }
+
+    public List<Map<String, Object>> filterRevenueTrend(
+            List<Map<String, Object>> source, String keyword, String sort) {
+        String normalizedKeyword = normalizeSearchKeyword(keyword);
+        String normalizedSort = normalizeRevenueSort(sort);
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (source != null) {
+            for (Map<String, Object> row : source) {
+                String label = String.valueOf(row.getOrDefault("periodLabel", ""))
+                        .replaceAll("\\s+", "").toLowerCase();
+                if (normalizedKeyword.isEmpty() || label.contains(normalizedKeyword)) {
+                    result.add(row);
+                }
+            }
+        }
+
+        if ("period_desc".equals(normalizedSort)) {
+            Collections.reverse(result);
+        } else if (!"period_asc".equals(normalizedSort)) {
+            Comparator<Map<String, Object>> comparator = switch (normalizedSort) {
+                case "revenue_desc" -> Comparator.comparing(this::revenueValue).reversed();
+                case "revenue_asc" -> Comparator.comparing(this::revenueValue);
+                case "orders_desc" -> Comparator.comparingInt(this::orderCountValue).reversed();
+                case "orders_asc" -> Comparator.comparingInt(this::orderCountValue);
+                default -> Comparator.comparingInt(row -> 0);
+            };
+            result.sort(comparator);
+        }
+        return result;
+    }
+
+    private BigDecimal revenueValue(Map<String, Object> row) {
+        Object value = row.get("revenue");
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        }
+        if (value instanceof Number) {
+            return BigDecimal.valueOf(((Number) value).doubleValue());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private int orderCountValue(Map<String, Object> row) {
+        Object value = row.get("ordersCount");
+        return value instanceof Number ? ((Number) value).intValue() : 0;
+    }
+
+    private String normalizePeriod(String period) {
+        String value = normalizeText(period).toLowerCase();
+        if (value.isEmpty()) {
+            return "all";
+        }
+        return switch (value) {
+            case "all", "custom", "today", "last_7_days", "this_week", "this_month", "this_year", "last_30_days", "last_90_days" -> value;
+            default -> "all";
+        };
+    }
+
+    private int normalizeYear(String yearStr, int fallback) {
+        String value = normalizeText(yearStr);
+        if (value.isEmpty()) {
+            return fallback;
+        }
+        try {
+            int year = Integer.parseInt(value);
+            int currentYear = LocalDate.now().getYear();
+            return year >= 2000 && year <= currentYear ? year : fallback;
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private LocalDate parseDate(String value, String fieldName) {
+        String normalized = normalizeText(value);
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(normalized);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(fieldName + " is invalid.");
+        }
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String normalizeUpper(String value, String fallback) {
+        String normalized = normalizeText(value);
+        return normalized.isEmpty() ? fallback : normalized.toUpperCase();
     }
 }

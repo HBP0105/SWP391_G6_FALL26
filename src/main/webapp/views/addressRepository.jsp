@@ -22,27 +22,8 @@
     <!-- Main Stylesheet -->
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css" />
 
-    <style>
-        .address-box {
-            background: #fff;
-            border: 1px solid #E4E7ED;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-        .address-box.default-address {
-            border-left: 3px solid #D10024;
-        }
-        .default-tag {
-            display: inline-block;
-            border: 1px solid #D10024;
-            color: #D10024;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 1px 6px;
-            margin-left: 8px;
-        }
-    </style>
+    <!-- Custom Address Repository Stylesheet -->
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/addressRepository.css" />
 </head>
 <body>
     <!-- HEADER -->
@@ -129,13 +110,13 @@
     <!-- /NAVIGATION -->
 
     <!-- ADDRESS REPOSITORY SECTION -->
-    <div class="section" style="padding-top: 30px; padding-bottom: 60px;">
+    <div class="section address-repo-section">
         <div class="container">
             <div class="row">
                 <!-- Cột Trái: Form Thêm Địa Chỉ Mới -->
                 <div class="col-md-5">
                     <div class="address-box">
-                        <h4 style="margin-top: 0; margin-bottom: 20px;">Add New Address</h4>
+                        <h4 class="address-heading">Add New Address</h4>
                         <form action="${pageContext.request.contextPath}/addresses" method="POST">
                             <input type="hidden" name="action" value="add">
                             <div class="form-group">
@@ -170,12 +151,12 @@
                                 <label>Address Line *</label>
                                 <input type="text" class="form-control" name="addressLine" placeholder="Street name, house number" required>
                             </div>
-                            <div class="checkbox" style="margin-bottom: 15px;">
+                            <div class="checkbox default-checkbox">
                                 <label>
                                     <input type="checkbox" name="isDefault" value="true"> Set as Default address
                                 </label>
                             </div>
-                            <button type="submit" class="primary-btn" style="width: 100%; border: none; border-radius: 4px;">
+                            <button type="submit" class="primary-btn btn-save-address">
                                 Save Address
                             </button>
                         </form>
@@ -184,11 +165,11 @@
 
                 <!-- Cột Phải: Danh Sách Địa Chỉ Trong Kho -->
                 <div class="col-md-7">
-                    <h4 style="margin-top: 0; margin-bottom: 20px;">My Address Repository (${fn:length(requestScope.addresses)})</h4>
+                    <h4 class="address-heading">My Address Repository (${fn:length(requestScope.addresses)})</h4>
 
                     <c:if test="${empty requestScope.addresses}">
-                        <div class="address-box text-center" style="padding: 40px 20px;">
-                            <p class="text-muted" style="margin: 0;">You have no saved addresses in your repository yet.</p>
+                        <div class="address-box text-center empty-address-box">
+                            <p class="text-muted empty-address-text">You have no saved addresses in your repository yet.</p>
                         </div>
                     </c:if>
 
@@ -196,21 +177,21 @@
                         <div class="address-box ${addr.isDefault ? 'default-address' : ''}">
                             <div class="row">
                                 <div class="col-sm-8">
-                                    <div style="margin-bottom: 6px;">
+                                    <div class="address-receiver-row">
                                         <strong>${fn:escapeXml(addr.receiverName)}</strong>
-                                        <span style="color: #999; margin: 0 6px;">|</span>
+                                        <span class="address-divider">|</span>
                                         <span>${fn:escapeXml(addr.receiverPhone)}</span>
                                         <c:if test="${addr.isDefault}">
                                             <span class="default-tag">Default</span>
                                         </c:if>
                                     </div>
-                                    <p style="margin: 0; color: #555; font-size: 13px;">
+                                    <p class="address-full-text">
                                         ${fn:escapeXml(addr.addressLine)}, ${fn:escapeXml(addr.ward)}, ${fn:escapeXml(addr.district)}, ${fn:escapeXml(addr.province)}
                                     </p>
                                 </div>
 
                                 <div class="col-sm-4 text-right">
-                                    <div style="margin-bottom: 6px;">
+                                    <div class="address-actions-top">
                                         <button type="button" class="btn btn-default btn-xs"
                                                 data-id="${addr.addressId}"
                                                 data-name="${fn:escapeXml(addr.receiverName)}"
@@ -230,7 +211,7 @@
                                     </div>
 
                                     <c:if test="${!addr.isDefault}">
-                                        <form action="${pageContext.request.contextPath}/addresses" method="POST" style="margin: 0;">
+                                        <form action="${pageContext.request.contextPath}/addresses" method="POST" class="address-form-clean">
                                             <input type="hidden" name="action" value="setDefault">
                                             <input type="hidden" name="addressId" value="${addr.addressId}">
                                             <button type="submit" class="btn btn-default btn-xs">
@@ -315,11 +296,11 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Delete Address</h4>
                 </div>
-                <form action="${pageContext.request.contextPath}/addresses" method="POST" style="margin: 0;">
+                <form action="${pageContext.request.contextPath}/addresses" method="POST" class="address-form-clean">
                     <div class="modal-body">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="addressId" id="delete_addressId">
-                        <p style="margin: 0;">Are you sure you want to delete this address?</p>
+                        <p class="modal-confirm-text">Are you sure you want to delete this address?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
