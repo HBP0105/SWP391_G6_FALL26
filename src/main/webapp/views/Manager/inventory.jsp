@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
@@ -24,7 +24,7 @@
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
 
     </head>
 
@@ -319,7 +319,7 @@
 
                         <section class="row g-3 mb-3">
 
-                            <div class="col-12 col-md-6 col-xl-3">
+                            <div class="col-12 col-md-6 col-lg-3">
 
                                 <a href="${pageContext.request.contextPath}/Manager/Inventory"
                                    class="text-decoration-none text-reset d-block">
@@ -354,7 +354,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-xl-3">
+                            <div class="col-12 col-md-6 col-lg-3">
 
                                 <a href="${pageContext.request.contextPath}/Manager/Inventory?stock=in"
                                    class="text-decoration-none text-reset d-block">
@@ -389,7 +389,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-xl-3">
+                            <div class="col-12 col-md-6 col-lg-3">
 
                                 <a href="${pageContext.request.contextPath}/Manager/Inventory?stock=low"
                                    class="text-decoration-none text-reset d-block">
@@ -424,7 +424,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-xl-3">
+                            <div class="col-12 col-md-6 col-lg-3">
 
                                 <a href="${pageContext.request.contextPath}/Manager/Inventory?stock=out"
                                    class="text-decoration-none text-reset d-block">
@@ -488,7 +488,7 @@
                             <div class="px-3 pt-3 pb-2">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/Inventory"
-                                      class="row g-3 align-items-end">
+                                      class="row g-3 align-items-end inventory-filter-form">
 
                                     <div class="col-xl-3 col-lg-4 col-md-6">
                                         <label class="form-label">Search</label>
@@ -862,7 +862,7 @@
                             <div class="p-3 border-bottom">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/Inventory"
-                                      class="row g-2 align-items-end">
+                                      class="row g-2 align-items-end transaction-filter-form">
                                     <input type="hidden" name="keyword" value="${keyword}"/>
                                     <input type="hidden" name="category" value="${selectedCategory}"/>
                                     <input type="hidden" name="stock" value="${selectedStock}"/>
@@ -1226,7 +1226,7 @@
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
 
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
 
 
 
