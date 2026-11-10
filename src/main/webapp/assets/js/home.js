@@ -13,6 +13,8 @@
     var activeIndex = -1;
 
     if (!searchInput || !suggestionsBox) return;
+    if (searchInput.getAttribute('data-suggest-bound') === '1') return;
+    searchInput.setAttribute('data-suggest-bound', '1');
 
     function debounce(fn, delay) {
         return function () {

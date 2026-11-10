@@ -183,8 +183,12 @@
             <ul class="main-nav nav navbar-nav">
                 <li class="${activeNav == 'home' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/home">Home</a></li>
                 <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
-                <li><a href="${pageContext.request.contextPath}/search?category=1">Headphones</a></li>
-                <li><a href="${pageContext.request.contextPath}/search?category=2">Earbuds</a></li>
+                <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(1) ? 'active' : ''}">
+                    <a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a>
+                </li>
+                <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(2) ? 'active' : ''}">
+                    <a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a>
+                </li>
                 <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
             </ul>
             <!-- /NAV -->
@@ -252,7 +256,199 @@
         color: #D10024 !important;
         font-weight: 600;
     }
+
+    /* ===== GLOBAL HEADER SEARCH AUTOCOMPLETE ===== */
+    .search-suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        text-decoration: none !important;
+        color: #333;
+        transition: background 0.15s ease;
+    }
+    .search-suggestion-item:last-child {
+        border-bottom: none;
+    }
+    .search-suggestion-item:hover,
+    .search-suggestion-item.active {
+        background-color: #f5f5f5;
+    }
+    .suggestion-img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 10px;
+        flex-shrink: 0;
+        border: 1px solid #eee;
+    }
+    .suggestion-info {
+        flex: 1;
+        overflow: hidden;
+        text-align: left;
+    }
+    .suggestion-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .suggestion-meta {
+        font-size: 11px;
+        color: #999;
+        margin-top: 2px;
+    }
+    .suggestion-price {
+        font-size: 13px;
+        font-weight: 700;
+        color: #D10024;
+        white-space: nowrap;
+        margin-left: 8px;
+    }
+    .suggestion-no-result {
+        padding: 12px;
+        text-align: center;
+        color: #999;
+        font-size: 13px;
+    }
 </style>
+
+<script>
+    (function () {
+        var searchInput = document.getElementById('search-input');
+        var suggestionsBox = document.getElementById('search-suggestions');
+        var searchForm = document.getElementById('search-form');
+        var contextPath = window.__contextPath || '';
+        var debounceTimer = null;
+        var activeIndex = -1;
+
+        if (!searchInput || !suggestionsBox) return;
+        if (searchInput.getAttribute('data-suggest-bound') === '1') return;
+        searchInput.setAttribute('data-suggest-bound', '1');
+
+        function debounce(fn, delay) {
+            return function () {
+                var args = arguments;
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () { fn.apply(null, args); }, delay);
+            };
+        }
+
+        function formatPrice(price) {
+            return parseFloat(price).toLocaleString('vi-VN') + ' \u20ab';
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text || ''));
+            return div.innerHTML;
+        }
+
+        function renderSuggestions(data) {
+            suggestionsBox.innerHTML = '';
+            activeIndex = -1;
+
+            if (!data || data.length === 0) {
+                suggestionsBox.innerHTML = '<div class="suggestion-no-result">No products found</div>';
+                suggestionsBox.style.display = 'block';
+                return;
+            }
+
+            data.forEach(function (item, idx) {
+                var a = document.createElement('a');
+                a.className = 'search-suggestion-item';
+                a.href = contextPath + '/productDetail?id=' + item.productID;
+                a.setAttribute('data-index', idx);
+
+                var imgUrl = item.imageUrl || 'assets/img/product01.png';
+                var imgSrc = imgUrl.indexOf('http') === 0
+                    ? imgUrl
+                    : contextPath + '/' + imgUrl;
+
+                a.innerHTML =
+                    '<img class="suggestion-img" src="' + imgSrc + '" alt="' + escapeHtml(item.productName) + '" onerror="this.src=\'' + contextPath + '/assets/img/product01.png\'">' +
+                    '<div class="suggestion-info">' +
+                        '<div class="suggestion-name">' + escapeHtml(item.productName) + '</div>' +
+                        '<div class="suggestion-meta">' + escapeHtml(item.categoryName || '') + '</div>' +
+                    '</div>' +
+                    '<span class="suggestion-price">' + formatPrice(item.price) + '</span>';
+
+                suggestionsBox.appendChild(a);
+            });
+
+            suggestionsBox.style.display = 'block';
+        }
+
+        function hideSuggestions() {
+            suggestionsBox.style.display = 'none';
+            activeIndex = -1;
+        }
+
+        function fetchSuggestions(keyword) {
+            if (keyword.length < 3) {
+                hideSuggestions();
+                return;
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', contextPath + '/searchSuggest?q=' + encodeURIComponent(keyword), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        renderSuggestions(JSON.parse(xhr.responseText));
+                    } catch (e) {
+                        hideSuggestions();
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        var debouncedFetch = debounce(fetchSuggestions, 300);
+
+        searchInput.addEventListener('keydown', function (e) {
+            var items = suggestionsBox.querySelectorAll('.search-suggestion-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, -1);
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+                return;
+            }
+            items.forEach(function (item, i) {
+                item.classList.toggle('active', i === activeIndex);
+            });
+        });
+
+        searchInput.addEventListener('input', function () {
+            debouncedFetch(this.value.trim());
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+
+        searchInput.addEventListener('focus', function () {
+            if (this.value.trim().length >= 3 && suggestionsBox.innerHTML !== '') {
+                suggestionsBox.style.display = 'block';
+            }
+        });
+
+        if (searchForm) {
+            searchForm.addEventListener('submit', function () {
+                hideSuggestions();
+            });
+        }
+    })();
+</script>
 
 <!-- GLOBAL WISHLIST TOAST & SCRIPT -->
 <div id="siteWishlistToast" style="display:none;position:fixed;bottom:24px;right:24px;background:#1e1f29;color:#fff;padding:14px 20px;border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,0.35);z-index:999999;font-size:13px;align-items:center;gap:10px;max-width:420px;line-height:1.4;">

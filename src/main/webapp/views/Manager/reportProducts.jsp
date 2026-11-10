@@ -16,10 +16,10 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
     </head>
 
-    <body>
+    <body class="report-page report-products">
 
         <div class="admin-shell">
 
@@ -139,7 +139,7 @@
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
                         <!-- PAGE HEADING -->
-                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                             <div class="page-heading-copy">
                                 <span class="page-icon">
                                     <i class="bi bi-box-seam"></i>
@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- REPORT NAVIGATION TABS -->
-                        <div class="mb-4">
+                        <div class="report-tabs mb-4">
                             <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                 <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' ? 'active' : 'text-body'}" 
                                    href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -185,14 +185,21 @@
                             </div>
                         </div>
 
+                        <c:if test="${not empty reportFilterError}">
+                            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>${reportFilterError}</span>
+                            </div>
+                        </c:if>
+
                         <!-- KPI SUMMARY CARDS -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="report-kpi-grid row g-3 mb-4">
+                            <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <p class="text-muted mb-1">Products Matched</p>
-                                            <h2 class="h3 mb-1">${totalItems}</h2>
+                                            <p class="text-muted mb-1">Total Products</p>
+                                            <h2 class="h3 mb-1">${summary.totalProducts}</h2>
                                             <small class="text-primary">
                                                 <i class="bi bi-check-circle me-1"></i>Catalog products evaluated
                                             </small>
@@ -204,7 +211,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -221,13 +228,13 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Total Product Revenue</p>
                                             <h2 class="h3 mb-1 text-success">
-                                                $<fmt:formatNumber value="${summary.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${summary.totalRevenue}" pattern="#,##0"/> VND
                                             </h2>
                                             <small class="text-success">
                                                 <i class="bi bi-cash me-1"></i>Gross product sales
@@ -240,13 +247,13 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Avg Revenue / Product</p>
                                             <h2 class="h3 mb-1">
-                                                $<fmt:formatNumber value="${summary.avgRevenuePerProduct}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${summary.avgRevenuePerProduct}" pattern="#,##0"/> VND
                                             </h2>
                                             <small class="text-muted">
                                                 <i class="bi bi-calculator me-1"></i>Per evaluated product
@@ -261,7 +268,7 @@
                         </div>
 
                         <!-- PRODUCT FILTER PANEL -->
-                        <section class="panel mb-4">
+                        <section class="panel report-filter-panel mb-4">
                             <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>
                                     <h2 class="h5 mb-1 section-title">
@@ -273,40 +280,40 @@
 
                                 <!-- Quick Presets -->
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Preset filters">
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=all&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=all&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'all' ? 'active' : ''}">All</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=today&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=today&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'today' ? 'active' : ''}">Today</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_week&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_week&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_week' ? 'active' : ''}">This Week</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_month&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_month&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_month' ? 'active' : ''}">This Month</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=last_30_days&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=last_30_days&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'last_30_days' ? 'active' : ''}">Last 30 Days</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_year&categoryId=${selectedCategory}&brandId=${selectedBrand}&sort=${selectedSort}&keyword=${keyword}" 
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=products&period=this_year&tableCategoryId=${tableCategoryId}&tableBrandId=${tableBrandId}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_year' ? 'active' : ''}">This Year</a>
                                 </div>
                             </div>
 
-                            <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end">
+                            <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end report-table-filter-form report-product-table-filter-form">
                                 <input type="hidden" name="tab" value="products">
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Start Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}">
+                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}" max="${today}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}">
+                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}" max="${today}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Category</label>
-                                    <select class="form-select form-select-sm" name="categoryId">
+                                    <select class="form-select form-select-sm" name="tableCategoryId">
                                         <option value="">All Categories</option>
                                         <c:forEach var="cat" items="${categories}">
-                                            <option value="${cat.categoryID}" ${selectedCategory == cat.categoryID ? 'selected' : ''}>
+                                            <option value="${cat.categoryID}" ${tableCategoryId == cat.categoryID ? 'selected' : ''}>
                                                 ${cat.categoryName}
                                             </option>
                                         </c:forEach>
@@ -315,10 +322,10 @@
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Brand</label>
-                                    <select class="form-select form-select-sm" name="brandId">
+                                    <select class="form-select form-select-sm" name="tableBrandId">
                                         <option value="">All Brands</option>
                                         <c:forEach var="b" items="${brands}">
-                                            <option value="${b.brandID}" ${selectedBrand == b.brandID ? 'selected' : ''}>
+                                            <option value="${b.brandID}" ${tableBrandId == b.brandID ? 'selected' : ''}>
                                                 ${b.brandName}
                                             </option>
                                         </c:forEach>
@@ -327,29 +334,29 @@
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Sort By</label>
-                                    <select class="form-select form-select-sm" name="sort">
-                                        <option value="revenue_desc" ${selectedSort == 'revenue_desc' ? 'selected' : ''}>Revenue: High to Low</option>
-                                        <option value="revenue_asc" ${selectedSort == 'revenue_asc' ? 'selected' : ''}>Revenue: Low to High</option>
-                                        <option value="units_desc" ${selectedSort == 'units_desc' ? 'selected' : ''}>Units Sold: High to Low</option>
-                                        <option value="units_asc" ${selectedSort == 'units_asc' ? 'selected' : ''}>Units Sold: Low to High</option>
-                                        <option value="orders_desc" ${selectedSort == 'orders_desc' ? 'selected' : ''}>Order Count: High to Low</option>
-                                        <option value="orders_asc" ${selectedSort == 'orders_asc' ? 'selected' : ''}>Order Count: Low to High</option>
-                                        <option value="name_asc" ${selectedSort == 'name_asc' ? 'selected' : ''}>Name: A to Z</option>
-                                        <option value="name_desc" ${selectedSort == 'name_desc' ? 'selected' : ''}>Name: Z to A</option>
-                                        <option value="id_desc" ${selectedSort == 'id_desc' ? 'selected' : ''}>Product ID: Newest First</option>
-                                        <option value="id_asc" ${selectedSort == 'id_asc' ? 'selected' : ''}>Product ID: Oldest First</option>
+                                    <select class="form-select form-select-sm" name="tableSort">
+                                        <option value="revenue_desc" ${tableSort == 'revenue_desc' ? 'selected' : ''}>Revenue: High to Low</option>
+                                        <option value="revenue_asc" ${tableSort == 'revenue_asc' ? 'selected' : ''}>Revenue: Low to High</option>
+                                        <option value="units_desc" ${tableSort == 'units_desc' ? 'selected' : ''}>Units Sold: High to Low</option>
+                                        <option value="units_asc" ${tableSort == 'units_asc' ? 'selected' : ''}>Units Sold: Low to High</option>
+                                        <option value="orders_desc" ${tableSort == 'orders_desc' ? 'selected' : ''}>Order Count: High to Low</option>
+                                        <option value="orders_asc" ${tableSort == 'orders_asc' ? 'selected' : ''}>Order Count: Low to High</option>
+                                        <option value="name_asc" ${tableSort == 'name_asc' ? 'selected' : ''}>Name: A to Z</option>
+                                        <option value="name_desc" ${tableSort == 'name_desc' ? 'selected' : ''}>Name: Z to A</option>
+                                        <option value="id_desc" ${tableSort == 'id_desc' ? 'selected' : ''}>Product ID: Newest First</option>
+                                        <option value="id_asc" ${tableSort == 'id_asc' ? 'selected' : ''}>Product ID: Oldest First</option>
                                     </select>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Keyword</label>
-                                    <input type="text" class="form-control form-control-sm" name="keyword" 
-                                           placeholder="Product Name or ID..." value="${keyword}">
+                                    <input type="text" class="form-control form-control-sm" name="tableKeyword"
+                                           placeholder="Product Name or ID..." value="${tableKeyword}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Page Size</label>
-                                    <select class="form-select form-select-sm" name="pageSize">
+                                    <select class="form-select form-select-sm" name="tablePageSize">
                                         <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 per page</option>
                                         <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 per page</option>
                                         <option value="50" ${pageSize == 50 ? 'selected' : ''}>50 per page</option>
@@ -380,13 +387,6 @@
                                     </p>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-2">
-                                    <input class="form-control form-control-sm table-search"
-                                           type="search"
-                                           placeholder="Client filter..."
-                                           data-table-search="productPerfTable"
-                                           aria-label="Client search products">
-                                </div>
                             </div>
 
                             <div class="table-responsive">
@@ -400,11 +400,11 @@
                                                     <c:param name="period" value="${selectedPeriod}"/>
                                                     <c:param name="startDate" value="${startDate}"/>
                                                     <c:param name="endDate" value="${endDate}"/>
-                                                    <c:param name="categoryId" value="${selectedCategory}"/>
-                                                    <c:param name="brandId" value="${selectedBrand}"/>
-                                                    <c:param name="keyword" value="${keyword}"/>
-                                                    <c:param name="pageSize" value="${pageSize}"/>
-                                                    <c:param name="sort" value="${selectedSort == 'id_desc' ? 'id_asc' : 'id_desc'}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+                                                    <c:param name="tableSort" value="${tableSort == 'id_desc' ? 'id_asc' : 'id_desc'}"/>
                                                 </c:url>
                                                 <a href="${sortIdUrl}" class="text-decoration-none text-muted">
                                                     Product ID <i class="bi bi-arrow-down-up small"></i>
@@ -416,11 +416,11 @@
                                                     <c:param name="period" value="${selectedPeriod}"/>
                                                     <c:param name="startDate" value="${startDate}"/>
                                                     <c:param name="endDate" value="${endDate}"/>
-                                                    <c:param name="categoryId" value="${selectedCategory}"/>
-                                                    <c:param name="brandId" value="${selectedBrand}"/>
-                                                    <c:param name="keyword" value="${keyword}"/>
-                                                    <c:param name="pageSize" value="${pageSize}"/>
-                                                    <c:param name="sort" value="${selectedSort == 'name_asc' ? 'name_desc' : 'name_asc'}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+                                                    <c:param name="tableSort" value="${tableSort == 'name_asc' ? 'name_desc' : 'name_asc'}"/>
                                                 </c:url>
                                                 <a href="${sortNameUrl}" class="text-decoration-none text-muted">
                                                     Product Name <i class="bi bi-arrow-down-up small"></i>
@@ -435,11 +435,11 @@
                                                     <c:param name="period" value="${selectedPeriod}"/>
                                                     <c:param name="startDate" value="${startDate}"/>
                                                     <c:param name="endDate" value="${endDate}"/>
-                                                    <c:param name="categoryId" value="${selectedCategory}"/>
-                                                    <c:param name="brandId" value="${selectedBrand}"/>
-                                                    <c:param name="keyword" value="${keyword}"/>
-                                                    <c:param name="pageSize" value="${pageSize}"/>
-                                                    <c:param name="sort" value="${selectedSort == 'units_desc' ? 'units_asc' : 'units_desc'}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+                                                    <c:param name="tableSort" value="${tableSort == 'units_desc' ? 'units_asc' : 'units_desc'}"/>
                                                 </c:url>
                                                 <a href="${sortUnitsUrl}" class="text-decoration-none text-muted">
                                                     Units Sold <i class="bi bi-arrow-down-up small"></i>
@@ -451,11 +451,11 @@
                                                     <c:param name="period" value="${selectedPeriod}"/>
                                                     <c:param name="startDate" value="${startDate}"/>
                                                     <c:param name="endDate" value="${endDate}"/>
-                                                    <c:param name="categoryId" value="${selectedCategory}"/>
-                                                    <c:param name="brandId" value="${selectedBrand}"/>
-                                                    <c:param name="keyword" value="${keyword}"/>
-                                                    <c:param name="pageSize" value="${pageSize}"/>
-                                                    <c:param name="sort" value="${selectedSort == 'orders_desc' ? 'orders_asc' : 'orders_desc'}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+                                                    <c:param name="tableSort" value="${tableSort == 'orders_desc' ? 'orders_asc' : 'orders_desc'}"/>
                                                 </c:url>
                                                 <a href="${sortOrdersUrl}" class="text-decoration-none text-muted">
                                                     Order Count <i class="bi bi-arrow-down-up small"></i>
@@ -467,11 +467,11 @@
                                                     <c:param name="period" value="${selectedPeriod}"/>
                                                     <c:param name="startDate" value="${startDate}"/>
                                                     <c:param name="endDate" value="${endDate}"/>
-                                                    <c:param name="categoryId" value="${selectedCategory}"/>
-                                                    <c:param name="brandId" value="${selectedBrand}"/>
-                                                    <c:param name="keyword" value="${keyword}"/>
-                                                    <c:param name="pageSize" value="${pageSize}"/>
-                                                    <c:param name="sort" value="${selectedSort == 'revenue_desc' ? 'revenue_asc' : 'revenue_desc'}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+                                                    <c:param name="tableSort" value="${tableSort == 'revenue_desc' ? 'revenue_asc' : 'revenue_desc'}"/>
                                                 </c:url>
                                                 <a href="${sortRevUrl}" class="text-decoration-none text-muted">
                                                     Revenue <i class="bi bi-arrow-down-up small"></i>
@@ -505,7 +505,7 @@
                                                             <span class="badge text-bg-light">${p.categoryName}</span>
                                                         </td>
                                                         <td class="text-end text-muted">
-                                                            $<fmt:formatNumber value="${p.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            <fmt:formatNumber value="${p.price}" pattern="#,##0"/> VND
                                                         </td>
                                                         <td class="text-center fw-bold text-primary">
                                                             ${p.unitsSold}
@@ -514,7 +514,7 @@
                                                             <span class="badge text-bg-light border">${p.orderCount}</span>
                                                         </td>
                                                         <td class="text-end fw-bold text-success">
-                                                            $<fmt:formatNumber value="${p.revenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            <fmt:formatNumber value="${p.revenue}" pattern="#,##0"/> VND
                                                         </td>
                                                     </tr>
                                                 </c:forEach>
@@ -546,12 +546,12 @@
                                                 <c:param name="period" value="${selectedPeriod}"/>
                                                 <c:param name="startDate" value="${startDate}"/>
                                                 <c:param name="endDate" value="${endDate}"/>
-                                                <c:param name="categoryId" value="${selectedCategory}"/>
-                                                <c:param name="brandId" value="${selectedBrand}"/>
-                                                <c:param name="keyword" value="${keyword}"/>
-                                                <c:param name="sort" value="${selectedSort}"/>
-                                                <c:param name="pageSize" value="${pageSize}"/>
-                                                <c:param name="page" value="${currentPage - 1}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+                                                <c:param name="tableSort" value="${tableSort}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+<c:param name="tablePage" value="${currentPage - 1}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
@@ -565,12 +565,12 @@
                                                         <c:param name="period" value="${selectedPeriod}"/>
                                                         <c:param name="startDate" value="${startDate}"/>
                                                         <c:param name="endDate" value="${endDate}"/>
-                                                        <c:param name="categoryId" value="${selectedCategory}"/>
-                                                        <c:param name="brandId" value="${selectedBrand}"/>
-                                                        <c:param name="keyword" value="${keyword}"/>
-                                                        <c:param name="sort" value="${selectedSort}"/>
-                                                        <c:param name="pageSize" value="${pageSize}"/>
-                                                        <c:param name="page" value="${pNum}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+                                                        <c:param name="tableSort" value="${tableSort}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+<c:param name="tablePage" value="${pNum}"/>
                                                     </c:url>
 
                                                     <li class="page-item ${pNum == currentPage ? 'active' : ''}">
@@ -584,12 +584,12 @@
                                                 <c:param name="period" value="${selectedPeriod}"/>
                                                 <c:param name="startDate" value="${startDate}"/>
                                                 <c:param name="endDate" value="${endDate}"/>
-                                                <c:param name="categoryId" value="${selectedCategory}"/>
-                                                <c:param name="brandId" value="${selectedBrand}"/>
-                                                <c:param name="keyword" value="${keyword}"/>
-                                                <c:param name="sort" value="${selectedSort}"/>
-                                                <c:param name="pageSize" value="${pageSize}"/>
-                                                <c:param name="page" value="${currentPage + 1}"/>
+<c:param name="tableCategoryId" value="${tableCategoryId}"/>
+<c:param name="tableBrandId" value="${tableBrandId}"/>
+<c:param name="tableKeyword" value="${tableKeyword}"/>
+                                                <c:param name="tableSort" value="${tableSort}"/>
+<c:param name="tablePageSize" value="${pageSize}"/>
+<c:param name="tablePage" value="${currentPage + 1}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
@@ -621,7 +621,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
 
         <script>
             function exportProductsToCSV() {
