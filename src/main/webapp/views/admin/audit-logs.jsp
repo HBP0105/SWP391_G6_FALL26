@@ -105,36 +105,7 @@
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <!-- SIDEBAR -->
-    <aside class="admin-sidebar" id="adminSidebar">
-      <div class="sidebar-header">
-        <a class="brand-mark" href="${pageContext.request.contextPath}/admin/revenue-report">
-          <span class="brand-icon"><i class="bi bi-shield-lock-fill"></i></span>
-          <span class="brand-copy">
-            <span class="brand-title">Admin Portal</span>
-            <span class="brand-subtitle">Headphone Shop</span>
-          </span>
-        </a>
-      </div>
-
-      <nav class="sidebar-nav">
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/revenue-report">
-          <span class="nav-icon"><i class="bi bi-graph-up-arrow"></i></span>
-          <span class="nav-text">Revenue Report</span>
-        </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/ai-performance">
-          <span class="nav-icon"><i class="bi bi-robot"></i></span>
-          <span class="nav-text">AI Performance & Config</span>
-        </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/admin/behavior-pipeline">
-          <span class="nav-icon"><i class="bi bi-diagram-3"></i></span>
-          <span class="nav-text">Behavior Pipeline</span>
-        </a>
-        <a class="nav-link active" href="${pageContext.request.contextPath}/admin/audit-logs">
-          <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
-          <span class="nav-text">Audit Logs</span>
-        </a>
-      </nav>
-    </aside>
+    <jsp:include page="_sidebar.jsp" />
 
     <!-- MAIN CONTENT -->
     <div class="admin-main">
@@ -438,7 +409,7 @@
             <c:if test="${totalPages > 1}">
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-3 border-top mt-3">
                 <div class="text-muted small">
-                  Showing ${(page - 1) * pageSize + 1} - ${Math.min(page * pageSize, totalCount)} of ${totalCount} records (Page ${page}/${totalPages})
+                  Showing ${(page - 1) * pageSize + 1} - ${page * pageSize < totalCount ? page * pageSize : totalCount} of ${totalCount} records (Page ${page}/${totalPages})
                 </div>
 
                 <ul class="pagination pagination-sm mb-0">

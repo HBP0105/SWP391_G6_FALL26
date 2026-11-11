@@ -774,6 +774,5 @@
                 if (e.key === 'Escape') closeReviewPhotoModal();
             });
         </script>
-        <jsp:include page="/assets/components/aiChatbot.jsp" />
     </body>
 </html>

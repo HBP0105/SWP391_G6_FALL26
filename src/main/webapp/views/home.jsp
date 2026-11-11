@@ -671,10 +671,10 @@
                                                             <div class="add-to-cart">
                                                                 <form action="${pageContext.request.contextPath}/cart"
                                                                     method="POST" style="margin: 0;">
-                                                                    <input name="action" value="add">
-                                                                    <input name="productId"
+                                                                    <input type="hidden" name="action" value="add">
+                                                                    <input type="hidden" name="productId"
                                                                         value="${product.productId}">
-                                                                    <input name="quantity" value="1">
+                                                                    <input type="hidden" name="quantity" value="1">
 
                                                                     <button type="submit" class="add-to-cart-btn">
                                                                         <i class="fa fa-shopping-cart"></i> add to cart
@@ -1108,8 +1108,6 @@
                     <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
                     <script>window.__contextPath = '${pageContext.request.contextPath}';</script>
                     <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
-
-                    <jsp:include page="/assets/components/aiChatbot.jsp" />
                 </body>
 
                 </html>

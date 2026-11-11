@@ -18,7 +18,7 @@
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
     </head>
 
     <body>
@@ -262,7 +262,7 @@
 
                         <div class="row g-3 mb-4">
 
-                            <div class="col-12 col-md-6 col-lg-3">
+                            <div class="col-12 col-md-6 col-xl-3">
 
                                 <div class="panel h-100">
 
@@ -295,7 +295,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-lg-3">
+                            <div class="col-12 col-md-6 col-xl-3">
 
                                 <div class="panel h-100">
 
@@ -328,7 +328,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-lg-3">
+                            <div class="col-12 col-md-6 col-xl-3">
 
                                 <div class="panel h-100">
 
@@ -341,12 +341,10 @@
                                             </p>
 
                                             <h2 class="h3 mb-1">
-                                                <fmt:formatNumber value="${totalRevenue}" pattern="#,##0"/> VND
                                             </h2>
 
                                             <small class="text-success">
-                                                <i class="bi bi-check-circle"></i>
-                                                Non-cancelled orders
+                                                <i class="bi bi-arrow-up"></i>
                                             </small>
 
                                         </div>
@@ -361,7 +359,7 @@
 
                             </div>
 
-                            <div class="col-12 col-md-6 col-lg-3">
+                            <div class="col-12 col-md-6 col-xl-3">
 
                                 <div class="panel h-100">
 
@@ -606,7 +604,7 @@
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
 
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
     </body>
 
 </html>

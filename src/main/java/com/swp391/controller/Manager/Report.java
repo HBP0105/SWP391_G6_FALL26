@@ -52,12 +52,6 @@ public class Report extends HttpServlet {
         String rawEndDate = request.getParameter("endDate");
         String rawStatus = request.getParameter("status");
         String yearStr = request.getParameter("year");
-        String tableKeyword = request.getParameter("tableKeyword");
-        String tableStatusRaw = request.getParameter("tableStatus");
-        String tablePaymentRaw = request.getParameter("tablePaymentMethod");
-        String tableSortRaw = request.getParameter("tableSort");
-        int tablePage = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
-        int tablePageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
 
         Map<String, Object> overviewStats = new HashMap<>();
         List<Map<String, Object>> monthlyRevenue = Collections.emptyList();
@@ -65,11 +59,6 @@ public class Report extends HttpServlet {
         List<Map<String, Object>> topProducts = Collections.emptyList();
         List<Map<String, Object>> categorySales = Collections.emptyList();
         List<Map<String, Object>> ordersReport = Collections.emptyList();
-        int tableTotalItems = 0;
-        int tableTotalPages = 1;
-        String tableStatus = "ALL";
-        String tablePaymentMethod = "ALL";
-        String tableSort = "date_desc";
 
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
@@ -93,18 +82,7 @@ public class Report extends HttpServlet {
             statusDistribution = reportService.getOrderStatusDistribution(startDate, endDate);
             topProducts = reportService.getTopSellingProducts(5, startDate, endDate);
             categorySales = reportService.getCategorySales(startDate, endDate);
-            tableStatus = reportService.normalizeOrderStatus(tableStatusRaw);
-            tablePaymentMethod = reportService.normalizePaymentMethod(tablePaymentRaw);
-            tableSort = reportService.normalizeOrderSort(tableSortRaw);
-            tableTotalItems = reportService.countDetailedOrders(
-                    startDate, endDate, tableStatus, tablePaymentMethod, tableKeyword
-            );
-            tableTotalPages = reportService.getTotalPages(tableTotalItems, tablePageSize);
-            tablePage = Math.min(tablePage, tableTotalPages);
-            ordersReport = reportService.getDetailedOrdersPaginated(
-                    startDate, endDate, tableStatus, tablePaymentMethod, tableKeyword,
-                    tableSort, tablePage, tablePageSize
-            );
+            ordersReport = reportService.getOrdersReport(startDate, endDate, status);
         } catch (IllegalArgumentException e) {
             request.setAttribute("reportFilterError", e.getMessage());
         }
@@ -121,14 +99,6 @@ public class Report extends HttpServlet {
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
         request.setAttribute("currentYear", currentYear);
-        request.setAttribute("tableKeyword", valueOrEmpty(tableKeyword));
-        request.setAttribute("tableStatus", tableStatus);
-        request.setAttribute("tablePaymentMethod", tablePaymentMethod);
-        request.setAttribute("tableSort", tableSort);
-        request.setAttribute("tablePage", tablePage);
-        request.setAttribute("tablePageSize", tablePageSize);
-        request.setAttribute("tableTotalItems", tableTotalItems);
-        request.setAttribute("tableTotalPages", tableTotalPages);
 
         request.getRequestDispatcher("/views/Manager/report.jsp").forward(request, response);
     }
@@ -141,12 +111,9 @@ public class Report extends HttpServlet {
         String rawEndDate = request.getParameter("endDate");
         String rawGroupBy = request.getParameter("groupBy");
         String yearStr = request.getParameter("year");
-        String tableKeyword = request.getParameter("tableKeyword");
-        String tableSort = reportService.normalizeRevenueSort(request.getParameter("tableSort"));
 
         Map<String, Object> revenueStats = new HashMap<>();
         List<Map<String, Object>> revenueTrend = Collections.emptyList();
-        List<Map<String, Object>> revenueTable = Collections.emptyList();
         List<Map<String, Object>> paymentBreakdown = Collections.emptyList();
 
         String startDate = valueOrEmpty(rawStartDate);
@@ -168,7 +135,6 @@ public class Report extends HttpServlet {
 
             revenueStats = reportService.getRevenueAnalysisStats(startDate, endDate);
             revenueTrend = reportService.getRevenueTrend(startDate, endDate, groupBy, currentYear);
-            revenueTable = reportService.filterRevenueTrend(revenueTrend, tableKeyword, tableSort);
             paymentBreakdown = reportService.getRevenuePaymentMethodBreakdown(startDate, endDate);
         } catch (IllegalArgumentException e) {
             request.setAttribute("reportFilterError", e.getMessage());
@@ -177,15 +143,12 @@ public class Report extends HttpServlet {
         request.setAttribute("currentTab", "revenue");
         request.setAttribute("revenueStats", revenueStats);
         request.setAttribute("revenueTrend", revenueTrend);
-        request.setAttribute("revenueTable", revenueTable);
         request.setAttribute("paymentBreakdown", paymentBreakdown);
         request.setAttribute("selectedPeriod", selectedPeriod);
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
         request.setAttribute("groupBy", groupBy);
         request.setAttribute("currentYear", currentYear);
-        request.setAttribute("tableKeyword", valueOrEmpty(tableKeyword));
-        request.setAttribute("tableSort", tableSort);
 
         request.getRequestDispatcher("/views/Manager/reportRevenue.jsp").forward(request, response);
     }
@@ -196,13 +159,13 @@ public class Report extends HttpServlet {
         String period = request.getParameter("period");
         String rawStartDate = request.getParameter("startDate");
         String rawEndDate = request.getParameter("endDate");
-        String keyword = request.getParameter("tableKeyword");
-        String rawSort = request.getParameter("tableSort");
+        String keyword = request.getParameter("keyword");
+        String rawSort = request.getParameter("sort");
 
-        int page = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
-        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
-        Integer categoryId = parsePositiveInteger(request.getParameter("tableCategoryId"));
-        Integer brandId = parsePositiveInteger(request.getParameter("tableBrandId"));
+        int page = reportService.normalizePage(parseInt(request.getParameter("page"), 1));
+        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("pageSize"), 10));
+        Integer categoryId = parsePositiveInteger(request.getParameter("categoryId"));
+        Integer brandId = parsePositiveInteger(request.getParameter("brandId"));
 
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
@@ -234,7 +197,7 @@ public class Report extends HttpServlet {
                     startDate, endDate, categoryId, brandId, keyword, sort, page, pageSize
             );
             summary = reportService.getProductPerformanceSummary(
-                    startDate, endDate, null, null, ""
+                    startDate, endDate, categoryId, brandId, keyword
             );
         } catch (IllegalArgumentException e) {
             request.setAttribute("reportFilterError", e.getMessage());
@@ -253,10 +216,10 @@ public class Report extends HttpServlet {
         request.setAttribute("selectedPeriod", selectedPeriod);
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
-        request.setAttribute("tableCategoryId", categoryId);
-        request.setAttribute("tableBrandId", brandId);
-        request.setAttribute("tableKeyword", valueOrEmpty(keyword));
-        request.setAttribute("tableSort", sort);
+        request.setAttribute("selectedCategory", categoryId);
+        request.setAttribute("selectedBrand", brandId);
+        request.setAttribute("keyword", valueOrEmpty(keyword));
+        request.setAttribute("selectedSort", sort);
 
         request.getRequestDispatcher("/views/Manager/reportProducts.jsp").forward(request, response);
     }
@@ -267,20 +230,18 @@ public class Report extends HttpServlet {
         String period = request.getParameter("period");
         String rawStartDate = request.getParameter("startDate");
         String rawEndDate = request.getParameter("endDate");
-        String rawStatus = request.getParameter("tableStatus");
-        String rawPaymentMethod = request.getParameter("tablePaymentMethod");
-        String keyword = request.getParameter("tableKeyword");
-        String rawSort = request.getParameter("tableSort");
+        String rawStatus = request.getParameter("status");
+        String rawPaymentMethod = request.getParameter("paymentMethod");
+        String keyword = request.getParameter("keyword");
 
-        int page = reportService.normalizePage(parseInt(request.getParameter("tablePage"), 1));
-        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("tablePageSize"), 10));
+        int page = reportService.normalizePage(parseInt(request.getParameter("page"), 1));
+        int pageSize = reportService.normalizePageSize(parseInt(request.getParameter("pageSize"), 10));
 
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
         String status = valueOrDefault(rawStatus, "ALL").toUpperCase();
         String paymentMethod = valueOrDefault(rawPaymentMethod, "ALL").toUpperCase();
         String selectedPeriod = valueOrDefault(period, "all");
-        String sort = reportService.normalizeOrderSort(rawSort);
 
         Map<String, Object> orderStats = new HashMap<>();
         List<Map<String, Object>> paymentStats = Collections.emptyList();
@@ -309,11 +270,11 @@ public class Report extends HttpServlet {
             }
 
             orderStats = reportService.getOrderAnalysisStats(
-                    startDate, endDate, "ALL", "ALL"
+                    startDate, endDate, status, paymentMethod
             );
             paymentStats = reportService.getOrderPaymentMethods(startDate, endDate);
             ordersList = reportService.getDetailedOrdersPaginated(
-                    startDate, endDate, status, paymentMethod, keyword, sort, page, pageSize
+                    startDate, endDate, status, paymentMethod, keyword, page, pageSize
             );
         } catch (IllegalArgumentException e) {
             request.setAttribute("reportFilterError", e.getMessage());
@@ -331,10 +292,9 @@ public class Report extends HttpServlet {
         request.setAttribute("selectedPeriod", selectedPeriod);
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
-        request.setAttribute("tableStatus", status);
-        request.setAttribute("tablePaymentMethod", paymentMethod);
-        request.setAttribute("tableKeyword", valueOrEmpty(keyword));
-        request.setAttribute("tableSort", sort);
+        request.setAttribute("selectedStatus", status);
+        request.setAttribute("selectedPaymentMethod", paymentMethod);
+        request.setAttribute("keyword", valueOrEmpty(keyword));
 
         request.getRequestDispatcher("/views/Manager/reportOrders.jsp").forward(request, response);
     }

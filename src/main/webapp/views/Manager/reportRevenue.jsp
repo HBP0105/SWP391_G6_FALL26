@@ -16,10 +16,10 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
     </head>
 
-    <body class="report-page">
+    <body>
 
         <div class="admin-shell">
 
@@ -139,7 +139,7 @@
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
                         <!-- PAGE HEADING -->
-                        <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                             <div class="page-heading-copy">
                                 <span class="page-icon">
                                     <i class="bi bi-graph-up-arrow"></i>
@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- REPORT NAVIGATION TABS -->
-                        <div class="report-tabs mb-4">
+                        <div class="mb-4">
                             <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                 <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' ? 'active' : 'text-body'}" 
                                    href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -185,15 +185,8 @@
                             </div>
                         </div>
 
-                        <c:if test="${not empty reportFilterError}">
-                            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-                                <span>${reportFilterError}</span>
-                            </div>
-                        </c:if>
-
                         <!-- DATE FILTER SECTION -->
-                        <section class="panel report-filter-panel mb-4">
+                        <section class="panel mb-4">
                             <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>
                                     <h2 class="h5 mb-1 section-title">
@@ -227,12 +220,12 @@
 
                                 <div class="col-12 col-md-3">
                                     <label class="form-label small text-muted mb-1">Start Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}" max="${today}">
+                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}">
                                 </div>
 
                                 <div class="col-12 col-md-3">
                                     <label class="form-label small text-muted mb-1">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}" max="${today}">
+                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}">
                                 </div>
 
                                 <div class="col-12 col-md-2">
@@ -264,14 +257,14 @@
                         </section>
 
                         <!-- REVENUE KPI CARDS -->
-                        <div class="report-kpi-grid row g-3 mb-4">
-                            <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Total Revenue</p>
                                             <h2 class="h3 mb-1 text-success">
-                                                <fmt:formatNumber value="${revenueStats.totalRevenue}" pattern="#,##0"/> VND
+                                                $<fmt:formatNumber value="${revenueStats.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                             </h2>
                                             <small class="text-success">
                                                 <i class="bi bi-check-circle me-1"></i>Excludes cancelled orders
@@ -284,13 +277,13 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Average Order Value</p>
                                             <h2 class="h3 mb-1 text-primary">
-                                                <fmt:formatNumber value="${revenueStats.avgOrderValue}" pattern="#,##0"/> VND
+                                                $<fmt:formatNumber value="${revenueStats.avgOrderValue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                             </h2>
                                             <small class="text-muted">
                                                 <i class="bi bi-calculator me-1"></i>Across ${revenueStats.validOrders} valid orders
@@ -303,7 +296,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -320,13 +313,13 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Delivered Revenue</p>
                                             <h2 class="h3 mb-1 text-body">
-                                                <fmt:formatNumber value="${revenueStats.deliveredRevenue}" pattern="#,##0"/> VND
+                                                $<fmt:formatNumber value="${revenueStats.deliveredRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                             </h2>
                                             <small class="text-success">
                                                 <i class="bi bi-truck me-1"></i>Fully completed & paid
@@ -346,7 +339,7 @@
                                 <div class="panel p-3 h-100 border-start border-4 border-info">
                                     <p class="text-muted mb-1 small">In-Transit (Shipping) Revenue</p>
                                     <h4 class="mb-0 text-info">
-                                        <fmt:formatNumber value="${revenueStats.shippingRevenue}" pattern="#,##0"/> VND
+                                        $<fmt:formatNumber value="${revenueStats.shippingRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                     </h4>
                                     <small class="text-muted">Currently in courier delivery</small>
                                 </div>
@@ -356,7 +349,7 @@
                                 <div class="panel p-3 h-100 border-start border-4 border-warning">
                                     <p class="text-muted mb-1 small">Pending Order Revenue</p>
                                     <h4 class="mb-0 text-warning">
-                                        <fmt:formatNumber value="${revenueStats.pendingRevenue}" pattern="#,##0"/> VND
+                                        $<fmt:formatNumber value="${revenueStats.pendingRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                     </h4>
                                     <small class="text-muted">Awaiting confirmation/packing</small>
                                 </div>
@@ -366,7 +359,7 @@
                                 <div class="panel p-3 h-100 border-start border-4 border-danger">
                                     <p class="text-muted mb-1 small">Cancelled Revenue (Lost)</p>
                                     <h4 class="mb-0 text-danger">
-                                        <fmt:formatNumber value="${revenueStats.cancelledRevenue}" pattern="#,##0"/> VND
+                                        $<fmt:formatNumber value="${revenueStats.cancelledRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                     </h4>
                                     <small class="text-muted">Potential sales cancelled by buyer/store</small>
                                 </div>
@@ -406,7 +399,7 @@
                                         <c:when test="${not empty revenueTrend}">
                                             <div class="chart-bars" style="grid-template-columns: repeat(${revenueTrend.size() > 0 ? revenueTrend.size() : 12}, minmax(16px, 1fr));">
                                                 <c:forEach var="item" items="${revenueTrend}">
-                                                    <div class="chart-column" title="${item.periodLabel}: <fmt:formatNumber value='${item.revenue}' pattern='#,##0'/> VND (${item.ordersCount} orders, ${item.unitsSold} units)">
+                                                    <div class="chart-column" title="${item.periodLabel}: $<fmt:formatNumber value='${item.revenue}' type='number' maxFractionDigits='0'/> (${item.ordersCount} orders, ${item.unitsSold} units)">
                                                         <span style="--bar-size: ${item.barHeight}%;"></span>
                                                         ${item.periodLabel}
                                                     </div>
@@ -459,7 +452,7 @@
                                                             </span>
                                                             <span class="text-muted small">
                                                                 ${pm.ordersCount} orders | 
-                                                                <strong class="text-body"><fmt:formatNumber value="${pm.revenue}" pattern="#,##0"/> VND</strong>
+                                                                <strong class="text-body">$<fmt:formatNumber value="${pm.revenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/></strong>
                                                                 (${pm.sharePct}%)
                                                             </span>
                                                         </div>
@@ -496,41 +489,17 @@
                                         <i class="bi bi-table"></i>
                                         <span>Revenue Timeline Breakdown</span>
                                     </h2>
-                                    <p class="text-muted mb-0">Tabular breakdown with filters independent from the chart and KPI cards.</p>
+                                    <p class="text-muted mb-0">Tabular breakdown of revenue, orders, and average order value by time interval.</p>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <input class="form-control form-control-sm table-search"
+                                           type="search"
+                                           placeholder="Search period..."
+                                           data-table-search="revenueTrendTable"
+                                           aria-label="Search timeline">
                                 </div>
                             </div>
-
-                            <form action="${pageContext.request.contextPath}/Manager/Report" method="GET"
-                                  class="row g-2 align-items-end report-table-filter-form report-revenue-table-filter-form mb-3">
-                                <input type="hidden" name="tab" value="revenue">
-                                <input type="hidden" name="period" value="${selectedPeriod}">
-                                <input type="hidden" name="startDate" value="${startDate}">
-                                <input type="hidden" name="endDate" value="${endDate}">
-                                <input type="hidden" name="groupBy" value="${groupBy}">
-                                <input type="hidden" name="year" value="${currentYear}">
-
-                                <div class="col-12 col-md">
-                                    <label class="form-label small text-muted mb-1">Search Period</label>
-                                    <input type="search" class="form-control form-control-sm" name="tableKeyword"
-                                           value="${tableKeyword}" placeholder="Month, quarter or year">
-                                </div>
-                                <div class="col-12 col-sm-7 col-md-4 col-xl-3">
-                                    <label class="form-label small text-muted mb-1">Sort</label>
-                                    <select class="form-select form-select-sm" name="tableSort">
-                                        <option value="period_asc" ${tableSort == 'period_asc' ? 'selected' : ''}>Period: Ascending</option>
-                                        <option value="period_desc" ${tableSort == 'period_desc' ? 'selected' : ''}>Period: Descending</option>
-                                        <option value="revenue_desc" ${tableSort == 'revenue_desc' ? 'selected' : ''}>Revenue: High to Low</option>
-                                        <option value="revenue_asc" ${tableSort == 'revenue_asc' ? 'selected' : ''}>Revenue: Low to High</option>
-                                        <option value="orders_desc" ${tableSort == 'orders_desc' ? 'selected' : ''}>Orders: High to Low</option>
-                                        <option value="orders_asc" ${tableSort == 'orders_asc' ? 'selected' : ''}>Orders: Low to High</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-auto d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search me-1"></i>Filter</button>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=revenue&period=${selectedPeriod}&startDate=${startDate}&endDate=${endDate}&groupBy=${groupBy}&year=${currentYear}"
-                                       class="btn btn-light btn-sm">Reset</a>
-                                </div>
-                            </form>
 
                             <div class="table-responsive">
                                 <table class="table align-middle mb-0" id="revenueTrendTable">
@@ -546,8 +515,8 @@
                                     </thead>
                                     <tbody>
                                         <c:choose>
-                                            <c:when test="${not empty revenueTable}">
-                                                <c:forEach var="t" items="${revenueTable}">
+                                            <c:when test="${not empty revenueTrend}">
+                                                <c:forEach var="t" items="${revenueTrend}">
                                                     <tr>
                                                         <td class="fw-semibold">
                                                             <i class="bi bi-calendar3 me-1 text-muted"></i>
@@ -560,10 +529,10 @@
                                                             <span class="text-muted">${t.unitsSold} units</span>
                                                         </td>
                                                         <td class="fw-semibold">
-                                                            <fmt:formatNumber value="${t.avgOrderValue}" pattern="#,##0"/> VND
+                                                            $<fmt:formatNumber value="${t.avgOrderValue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                                         </td>
                                                         <td class="fw-bold text-success">
-                                                            <fmt:formatNumber value="${t.revenue}" pattern="#,##0"/> VND
+                                                            $<fmt:formatNumber value="${t.revenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                                         </td>
                                                         <td style="min-width: 140px;">
                                                             <div class="d-flex align-items-center gap-2">
@@ -614,7 +583,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
 
         <script>
             function exportRevenueToCSV() {

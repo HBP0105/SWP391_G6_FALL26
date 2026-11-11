@@ -582,7 +582,6 @@
                                 });
                             });
                         </script>
-                        <jsp:include page="/assets/components/aiChatbot.jsp" />
         </body>
 
         </html>

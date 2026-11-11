@@ -5,7 +5,6 @@ import com.swp391.model.OrderSummary;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.math.BigDecimal;
 
 /**
  * Service layer for Manager Dashboard.
@@ -37,10 +36,6 @@ public class DashboardService {
 
     public int getLowStockProducts() {
         return dashBoardDao.getLowStockProducts();
-    }
-
-    public BigDecimal getTotalRevenue() {
-        return dashBoardDao.getTotalRevenue();
     }
 
     /**

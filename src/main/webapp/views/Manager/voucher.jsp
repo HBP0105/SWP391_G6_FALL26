@@ -27,7 +27,7 @@
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
 
     </head>
 
@@ -389,10 +389,10 @@
                             <div class="px-3 pt-3 pb-2">
                                 <form method="get"
                                       action="${pageContext.request.contextPath}/Manager/Voucher"
-                                      class="row g-2 align-items-end voucher-filter-form">
+                                      class="row g-2 align-items-end flex-xl-nowrap">
 
                                     <!-- Search -->
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Search</label>
                                         <input class="form-control"
                                                type="search"
@@ -402,7 +402,7 @@
                                     </div>
 
                                     <!-- Discount Type -->
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Discount Type</label>
                                         <select name="discountType" class="form-select">
                                             <option value="">All Types</option>
@@ -420,7 +420,7 @@
                                     </div>
 
                                     <!-- Status -->
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Status</label>
                                         <select name="status" class="form-select">
                                             <option value="">All Statuses</option>
@@ -443,7 +443,7 @@
                                     </div>
 
                                     <!-- Valid Period -->
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Valid Period</label>
                                         <select name="validPeriod" class="form-select">
                                             <option value="">All Periods</option>
@@ -465,7 +465,7 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Sort</label>
                                         <select name="sort" class="form-select">
 
@@ -502,7 +502,7 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-12 col-md-6 col-lg">
+                                    <div class="col-12 col-md-6 col-xl">
                                         <label class="form-label">Page Size</label>
 
                                         <select name="pageSize"
@@ -533,7 +533,7 @@
                                     </div>
 
                                     <!-- Buttons -->
-                                    <div class="col-12 col-md-6 col-lg-auto d-flex gap-2">
+                                    <div class="col-12 col-md-6 col-xl-auto d-flex gap-2">
 
                                         <button type="submit"
                                                 class="btn btn-primary text-nowrap">
@@ -1021,7 +1021,7 @@
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
 
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
 
 
 
