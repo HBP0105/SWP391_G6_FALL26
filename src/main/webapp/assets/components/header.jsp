@@ -72,9 +72,14 @@
                 <!-- SEARCH BAR -->
                 <div class="col-md-6">
                     <div class="header-search" style="position: relative;">
-                        <form id="search-form" action="${pageContext.request.contextPath}/productList" method="get" autocomplete="off">
-                            <input id="search-input" class="input" name="q" placeholder="Search here" type="text"
-                                   value="${param.q}">
+                        <form id="search-form" action="${pageContext.request.contextPath}/productList" method="get" autocomplete="off" style="position: relative;">
+                            <input id="search-input" class="input" name="q" placeholder="Search here (hoặc tìm bằng hình ảnh...)" type="text"
+                                   value="${param.q}" style="width: calc(100% - 100px); border-radius: 40px 0 0 40px; padding-right: 36px;">
+                            <a href="${pageContext.request.contextPath}/ai-search" title="Tìm kiếm thông minh bằng hình ảnh (AI Visual Search)" 
+                               style="position: absolute; right: 112px; top: 50%; transform: translateY(-50%); color: #8D99AE; font-size: 16px; padding: 4px; z-index: 5;"
+                               onmouseover="this.style.color='#D10024'" onmouseout="this.style.color='#8D99AE'">
+                                <i class="fa fa-camera"></i>
+                            </a>
                             <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
                         </form>
                         <!-- Autocomplete dropdown -->
@@ -190,6 +195,11 @@
                     <a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a>
                 </li>
                 <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
+                <li class="${activeNav == 'ai-search' ? 'active' : ''}">
+                    <a href="${pageContext.request.contextPath}/ai-search">
+                        <i class="fa fa-magic" style="color: #D10024; margin-right: 4px;"></i>AI Search
+                    </a>
+                </li>
             </ul>
             <!-- /NAV -->
         </div>

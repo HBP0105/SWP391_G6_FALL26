@@ -16,10 +16,10 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
     </head>
 
-    <body class="report-page report-orders">
+    <body>
 
         <div class="admin-shell">
 
@@ -139,7 +139,7 @@
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
                         <!-- PAGE HEADING -->
-                        <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                             <div class="page-heading-copy">
                                 <span class="page-icon">
                                     <i class="bi bi-receipt"></i>
@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- REPORT NAVIGATION TABS -->
-                        <div class="report-tabs mb-4">
+                        <div class="mb-4">
                             <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                 <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' ? 'active' : 'text-body'}" 
                                    href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -185,16 +185,9 @@
                             </div>
                         </div>
 
-                        <c:if test="${not empty reportFilterError}">
-                            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-                                <span>${reportFilterError}</span>
-                            </div>
-                        </c:if>
-
                         <!-- 8 ORDER KPI SUMMARY CARDS -->
-                        <div class="report-kpi-grid row g-3 mb-4">
-                            <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -211,7 +204,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -228,7 +221,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -247,7 +240,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -266,7 +259,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -283,13 +276,13 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Average Order Value</p>
                                             <h2 class="h3 mb-1">
-                                                <fmt:formatNumber value="${orderStats.avgOrderValue}" pattern="#,##0"/> VND
+                                                $<fmt:formatNumber value="${orderStats.avgOrderValue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                             </h2>
                                             <small class="text-muted">
                                                 <i class="bi bi-calculator me-1"></i>Per non-cancelled order
@@ -302,26 +295,26 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p class="text-muted mb-1">Total Revenue</p>
                                             <h2 class="h3 mb-1 text-success">
-                                                <fmt:formatNumber value="${orderStats.totalRevenue}" pattern="#,##0"/> VND
+                                                $<fmt:formatNumber value="${orderStats.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                             </h2>
                                             <small class="text-success">
                                                 <i class="bi bi-graph-up me-1"></i>Realized order volume
                                             </small>
                                         </div>
                                         <span class="page-icon">
-                                            <i class="bi bi-cash-stack"></i>
+                                            <i class="bi bi-currency-dollar"></i>
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -385,7 +378,7 @@
 
                                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                                 <span class="text-muted small">Total Value:</span>
-                                                                <strong class="text-success"><fmt:formatNumber value="${pm.totalAmount}" pattern="#,##0"/> VND</strong>
+                                                                <strong class="text-success">$<fmt:formatNumber value="${pm.totalAmount}" type="number" minFractionDigits="2" maxFractionDigits="2"/></strong>
                                                             </div>
 
                                                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -416,7 +409,7 @@
                         </div>
 
                         <!-- FILTER SECTION FOR DETAILED ORDERS -->
-                        <section class="panel report-filter-panel mb-4">
+                        <section class="panel mb-4">
                             <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>
                                     <h2 class="h5 mb-1 section-title">
@@ -428,77 +421,65 @@
 
                                 <!-- Quick Presets -->
                                 <div class="btn-group btn-group-sm" role="group" aria-label="Preset filters">
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=all&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=all&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'all' ? 'active' : ''}">All</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=today&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=today&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'today' ? 'active' : ''}">Today</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_week&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_week&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_week' ? 'active' : ''}">This Week</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_month&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_month&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_month' ? 'active' : ''}">This Month</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=last_30_days&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=last_30_days&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'last_30_days' ? 'active' : ''}">Last 30 Days</a>
-                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_year&tableStatus=${tableStatus}&tablePaymentMethod=${tablePaymentMethod}&tableSort=${tableSort}&tableKeyword=${tableKeyword}"
+                                    <a href="${pageContext.request.contextPath}/Manager/Report?tab=orders&period=this_year&status=${selectedStatus}&paymentMethod=${selectedPaymentMethod}&keyword=${keyword}" 
                                        class="btn btn-outline-primary ${selectedPeriod == 'this_year' ? 'active' : ''}">This Year</a>
                                 </div>
                             </div>
 
-                            <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end report-table-filter-form report-order-table-filter-form">
+                            <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end">
                                 <input type="hidden" name="tab" value="orders">
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Start Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}" max="${today}">
+                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}" max="${today}">
+                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Order Status</label>
-                                    <select class="form-select form-select-sm" name="tableStatus">
-                                        <option value="ALL" ${tableStatus == 'ALL' ? 'selected' : ''}>All Statuses</option>
-                                        <option value="DELIVERED" ${tableStatus == 'DELIVERED' ? 'selected' : ''}>Delivered</option>
-                                        <option value="SHIPPING" ${tableStatus == 'SHIPPING' ? 'selected' : ''}>Shipping</option>
-                                        <option value="PENDING" ${tableStatus == 'PENDING' ? 'selected' : ''}>Pending</option>
-                                        <option value="CONFIRMED" ${tableStatus == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
-                                        <option value="CANCELLED" ${tableStatus == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                    <select class="form-select form-select-sm" name="status">
+                                        <option value="ALL" ${selectedStatus == 'ALL' ? 'selected' : ''}>All Statuses</option>
+                                        <option value="DELIVERED" ${selectedStatus == 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                                        <option value="SHIPPING" ${selectedStatus == 'SHIPPING' ? 'selected' : ''}>Shipping</option>
+                                        <option value="PENDING" ${selectedStatus == 'PENDING' ? 'selected' : ''}>Pending</option>
+                                        <option value="CONFIRMED" ${selectedStatus == 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                                        <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
                                     </select>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Payment Method</label>
-                                    <select class="form-select form-select-sm" name="tablePaymentMethod">
-                                        <option value="ALL" ${tablePaymentMethod == 'ALL' ? 'selected' : ''}>All Methods</option>
-                                        <option value="COD" ${tablePaymentMethod == 'COD' ? 'selected' : ''}>COD</option>
-                                        <option value="VNPAY" ${tablePaymentMethod == 'VNPAY' ? 'selected' : ''}>VNPay</option>
-                                        <option value="BANK_TRANSFER" ${tablePaymentMethod == 'BANK_TRANSFER' ? 'selected' : ''}>Bank Transfer</option>
+                                    <select class="form-select form-select-sm" name="paymentMethod">
+                                        <option value="ALL" ${selectedPaymentMethod == 'ALL' ? 'selected' : ''}>All Methods</option>
+                                        <option value="COD" ${selectedPaymentMethod == 'COD' ? 'selected' : ''}>COD</option>
+                                        <option value="VNPAY" ${selectedPaymentMethod == 'VNPAY' ? 'selected' : ''}>VNPay</option>
+                                        <option value="BANK_TRANSFER" ${selectedPaymentMethod == 'BANK_TRANSFER' ? 'selected' : ''}>Bank Transfer</option>
                                     </select>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Keyword</label>
-                                    <input type="text" class="form-control form-control-sm" name="tableKeyword"
-                                           placeholder="ID, Customer, Email..." value="${tableKeyword}">
-                                </div>
-
-                                <div class="col-12 col-sm-6 col-md-3 col-xl-2">
-                                    <label class="form-label small text-muted mb-1">Sort By</label>
-                                    <select class="form-select form-select-sm" name="tableSort">
-                                        <option value="date_desc" ${tableSort == 'date_desc' ? 'selected' : ''}>Newest Date</option>
-                                        <option value="date_asc" ${tableSort == 'date_asc' ? 'selected' : ''}>Oldest Date</option>
-                                        <option value="amount_desc" ${tableSort == 'amount_desc' ? 'selected' : ''}>Amount: High to Low</option>
-                                        <option value="amount_asc" ${tableSort == 'amount_asc' ? 'selected' : ''}>Amount: Low to High</option>
-                                        <option value="id_desc" ${tableSort == 'id_desc' ? 'selected' : ''}>Order ID: Desc</option>
-                                        <option value="id_asc" ${tableSort == 'id_asc' ? 'selected' : ''}>Order ID: Asc</option>
-                                    </select>
+                                    <input type="text" class="form-control form-control-sm" name="keyword" 
+                                           placeholder="ID, Customer, Email..." value="${keyword}">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-1">
                                     <label class="form-label small text-muted mb-1">Page Size</label>
-                                    <select class="form-select form-select-sm" name="tablePageSize">
+                                    <select class="form-select form-select-sm" name="pageSize">
                                         <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
                                         <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
                                         <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
@@ -529,6 +510,13 @@
                                     </p>
                                 </div>
 
+                                <div class="d-flex align-items-center gap-2">
+                                    <input class="form-control form-control-sm table-search"
+                                           type="search"
+                                           placeholder="Client filter table..."
+                                           data-table-search="orderAnalysisTable"
+                                           aria-label="Client search orders">
+                                </div>
                             </div>
 
                             <div class="table-responsive">
@@ -586,7 +574,7 @@
                                                             </c:choose>
                                                         </td>
                                                         <td class="fw-bold">
-                                                            <fmt:formatNumber value="${ord.totalAmount}" pattern="#,##0"/> VND
+                                                            $<fmt:formatNumber value="${ord.totalAmount}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                                         </td>
                                                         <td>
                                                             <c:choose>
@@ -646,12 +634,11 @@
                                                 <c:param name="period" value="${selectedPeriod}"/>
                                                 <c:param name="startDate" value="${startDate}"/>
                                                 <c:param name="endDate" value="${endDate}"/>
-<c:param name="tableStatus" value="${tableStatus}"/>
-<c:param name="tablePaymentMethod" value="${tablePaymentMethod}"/>
-<c:param name="tableKeyword" value="${tableKeyword}"/>
-                                                <c:param name="tableSort" value="${tableSort}"/>
-<c:param name="tablePageSize" value="${pageSize}"/>
-<c:param name="tablePage" value="${currentPage - 1}"/>
+                                                <c:param name="status" value="${selectedStatus}"/>
+                                                <c:param name="paymentMethod" value="${selectedPaymentMethod}"/>
+                                                <c:param name="keyword" value="${keyword}"/>
+                                                <c:param name="pageSize" value="${pageSize}"/>
+                                                <c:param name="page" value="${currentPage - 1}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
@@ -665,12 +652,11 @@
                                                         <c:param name="period" value="${selectedPeriod}"/>
                                                         <c:param name="startDate" value="${startDate}"/>
                                                         <c:param name="endDate" value="${endDate}"/>
-<c:param name="tableStatus" value="${tableStatus}"/>
-<c:param name="tablePaymentMethod" value="${tablePaymentMethod}"/>
-<c:param name="tableKeyword" value="${tableKeyword}"/>
-                                                        <c:param name="tableSort" value="${tableSort}"/>
-<c:param name="tablePageSize" value="${pageSize}"/>
-<c:param name="tablePage" value="${pNum}"/>
+                                                        <c:param name="status" value="${selectedStatus}"/>
+                                                        <c:param name="paymentMethod" value="${selectedPaymentMethod}"/>
+                                                        <c:param name="keyword" value="${keyword}"/>
+                                                        <c:param name="pageSize" value="${pageSize}"/>
+                                                        <c:param name="page" value="${pNum}"/>
                                                     </c:url>
 
                                                     <li class="page-item ${pNum == currentPage ? 'active' : ''}">
@@ -684,12 +670,11 @@
                                                 <c:param name="period" value="${selectedPeriod}"/>
                                                 <c:param name="startDate" value="${startDate}"/>
                                                 <c:param name="endDate" value="${endDate}"/>
-<c:param name="tableStatus" value="${tableStatus}"/>
-<c:param name="tablePaymentMethod" value="${tablePaymentMethod}"/>
-<c:param name="tableKeyword" value="${tableKeyword}"/>
-                                                <c:param name="tableSort" value="${tableSort}"/>
-<c:param name="tablePageSize" value="${pageSize}"/>
-<c:param name="tablePage" value="${currentPage + 1}"/>
+                                                <c:param name="status" value="${selectedStatus}"/>
+                                                <c:param name="paymentMethod" value="${selectedPaymentMethod}"/>
+                                                <c:param name="keyword" value="${keyword}"/>
+                                                <c:param name="pageSize" value="${pageSize}"/>
+                                                <c:param name="page" value="${currentPage + 1}"/>
                                             </c:url>
 
                                             <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
@@ -721,7 +706,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
 
         <script>
             function exportOrdersToCSV() {

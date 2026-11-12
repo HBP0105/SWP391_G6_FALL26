@@ -104,6 +104,83 @@ public class GeminiClient {
     }
 
     /**
+     * Calls Gemini generateContent endpoint with Multimodal Image input (Base64 inline_data).
+     */
+    public static String generateTextWithImage(String prompt, String mimeType, String base64Image) {
+        List<String> mimes = mimeType != null ? List.of(mimeType) : List.of("image/jpeg");
+        List<String> imgs = base64Image != null ? List.of(base64Image) : List.of();
+        return generateTextWithMultipleImages(prompt, mimes, imgs);
+    }
+
+    /**
+     * Calls Gemini generateContent endpoint with up to 4 Multimodal Images (Base64 inline_data).
+     */
+    public static String generateTextWithMultipleImages(String prompt, List<String> mimeTypes, List<String> base64Images) {
+        if (apiKey == null || apiKey.isEmpty() || base64Images == null || base64Images.isEmpty()) {
+            return generateText(prompt);
+        }
+
+        StringBuilder partsBuilder = new StringBuilder();
+        partsBuilder.append("{\"text\":\"").append(escapeJson(prompt)).append("\"}");
+
+        int count = Math.min(4, base64Images.size());
+        for (int i = 0; i < count; i++) {
+            String b64 = base64Images.get(i);
+            if (b64 == null || b64.trim().isEmpty()) continue;
+
+            String safeMime = (mimeTypes != null && i < mimeTypes.size() && mimeTypes.get(i) != null && !mimeTypes.get(i).trim().isEmpty())
+                    ? mimeTypes.get(i).trim() : "image/jpeg";
+            String cleanBase64 = b64;
+            if (cleanBase64.contains(",")) {
+                cleanBase64 = cleanBase64.substring(cleanBase64.indexOf(",") + 1);
+            }
+            cleanBase64 = cleanBase64.replaceAll("\\s+", "");
+
+            partsBuilder.append(",{\"inline_data\":{\"mime_type\":\"")
+                    .append(escapeJson(safeMime)).append("\",\"data\":\"")
+                    .append(cleanBase64).append("\"}}");
+        }
+
+        String payload = "{\"contents\":[{\"role\":\"user\",\"parts\":["
+                + partsBuilder.toString()
+                + "]}],\"generationConfig\":{\"temperature\":0.2,\"maxOutputTokens\":800}}";
+
+        List<String> urls = new ArrayList<>();
+        if (apiKey.startsWith("AQ.")) {
+            urls.add("https://aiplatform.googleapis.com/v1/publishers/google/models/" + modelName + ":generateContent?key=" + apiKey);
+            urls.add("https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent");
+        } else {
+            urls.add("https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + apiKey);
+        }
+
+        for (String url : urls) {
+            try {
+                HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(12))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .header("x-goog-api-key", apiKey)
+                        .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8));
+
+                HttpResponse<String> resp = HTTP_CLIENT.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (resp.statusCode() == 200) {
+                    String text = extractTextFromGeminiJson(resp.body());
+                    if (text != null && !text.isEmpty()) {
+                        lastStatusMessage = "CONNECTED (HTTP 200)";
+                        return text;
+                    }
+                } else {
+                    lastStatusMessage = "HTTP_" + resp.statusCode();
+                }
+            } catch (Exception e) {
+                lastStatusMessage = "ERROR: " + e.getMessage();
+                LOGGER.log(Level.FINE, "Gemini Vision API call fallback triggered: " + e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
      * Calls Gemini Embedding API (text-embedding-004 with outputDimensionality=512) to produce a 512-D vector.
      * Returns null if API key is unauthorized or offline so caller can fall back to local 512-D hash vector.
      */
@@ -162,27 +239,47 @@ public class GeminiClient {
         if (catalog == null || catalog.isEmpty()) return null;
 
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are the dedicated English AI Audio Shopping Assistant for Electro Headphone Store.\n");
-        prompt.append("SCOPE RULE: You ONLY provide product purchasing advice, recommendations, and technical comparisons for headphones, earbuds, and audio accessories in our catalog.\n");
-        prompt.append("STRICT REJECTION POLICY: If the customer message is greeting, small talk, social conversation (e.g., 'hello', 'how are you', 'what's up'), off-topic, unrelated to buying audio products (e.g., weather, food, math, news, coding), gibberish, keyboard mash, or meaningless characters (e.g., 'asdfgh', '123456', '???'):\n");
-        prompt.append("You MUST NOT answer or entertain the topic, and MUST NOT recommend any products.\n");
-        prompt.append("Instead, you must reply: 'I am an AI shopping assistant dedicated to audio products. I cannot answer social, off-topic, or non-shopping inquiries. Please ask me about buying headphones, earbuds, or audio gear (e.g., budget, noise cancelling, battery life, brand).' and return IDS: NONE.\n\n");
-        prompt.append("Below is our active product catalog:\n");
+        prompt.append("You are the expert AI Audio Shopping Assistant for Electro Headphone Store.\n");
+        prompt.append("SCOPE & REJECTION POLICY:\n");
+        prompt.append("- You ONLY assist with audio product purchasing, technical advice, specs comparison, and recommendations.\n");
+        prompt.append("- If the customer message is greeting/social chit-chat, off-topic, gibberish, or unrelated to audio equipment, reply with standard polite refusal and return IDS: NONE.\n\n");
+        prompt.append("CRITICAL RECOMMENDATION & CONSTRAINT MATCHING RULES:\n");
+        prompt.append("1. Multi-language understanding: Parse user intent accurately from any language (English, Vietnamese, etc.).\n");
+        prompt.append("2. Price constraint: If the user requests a budget or price cap (e.g., 'under 3 million', 'duoi 3tr', '< 3000000 VND'), ONLY recommend products with Price <= limit. NEVER recommend products exceeding the user's budget.\n");
+        prompt.append("3. Water resistance constraint: If the user asks for water resistance, waterproof, sweat resistance, workout, gym, or running (e.g., 'chống nước', 'kháng nước', 'water resistance', 'IPX'), ONLY recommend products that have WaterResistance != 'None' (e.g., IPX4, IPX5). Do NOT recommend products with WaterResistance='None'.\n");
+        prompt.append("4. Category & Style constraint: Respect user preference for Over-ear Headphones vs In-ear / TWS Earbuds.\n");
+        prompt.append("5. Battery life constraint: If the user specifies battery life duration or range (e.g., 'over 40 hours', 'between 10 and 20 hours', 'pin trên 40h', 'từ 10 đến 20 giờ'), ONLY recommend products whose Battery specification strictly satisfies that condition. NEVER recommend products outside the requested battery range.\n");
+        prompt.append("6. Weight / Lightweight constraint: If the user requests 'light' or 'lightweight' headphones (e.g., 'lightweight', 'nhẹ'), ONLY recommend models with Weight <= 250g. NEVER recommend models heavier than 250g (such as Sennheiser Momentum 4 293g, AirPods Max 385g, or JBL Quantum 810 418g).\n");
+        prompt.append("7. HONESTY & UNSATISFIED / IMPOSSIBLE CRITERIA POLICY:\n");
+        prompt.append("   - If the user asks for a combination of criteria that NO product in our catalog meets (e.g., 'waterproof headphones' when all our over-ear headphones have WaterResistance=None, or a budget below our cheapest item, or battery higher than our longest-lasting model):\n");
+        prompt.append("     a) You MUST be 100% honest and transparent in the REPLY. Explicitly declare what is unavailable (e.g., 'Currently, our catalog does not have over-ear headphones with water resistance, as all our water-resistant models are in-ear earbuds.').\n");
+        prompt.append("     b) You may propose alternative options (e.g., water-resistant earbuds, or top over-ear headphones without waterproofing), but you MUST explicitly state the compromise in the REPLY.\n");
+        prompt.append("     c) NEVER claim or hallucinate that a product has water resistance, low price, or features that it lacks.\n\n");
+
+        prompt.append("Complete Store Product Catalog (ALL active specifications):\n");
         for (Map<String, Object> p : catalog) {
-            prompt.append(String.format("- ID=%s | Name=%s | Brand=%s | Category=%s | Price=%s VND | ANC=%s | Battery=%sh | Conn=%s\n",
+            String desc = (String) p.getOrDefault("description", "");
+            if (desc.length() > 120) desc = desc.substring(0, 120) + "...";
+            prompt.append(String.format("- ID=%s | Name=%s | Brand=%s | Category=%s | Price=%s VND | WaterResistance=%s | ANC=%s | Battery=%sh | Mic=%s | Driver=%smm | Weight=%sg | Conn=%s | Stock=%s | Desc: %s\n",
                     p.get("productId"),
                     p.get("productName"),
                     p.get("brandName"),
                     p.get("categoryName"),
                     p.get("price"),
+                    p.getOrDefault("waterResistance", "None"),
                     Boolean.TRUE.equals(p.get("noiseCancelling")) ? "Yes" : "No",
-                    p.get("batteryLife"),
-                    p.get("connectionType")));
+                    p.getOrDefault("batteryLife", "N/A"),
+                    Boolean.TRUE.equals(p.get("microphone")) ? "Yes" : "No",
+                    p.getOrDefault("driverSize", "N/A"),
+                    p.getOrDefault("weight", "N/A"),
+                    p.getOrDefault("connectionType", "Wireless"),
+                    p.getOrDefault("stockQuantity", "10"),
+                    desc));
         }
         prompt.append("\nCustomer question: \"").append(userQuery).append("\"\n");
         prompt.append("Respond in this exact 2-line format:\n");
-        prompt.append("REPLY: <your English response (either polite out-of-scope refusal OR helpful product advice, max 2 sentences)>\n");
-        prompt.append("IDS: <comma-separated up to 4 best matching Product IDs, e.g. 1,3,8 or NONE>\n");
+        prompt.append("REPLY: <helpful shopping advice in 1-2 sentences matching user language, explaining why these models fit their price/features>\n");
+        prompt.append("IDS: <comma-separated up to 4 best matching Product IDs, e.g. 2,14,15 or NONE>\n");
 
         String raw = generateText(prompt.toString());
         if (raw == null || raw.trim().isEmpty()) {
@@ -214,6 +311,96 @@ public class GeminiClient {
         }
 
         Map<String, Object> res = new HashMap<>();
+        res.put("reply", replyLine);
+        res.put("productIds", matchedIds);
+        return res;
+    }
+
+    /**
+     * Multimodal Image Search with Gemini (Single image backward compatibility).
+     */
+    public static Map<String, Object> askShoppingAssistantWithImage(
+            String userNote, String mimeType, String base64Image, List<Map<String, Object>> catalog) {
+        List<String> mimes = mimeType != null ? List.of(mimeType) : List.of("image/jpeg");
+        List<String> imgs = base64Image != null ? List.of(base64Image) : List.of();
+        return askShoppingAssistantWithImages(userNote, mimes, imgs, catalog);
+    }
+
+    /**
+     * Multimodal Image Search with Gemini (Supports up to 4 images):
+     * Analyzes headphone photo(s) and matches with catalog products.
+     */
+    public static Map<String, Object> askShoppingAssistantWithImages(
+            String userNote, List<String> mimeTypes, List<String> base64Images, List<Map<String, Object>> catalog) {
+        if (catalog == null || catalog.isEmpty() || base64Images == null || base64Images.isEmpty()) {
+            return null;
+        }
+
+        int imgCount = Math.min(4, base64Images.size());
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("You are an expert AI headphone shopping assistant and visual search engine for an audio store.\n");
+        prompt.append("The customer uploaded ").append(imgCount).append(" photo(s) of a headphone, earbud, or audio gear, with optional note: \"")
+              .append(userNote != null ? userNote.trim() : "").append("\"\n\n");
+        prompt.append("Below is our active store product catalog:\n");
+        for (Map<String, Object> p : catalog) {
+            prompt.append(String.format("- ID=%s | Name=%s | Brand=%s | Category=%s | Price=%s VND | WaterResistance=%s | ANC=%s | Battery=%sh | Mic=%s | Driver=%smm | Conn=%s\n",
+                    p.get("productId"),
+                    p.get("productName"),
+                    p.get("brandName"),
+                    p.get("categoryName"),
+                    p.get("price"),
+                    p.getOrDefault("waterResistance", "None"),
+                    Boolean.TRUE.equals(p.get("noiseCancelling")) ? "Yes" : "No",
+                    p.getOrDefault("batteryLife", "N/A"),
+                    Boolean.TRUE.equals(p.get("microphone")) ? "Yes" : "No",
+                    p.getOrDefault("driverSize", "N/A"),
+                    p.getOrDefault("connectionType", "Wireless")));
+        }
+        prompt.append("\nTasks:\n");
+        prompt.append("1. Analyze the uploaded image(s): identify the form factor (Over-ear headphone, In-ear TWS earbud, On-ear), color, visible brand styling, and key visual attributes.\n");
+        prompt.append("2. Find the best matching or most visually similar products from our store catalog above.\n");
+        prompt.append("3. Respond strictly in this format:\n");
+        prompt.append("ANALYSIS: <1-2 sentences in English summarizing what type of headphone is in the image(s), color, design, and style>\n");
+        prompt.append("REPLY: <1-2 sentences in English giving shopping advice or explaining why the matched products resemble the photo(s)>\n");
+        prompt.append("IDS: <comma-separated up to 6 best matching Product IDs from catalog, e.g. 1, 3, 5, or NONE>\n");
+
+        String raw = generateTextWithMultipleImages(prompt.toString(), mimeTypes, base64Images);
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+
+        String analysisLine = null;
+        String replyLine = null;
+        List<Integer> matchedIds = new ArrayList<>();
+        for (String line : raw.split("\\r?\\n")) {
+            String trimmed = line.trim();
+            if (trimmed.toUpperCase().startsWith("ANALYSIS:")) {
+                analysisLine = trimmed.substring(9).trim();
+            } else if (trimmed.toUpperCase().startsWith("REPLY:")) {
+                replyLine = trimmed.substring(6).trim();
+            } else if (trimmed.toUpperCase().startsWith("IDS:")) {
+                String idsPart = trimmed.substring(4).trim();
+                if (!idsPart.equalsIgnoreCase("NONE") && !idsPart.contains("NONE")) {
+                    Matcher m = Pattern.compile("\\d+").matcher(idsPart);
+                    while (m.find() && matchedIds.size() < 6) {
+                        try {
+                            matchedIds.add(Integer.parseInt(m.group()));
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+
+        if (analysisLine == null || analysisLine.isEmpty()) {
+            analysisLine = "AI has recognized the headphone model from your uploaded image(s).";
+        }
+        if (replyLine == null || replyLine.isEmpty()) {
+            replyLine = raw.replaceAll("(?i)(ANALYSIS|IDS):.*", "").trim();
+        }
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("analysis", analysisLine);
         res.put("reply", replyLine);
         res.put("productIds", matchedIds);
         return res;

@@ -822,8 +822,8 @@ public class ReportDAO {
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (LOWER(REPLACE(p.ProductName, ' ', '')) LIKE ? OR CAST(p.ProductID AS VARCHAR(20)) = ?)");
-            String kw = "%" + keyword.trim().toLowerCase() + "%";
+            sql.append(" AND (p.ProductName LIKE ? OR CAST(p.ProductID AS VARCHAR(20)) = ?)");
+            String kw = "%" + keyword.trim() + "%";
             params.add(kw);
             params.add(keyword.trim());
         }
@@ -897,8 +897,8 @@ public class ReportDAO {
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (LOWER(REPLACE(p.ProductName, ' ', '')) LIKE ? OR CAST(p.ProductID AS VARCHAR(20)) = ?)");
-            params.add("%" + keyword.trim().toLowerCase() + "%");
+            sql.append(" AND (p.ProductName LIKE ? OR CAST(p.ProductID AS VARCHAR(20)) = ?)");
+            params.add("%" + keyword.trim() + "%");
             params.add(keyword.trim());
         }
 
@@ -1287,7 +1287,6 @@ public class ReportDAO {
             String status,
             String paymentMethod,
             String keyword,
-            String sort,
             int offset,
             int limit) {
 
@@ -1332,14 +1331,14 @@ public class ReportDAO {
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (CAST(o.OrderID AS VARCHAR(20)) = ? OR LOWER(REPLACE(ISNULL(c.FullName, ''), ' ', '')) LIKE ? OR LOWER(REPLACE(ISNULL(c.Email, ''), ' ', '')) LIKE ? OR REPLACE(ISNULL(o.ShippingPhone, ''), ' ', '') LIKE ?)");
+            sql.append(" AND (CAST(o.OrderID AS VARCHAR(20)) = ? OR c.FullName LIKE ? OR c.Email LIKE ? OR o.ShippingPhone LIKE ?)");
             params.add(keyword.trim());
-            params.add("%" + keyword.trim().toLowerCase() + "%");
-            params.add("%" + keyword.trim().toLowerCase() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
             params.add("%" + keyword.trim() + "%");
         }
 
-        sql.append(" ").append(resolveOrderSort(sort));
+        sql.append(" ORDER BY o.OrderDate DESC");
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add(offset);
         params.add(limit);
@@ -1421,10 +1420,10 @@ public class ReportDAO {
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (CAST(o.OrderID AS VARCHAR(20)) = ? OR LOWER(REPLACE(ISNULL(c.FullName, ''), ' ', '')) LIKE ? OR LOWER(REPLACE(ISNULL(c.Email, ''), ' ', '')) LIKE ? OR REPLACE(ISNULL(o.ShippingPhone, ''), ' ', '') LIKE ?)");
+            sql.append(" AND (CAST(o.OrderID AS VARCHAR(20)) = ? OR c.FullName LIKE ? OR c.Email LIKE ? OR o.ShippingPhone LIKE ?)");
             params.add(keyword.trim());
-            params.add("%" + keyword.trim().toLowerCase() + "%");
-            params.add("%" + keyword.trim().toLowerCase() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
             params.add("%" + keyword.trim() + "%");
         }
 
@@ -1459,19 +1458,5 @@ public class ReportDAO {
             sql.append(" AND o.OrderDate <= CAST(? AS DATETIME2)");
             params.add(endDate.trim() + " 23:59:59");
         }
-    }
-
-    private String resolveOrderSort(String sort) {
-        if (sort == null) {
-            return "ORDER BY o.OrderDate DESC";
-        }
-        return switch (sort.trim().toLowerCase()) {
-            case "date_asc" -> "ORDER BY o.OrderDate ASC";
-            case "amount_desc" -> "ORDER BY o.TotalAmount DESC, o.OrderDate DESC";
-            case "amount_asc" -> "ORDER BY o.TotalAmount ASC, o.OrderDate DESC";
-            case "id_desc" -> "ORDER BY o.OrderID DESC";
-            case "id_asc" -> "ORDER BY o.OrderID ASC";
-            default -> "ORDER BY o.OrderDate DESC";
-        };
     }
 }

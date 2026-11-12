@@ -6,36 +6,17 @@
   'use strict';
 
   // 1. Theme Management
-  // Use a new preference key so stale dark-theme values from the previous
-  // Manager UI do not override the light design baseline.
-  var STORAGE_THEME_KEY = 'adminHMD.colorTheme.v3';
-
-  function readStorage(key) {
-    try {
-      return window.localStorage.getItem(key);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  function writeStorage(key, value) {
-    try {
-      window.localStorage.setItem(key, value);
-    } catch (error) {
-      // The layout must keep working when storage is disabled.
-    }
-  }
+  var STORAGE_THEME_KEY = 'managerTheme';
 
   function getSavedTheme() {
-    var savedTheme = readStorage(STORAGE_THEME_KEY);
-
-    return savedTheme === 'dark' ? 'dark' : 'light';
+    return localStorage.getItem(STORAGE_THEME_KEY) || localStorage.getItem('adminTheme') || 'light';
   }
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-bs-theme', theme);
-    writeStorage(STORAGE_THEME_KEY, theme);
+    localStorage.setItem(STORAGE_THEME_KEY, theme);
+    localStorage.setItem('adminTheme', theme);
 
     var icons = document.querySelectorAll('[data-theme-icon]');
     icons.forEach(function(icon) {
@@ -68,33 +49,14 @@
     // 2. Sidebar Management
     var sidebarToggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
     var sidebarBackdrops = document.querySelectorAll('[data-sidebar-close], .sidebar-backdrop');
-    var SIDEBAR_MINI_KEY = 'adminHMD.sidebarMini.v2';
-
-    function getSavedMiniState() {
-      var savedState = readStorage(SIDEBAR_MINI_KEY);
-
-      // Match the Staff order-list shell: the desktop sidebar starts expanded.
-      return savedState === 'true';
-    }
-
-    function saveMiniState(isMini) {
-      writeStorage(SIDEBAR_MINI_KEY, String(isMini));
-    }
-
-    function updateSidebarState() {
-      var isDesktop = window.matchMedia('(min-width: 992px)').matches;
-      var isMini = isDesktop && getSavedMiniState();
-
-      document.body.classList.remove('sidebar-open');
-      document.body.classList.toggle('sidebar-mini', isMini);
-
-      sidebarToggleButtons.forEach(function(btn) {
-        btn.setAttribute('aria-expanded', String(isDesktop ? !isMini : false));
-      });
-    }
+    var SIDEBAR_MINI_KEY = 'managerSidebarMini';
 
     // Restore mini sidebar preference on desktop
-    updateSidebarState();
+    if (window.innerWidth >= 992) {
+      if (localStorage.getItem(SIDEBAR_MINI_KEY) === 'true') {
+        document.body.classList.add('sidebar-mini');
+      }
+    }
 
     sidebarToggleButtons.forEach(function(btn) {
       btn.addEventListener('click', function(e) {
@@ -105,7 +67,7 @@
           // Desktop: collapse to mini sidebar
           document.body.classList.toggle('sidebar-mini');
           var isMini = document.body.classList.contains('sidebar-mini');
-          saveMiniState(isMini);
+          localStorage.setItem(SIDEBAR_MINI_KEY, isMini ? 'true' : 'false');
           btn.setAttribute('aria-expanded', isMini ? 'false' : 'true');
         } else {
           // Mobile: slide out sidebar
@@ -126,9 +88,11 @@
       });
     });
 
-    // Keep the correct sidebar mode when crossing the desktop breakpoint.
+    // Close mobile sidebar on window resize to desktop
     window.addEventListener('resize', function() {
-      updateSidebarState();
+      if (window.innerWidth >= 992) {
+        document.body.classList.remove('sidebar-open');
+      }
     });
 
     // 3. Client-side Table Search Filter

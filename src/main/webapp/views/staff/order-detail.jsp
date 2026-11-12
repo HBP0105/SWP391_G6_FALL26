@@ -14,11 +14,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Details #ORD-${order.orderID} | Manager Dashboard</title>
 
-  <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- adminHMD Custom Style -->
+  <!-- Admin_Manager Vendor & Custom Styles -->
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/bootstrap.min.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
@@ -220,10 +219,10 @@
   <!-- SCREEN DASHBOARD UI (FIT 1 SCREEN VIEWPORT WITHOUT SCROLLING)     -->
   <!-- ================================================================= -->
   <div class="admin-shell">
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="sidebar-backdrop" data-sidebar-close id="sidebarBackdrop"></div>
 
     <!-- SIDEBAR -->
-    <aside class="admin-sidebar" id="adminSidebar">
+    <aside class="admin-sidebar" id="adminSidebar" aria-label="Main navigation">
       <div class="sidebar-header">
         <a class="brand-mark" href="${pageContext.request.contextPath}/Manager/Dashboard">
           <span class="brand-icon"><i class="bi bi-headphones"></i></span>
@@ -239,7 +238,7 @@
           <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
           <span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/products">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/ProductManagement">
           <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
           <span class="nav-text">Products</span>
         </a>
@@ -251,7 +250,7 @@
           <span class="nav-icon"><i class="bi bi-boxes"></i></span>
           <span class="nav-text">Inventory</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Voucher">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/VoucherManagement">
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
@@ -264,6 +263,11 @@
           <span class="nav-text">Profile</span>
         </a>
       </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-dot"></span>
+        <span class="sidebar-footer-text">System running smoothly</span>
+      </div>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
@@ -272,8 +276,16 @@
       <nav class="navbar admin-navbar navbar-expand bg-white py-1 px-3 border-bottom shadow-sm">
         <div class="container-fluid px-0 d-flex align-items-center justify-content-between">
           
-          <!-- Left: Order Title, Back Button & Status Badge -->
+          <!-- Left: Sidebar Toggle, Order Title, Back Button & Status Badge -->
           <div class="d-flex align-items-center gap-2">
+            <button class="sidebar-toggle me-1"
+                    type="button"
+                    data-sidebar-toggle
+                    aria-controls="adminSidebar"
+                    aria-expanded="true"
+                    aria-label="Toggle sidebar">
+              <span></span><span></span><span></span>
+            </button>
             <a href="${pageContext.request.contextPath}/Manager/OrderManagement" class="btn btn-outline-secondary btn-sm px-2 py-0.5" style="font-size: 0.72rem;">
               <i class="bi bi-arrow-left me-1"></i> Orders
             </a>
@@ -298,21 +310,30 @@
             </c:choose>
           </div>
 
-          <!-- Right: Print Official Invoice Button, Theme Toggle Moon Icon & Profile Dropdown -->
+          <!-- Right: Print Official Invoice Button, Theme Toggle & Profile Dropdown -->
           <div class="navbar-actions d-flex align-items-center gap-2 ms-auto">
             <button onclick="window.print();" class="btn btn-primary btn-sm px-2.5 py-0.5 shadow-sm fw-bold me-1" style="font-size: 0.73rem;">
               <i class="bi bi-printer-fill me-1"></i> Print Official Invoice
             </button>
-            <button class="icon-button theme-toggle" id="themeToggleBtn" type="button" title="Switch Light/Dark Theme">
-              <i class="bi bi-moon-stars" id="themeIcon"></i>
+            <button class="icon-button theme-toggle"
+                    type="button"
+                    data-theme-toggle
+                    aria-label="Switch color theme"
+                    title="Switch color theme">
+              <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
             </button>
             <div class="dropdown">
               <button class="profile-button dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle fs-5 me-1"></i>
-                <span class="profile-name d-none d-sm-inline">Manager</span>
+                <img class="avatar-img avatar-sm"
+                     src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+                     alt="Manager"
+                     onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
+                <span class="profile-name d-none d-sm-inline ms-1">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/home"><i class="bi bi-box-arrow-right me-2"></i>Exit to Store</a></li>
+                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/Manager/Profile"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
               </ul>
             </div>
           </div>
@@ -832,8 +853,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Admin_Manager JS Bundle & Main Script -->
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
 
   <script>
     // Smart Shipping Courier & Tracking Number Helpers

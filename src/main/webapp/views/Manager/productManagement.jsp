@@ -15,67 +15,31 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
         <style>
-
-            @media (min-width: 1100px) {
-                body.sidebar-mini .product-filter-form {
+            @media (min-width: 1200px) {
+                .product-filter-form {
                     display: grid;
-                    grid-template-columns: minmax(0, 1.7fr) repeat(5, minmax(0, 1fr)) minmax(0, 2.1fr);
+                    grid-template-columns: minmax(0, 1.7fr) repeat(4, minmax(0, 1fr)) minmax(0, 2.1fr);
                     gap: 12px;
                     margin: 0;
                     align-items: end;
                 }
-                body.sidebar-mini .product-filter-form > div {
+                .product-filter-form > div {
                     width: auto;
                     max-width: none;
                     min-width: 0;
                     padding: 0;
                     margin: 0;
                 }
-                body.sidebar-mini .product-filter-form .filter-actions {
+                .product-filter-form .filter-actions {
                     flex-wrap: nowrap;
                     white-space: nowrap;
                 }
-                body.sidebar-mini .product-filter-form .filter-actions .btn {
+                .product-filter-form .filter-actions .btn {
                     font-size: 0.875rem;
                     padding-left: 0.65rem;
                     padding-right: 0.65rem;
-                }
-            }
-
-            @media (min-width: 1500px) {
-                body:not(.sidebar-mini) .product-filter-form {
-                    display: grid;
-                    grid-template-columns: minmax(0, 1.7fr) repeat(5, minmax(0, 1fr)) minmax(0, 2.1fr);
-                    gap: 12px;
-                    margin: 0;
-                    align-items: end;
-                }
-                body:not(.sidebar-mini) .product-filter-form > div {
-                    width: auto;
-                    max-width: none;
-                    min-width: 0;
-                    padding: 0;
-                    margin: 0;
-                }
-                body:not(.sidebar-mini) .product-filter-form .filter-actions {
-                    flex-wrap: nowrap;
-                    white-space: nowrap;
-                }
-                body:not(.sidebar-mini) .product-filter-form .filter-actions .btn {
-                    font-size: 0.875rem;
-                    padding-left: 0.65rem;
-                    padding-right: 0.65rem;
-                }
-            }
-
-            @media (min-width: 1200px) and (max-width: 1499.98px) {
-                body:not(.sidebar-mini) .product-filter-form .filter-actions {
-                    width: auto;
-                    flex: 0 0 auto;
-                    flex-wrap: nowrap;
-                    white-space: nowrap;
                 }
             }
         </style>
@@ -318,7 +282,7 @@
                                         </a>
                                     </div>
 
-                                    <div class="col-xl-3 col-lg-4 col-md-6 page-size-filter">
+                                    <div class="col-xl-2 col-lg-4 col-md-6">
                                         <label class="form-label">Page Size</label>
                                         <select name="pageSize" class="form-select"
                                                 onchange="this.form.submit()">
@@ -504,6 +468,6 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
     </body>
 </html>

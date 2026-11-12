@@ -16,10 +16,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Management | Manager Dashboard</title>
 
-  <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Admin_Manager Vendor & Custom Styles -->
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/bootstrap.min.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
@@ -60,10 +60,10 @@
 
 <body>
   <div class="admin-shell">
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="sidebar-backdrop" data-sidebar-close id="sidebarBackdrop"></div>
 
     <!-- SIDEBAR -->
-    <aside class="admin-sidebar" id="adminSidebar">
+    <aside class="admin-sidebar" id="adminSidebar" aria-label="Main navigation">
       <div class="sidebar-header">
         <a class="brand-mark" href="${pageContext.request.contextPath}/Manager/Dashboard">
           <span class="brand-icon"><i class="bi bi-headphones"></i></span>
@@ -79,7 +79,7 @@
           <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
           <span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/products">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/ProductManagement">
           <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
           <span class="nav-text">Products</span>
         </a>
@@ -91,7 +91,7 @@
           <span class="nav-icon"><i class="bi bi-boxes"></i></span>
           <span class="nav-text">Inventory</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Voucher">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/VoucherManagement">
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
@@ -104,27 +104,54 @@
           <span class="nav-text">Profile</span>
         </a>
       </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-dot"></span>
+        <span class="sidebar-footer-text">System running smoothly</span>
+      </div>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
     <div class="admin-main">
       <!-- TOP NAVBAR -->
       <nav class="navbar admin-navbar navbar-expand bg-white">
-        <div class="container-fluid px-0">
-          <div class="navbar-actions ms-auto d-flex align-items-center gap-2">
-            <!-- Theme Toggle Button -->
-            <button class="icon-button theme-toggle" id="themeToggleBtn" type="button" title="Switch Light/Dark Theme">
-              <i class="bi bi-moon-stars" id="themeIcon"></i>
+        <div class="container-fluid px-3 px-lg-4">
+          <button class="sidebar-toggle"
+                  type="button"
+                  data-sidebar-toggle
+                  aria-controls="adminSidebar"
+                  aria-expanded="true"
+                  aria-label="Toggle sidebar">
+            <span></span><span></span><span></span>
+          </button>
+
+          <div class="navbar-actions ms-auto">
+            <button class="icon-button theme-toggle"
+                    type="button"
+                    data-theme-toggle
+                    aria-label="Switch color theme"
+                    title="Switch color theme">
+              <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
             </button>
 
-            <!-- Profile Dropdown -->
             <div class="dropdown">
-              <button class="profile-button dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle fs-5 me-1"></i>
-                <span class="profile-name d-none d-sm-inline">Manager</span>
+              <button class="profile-button dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">
+                <img class="avatar-img avatar-sm"
+                     src="${pageContext.request.contextPath}/assets/Admin_Manager/images/avatar/gumball.jpg"
+                     alt="Manager"
+                     onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'34\' height=\'34\' viewBox=\'0 0 34 34\'><rect width=\'34\' height=\'34\' rx=\'8\' fill=\'%232563eb\'/><text x=\'50%25\' y=\'53%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'sans-serif\' font-size=\'14\' font-weight=\'bold\'>M</text></svg>';">
+                <span class="profile-name d-none d-sm-inline">${not empty sessionScope.staff.fullName ? sessionScope.staff.fullName : 'Manager'}</span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/home"><i class="bi bi-box-arrow-right me-2"></i>Exit to Store</a></li>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="${pageContext.request.contextPath}/Manager/Profile">Profile</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="${pageContext.request.contextPath}/logout">Sign out</a>
+                </li>
               </ul>
             </div>
           </div>
@@ -643,8 +670,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Admin_Manager JS Bundle & Main Script -->
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
   
   <!-- Client-side Search, Date Validation, Modal, Export CSV & Theme Toggle Script -->
   <script>
@@ -978,21 +1006,23 @@
       }
     });
 
-    // Dark / Light Mode Toggle
+    // Dark / Light Mode Toggle handled by main.js
     var themeToggleBtn = document.getElementById('themeToggleBtn');
     var themeIcon = document.getElementById('themeIcon');
     var htmlTag = document.documentElement;
 
-    themeToggleBtn.addEventListener('click', function() {
-      var currentTheme = htmlTag.getAttribute('data-theme');
-      if (currentTheme === 'dark') {
-        htmlTag.setAttribute('data-theme', 'light');
-        themeIcon.className = 'bi bi-moon-stars';
-      } else {
-        htmlTag.setAttribute('data-theme', 'dark');
-        themeIcon.className = 'bi bi-sun-fill';
-      }
-    });
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', function() {
+        var currentTheme = htmlTag.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+          htmlTag.setAttribute('data-theme', 'light');
+          if (themeIcon) themeIcon.className = 'bi bi-moon-stars';
+        } else {
+          htmlTag.setAttribute('data-theme', 'dark');
+          if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
+        }
+      });
+    }
   </script>
 </body>
 </html>

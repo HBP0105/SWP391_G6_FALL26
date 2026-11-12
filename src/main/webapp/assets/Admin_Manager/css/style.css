@@ -1,6 +1,6 @@
 :root {
-  --sidebar-width: 220px;
-  --sidebar-mini-width: 72px;
+  --sidebar-width: 280px;
+  --sidebar-mini-width: 84px;
   --admin-bg: #f5f7fb;
   --admin-surface: #ffffff;
   --admin-surface-soft: #f8fafc;
@@ -12,15 +12,8 @@
   --admin-success: #0f766e;
   --admin-warning: #d97706;
   --admin-danger: #dc2626;
-  --admin-sidebar: #ffffff;
-  --admin-sidebar-soft: #eef4ff;
-  --admin-sidebar-border: #dbe4ef;
-  --admin-sidebar-text: #475569;
-  --admin-sidebar-text-strong: #0f172a;
-  --admin-sidebar-muted: #64748b;
-  --admin-sidebar-icon-bg: #eaf2ff;
-  --admin-sidebar-icon: #2563eb;
-  --admin-sidebar-shadow: 18px 0 42px rgba(15, 23, 42, 0.08);
+  --admin-sidebar: #111827;
+  --admin-sidebar-soft: #1f2937;
   --admin-shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.06);
   --admin-shadow: 0 18px 46px rgba(15, 23, 42, 0.09);
   --admin-shadow-lg: 0 26px 70px rgba(15, 23, 42, 0.12);
@@ -38,7 +31,6 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  overflow-x: hidden;
   background: linear-gradient(180deg, #f8fbff 0%, var(--admin-bg) 42%, #eef4fa 100%);
   color: var(--admin-text);
   font-family: "Segoe UI", Arial, sans-serif;
@@ -245,24 +237,9 @@ a {
   position: sticky;
   top: 0;
   z-index: 1020;
-  min-height: 80px;
+  min-height: 72px;
   border-bottom: 1px solid var(--admin-border);
   box-shadow: var(--admin-shadow-sm);
-  padding: 0.75rem 1.25rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-.admin-navbar > .container-fluid {
-  width: 100%;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  padding-right: 0 !important;
-  padding-left: 0 !important;
 }
 
 .admin-navbar.bg-white {
@@ -271,12 +248,12 @@ a {
 }
 
 .sidebar-toggle {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   display: inline-grid;
   place-items: center;
   gap: 4px;
-  padding: 11px;
+  padding: 9px;
   border: 1px solid var(--admin-border);
   border-radius: 8px;
   background: #ffffff;
@@ -292,7 +269,7 @@ a {
 }
 
 .sidebar-toggle span {
-  width: 20px;
+  width: 18px;
   height: 2px;
   display: block;
   background: var(--admin-text);
@@ -316,17 +293,7 @@ a {
 .navbar-actions {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  margin-left: auto !important;
-  gap: 0.85rem;
-}
-
-.admin-navbar .sidebar-toggle,
-.admin-navbar .icon-button,
-.admin-navbar .profile-button,
-.admin-navbar .dropdown {
-  flex: 0 0 auto;
+  gap: 0.75rem;
 }
 
 .icon-button,
@@ -348,8 +315,8 @@ a {
 
 .icon-button {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 8px;
   font-weight: 800;
 }
@@ -378,28 +345,6 @@ a {
   font-weight: 700;
 }
 
-/* The bundled demo avatar is visually blank. Use the same clear Manager
-   initial treatment as the reference navbar instead. */
-.profile-button .avatar-img {
-  display: none;
-}
-
-.profile-button::before {
-  content: "M";
-  width: 36px;
-  height: 36px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 36px;
-  border-radius: 8px;
-  background: var(--admin-primary);
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
-}
-
 .notification-time {
   color: var(--admin-muted);
   font-size: 0.82rem;
@@ -409,8 +354,8 @@ a {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  min-height: 48px;
-  padding: 0.4rem 0.8rem;
+  min-height: 42px;
+  padding: 0.35rem 0.65rem;
   border-radius: 8px;
   font-weight: 700;
 }
@@ -432,8 +377,8 @@ a {
 }
 
 .avatar-sm {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
 }
 
@@ -460,7 +405,7 @@ html[data-theme="dark"] .profile-button .avatar-sm {
 }
 
 .dashboard-content {
-  min-height: calc(100vh - 140px);
+  min-height: calc(100vh - 132px);
 }
 
 .dashboard-content > .container-fluid {
@@ -503,8 +448,6 @@ html[data-theme="dark"] .profile-button .avatar-sm {
 .btn {
   border-radius: 8px;
   font-weight: 700;
-  min-height: 42px;
-  padding: 0.58rem 0.9rem;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
   transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
@@ -512,22 +455,6 @@ html[data-theme="dark"] .profile-button .avatar-sm {
 .btn:hover,
 .btn:focus {
   transform: translateY(-1px);
-}
-
-.btn-sm {
-  min-height: 36px;
-  padding: 0.42rem 0.72rem;
-  font-size: 0.8125rem;
-}
-
-.form-control,
-.form-select {
-  min-height: 42px;
-}
-
-.form-control-sm,
-.form-select-sm {
-  min-height: 36px;
 }
 
 .btn-primary {
@@ -749,24 +676,6 @@ html[data-theme="dark"] .profile-button .avatar-sm {
   min-width: 120px;
   padding-top: 1rem;
   padding-bottom: 1rem;
-}
-
-.table-responsive {
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Manager tables reserve enough room for row actions. Wrapping each button
-   onto its own line makes otherwise healthy tables look broken. */
-.table th.text-end:last-child,
-.table td.text-end:last-child {
-  min-width: 190px;
-  white-space: nowrap;
-}
-
-.table td.text-end:last-child > .btn {
-  margin-block: 0.15rem;
 }
 
 .table tbody tr {
@@ -1235,7 +1144,7 @@ html[data-theme="dark"] body {
 }
 
 .theme-toggle i {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .admin-navbar.bg-white,
@@ -1706,742 +1615,4 @@ html[data-theme="dark"] {
 .sidebar-footer {
   border-top-color: var(--admin-sidebar-border);
   color: var(--admin-sidebar-text);
-}
-
-/* Compact analytics layout used by the four Manager report views.  The
-   reference report is intentionally denser than the CRUD screens, so these
-   rules stay scoped to .report-page and do not resize the rest of Manager. */
-body.report-page {
-  --sidebar-mini-width: 42px;
-  font-size: 0.8125rem;
-}
-
-@media (min-width: 992px) {
-  body.report-page.sidebar-mini .sidebar-header {
-    margin-inline: 0;
-    padding: 14px 7px 12px;
-  }
-
-  body.report-page.sidebar-mini .brand-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-  }
-
-  body.report-page.sidebar-mini .sidebar-nav {
-    gap: 0.55rem;
-    padding: 0.75rem 5px;
-  }
-
-  body.report-page.sidebar-mini .sidebar-nav .nav-link {
-    min-height: 32px;
-    padding: 2px;
-    border-radius: 6px;
-  }
-
-  body.report-page.sidebar-mini .nav-icon {
-    width: 27px;
-    height: 27px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-  }
-
-  body.report-page.sidebar-mini .sidebar-footer {
-    margin-inline: 8px;
-    padding-block: 0.75rem;
-  }
-}
-
-.report-page .admin-navbar {
-  min-height: 60px;
-  padding: 0.65rem 1rem;
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.05);
-}
-
-.report-page .admin-navbar > .container-fluid {
-  min-height: 38px;
-}
-
-.report-page .sidebar-toggle,
-.report-page .icon-button {
-  width: 32px;
-  height: 32px;
-  padding: 7px;
-  border-radius: 6px;
-}
-
-.report-page .sidebar-toggle span {
-  width: 16px;
-}
-
-.report-page .navbar-actions {
-  gap: 0.5rem;
-}
-
-.report-page .profile-button {
-  min-height: 32px;
-  padding: 0.2rem 0.45rem;
-  gap: 0.35rem;
-  border-radius: 6px;
-}
-
-.report-page .profile-button::before {
-  width: 24px;
-  height: 24px;
-  flex-basis: 24px;
-  border-radius: 6px;
-  font-size: 0.68rem;
-}
-
-.report-page .profile-name {
-  display: none !important;
-}
-
-.report-page .dashboard-content > .container-fluid {
-  padding: 1.25rem 1rem 1.5rem !important;
-}
-
-.report-page .report-heading {
-  margin-bottom: 1rem !important;
-  gap: 0.75rem !important;
-}
-
-.report-page .report-heading .page-heading-copy {
-  gap: 0.7rem;
-}
-
-.report-page .report-heading .page-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
-
-.report-page .report-heading .eyebrow {
-  margin-bottom: 0.15rem !important;
-  font-size: 0.625rem;
-}
-
-.report-page .report-heading h1 {
-  margin-bottom: 0.15rem !important;
-  font-size: 1.3rem;
-  line-height: 1.15;
-}
-
-.report-page .report-heading p.text-muted {
-  font-size: 0.72rem;
-  line-height: 1.3;
-}
-
-.report-page .btn {
-  min-height: 32px;
-  padding: 0.35rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-}
-
-.report-page .btn-sm {
-  min-height: 28px;
-  padding: 0.28rem 0.55rem;
-  font-size: 0.7rem;
-}
-
-.report-page .report-tabs {
-  margin-bottom: 1rem !important;
-}
-
-.report-page .report-tabs .nav {
-  gap: 0 !important;
-  padding: 2px !important;
-  border-radius: 6px !important;
-}
-
-.report-page .report-tabs .nav-link {
-  padding: 0.42rem 0.75rem !important;
-  border-radius: 5px;
-  font-size: 0.72rem;
-  line-height: 1.15;
-}
-
-.report-page .panel {
-  padding: 0.9rem;
-  border-radius: 6px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-}
-
-.report-page .panel-header {
-  margin-bottom: 0.75rem;
-}
-
-.report-page .panel-header .section-title,
-.report-page .panel-header h2,
-.report-page .panel-header h3 {
-  font-size: 0.9rem;
-}
-
-.report-page .section-title i {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-}
-
-.report-page .panel-header p,
-.report-page .report-filter-panel p.text-muted {
-  font-size: 0.68rem;
-  line-height: 1.35;
-}
-
-.report-page .report-filter-panel {
-  margin-bottom: 1rem !important;
-}
-
-.report-page .report-filter-panel .btn-group .btn {
-  min-height: 25px;
-  padding: 0.2rem 0.45rem;
-  font-size: 0.65rem;
-}
-
-.report-page .report-filter-panel label {
-  margin-bottom: 0.25rem !important;
-  font-size: 0.68rem;
-}
-
-.report-page .form-control,
-.report-page .form-select {
-  min-height: 32px;
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
-  border-radius: 5px;
-  font-size: 0.72rem;
-}
-
-.report-page .form-control-sm,
-.report-page .form-select-sm {
-  min-height: 28px;
-  font-size: 0.7rem;
-}
-
-.report-page .report-kpi-grid {
-  margin-bottom: 1rem !important;
-}
-
-.report-page .report-kpi-grid .panel {
-  min-height: 86px;
-  padding: 0.8rem;
-}
-
-.report-page .report-kpi-grid p {
-  font-size: 0.7rem;
-}
-
-.report-page .report-kpi-grid h2,
-.report-page .report-kpi-grid .h3 {
-  font-size: 1.2rem;
-  line-height: 1.1;
-}
-
-.report-page .report-kpi-grid small {
-  font-size: 0.63rem;
-}
-
-.report-page .report-kpi-grid .page-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-}
-
-.report-page .row.g-3 {
-  --bs-gutter-x: 0.75rem;
-  --bs-gutter-y: 0.75rem;
-}
-
-.report-page .chart-bars {
-  height: 220px;
-  gap: 0.65rem;
-  padding-top: 0.8rem;
-}
-
-.report-page .chart-column {
-  gap: 0.4rem;
-  font-size: 0.65rem;
-}
-
-.report-page .donut-chart {
-  width: 132px;
-  height: 132px;
-}
-
-.report-page .donut-chart span {
-  width: 76px;
-  height: 76px;
-  font-size: 1.15rem;
-}
-
-.report-page .legend-list {
-  gap: 0.45rem;
-  font-size: 0.68rem;
-}
-
-.report-page .legend-list div {
-  padding: 0.5rem 0.6rem;
-  border-radius: 5px;
-}
-
-.report-page .table {
-  font-size: 0.72rem;
-}
-
-.report-page .table thead th {
-  font-size: 0.65rem;
-}
-
-.report-page .table tbody td {
-  padding-top: 0.65rem;
-  padding-bottom: 0.65rem;
-}
-
-.report-page .admin-footer {
-  padding-block: 0.75rem;
-  font-size: 0.7rem;
-}
-
-/* Product and order reports historically placed their filters below summary
-   content. Match the Overview/Revenue visual rhythm without duplicating JSP
-   blocks or changing any submitted fields. */
-.report-products .dashboard-content > .container-fluid,
-.report-orders .dashboard-content > .container-fluid {
-  display: flex;
-  flex-direction: column;
-}
-
-.report-products .dashboard-content > .container-fluid > *,
-.report-orders .dashboard-content > .container-fluid > * {
-  order: 5;
-}
-
-.report-products .report-heading,
-.report-orders .report-heading {
-  order: 1 !important;
-}
-
-.report-products .report-tabs,
-.report-orders .report-tabs {
-  order: 2 !important;
-}
-
-.report-products .report-filter-panel,
-.report-orders .report-filter-panel {
-  order: 3 !important;
-}
-
-.report-products .report-kpi-grid,
-.report-orders .report-kpi-grid {
-  order: 4 !important;
-}
-
-@media (max-width: 991.98px) {
-  body.report-page {
-    font-size: 0.875rem;
-  }
-
-  .report-page .admin-navbar {
-    min-height: 60px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .report-page .dashboard-content > .container-fluid {
-    padding: 1rem 0.75rem 1.25rem !important;
-  }
-
-  .report-page .report-heading > .d-flex,
-  .report-page .report-heading > div:last-child {
-    width: 100%;
-  }
-
-  .report-page .report-tabs .nav {
-    width: 100%;
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .report-page .report-tabs .nav-link {
-    text-align: center;
-  }
-}
-
-/* -------------------------------------------------------------------------
-   Unified Manager shell
-   -------------------------------------------------------------------------
-   The Staff order-list is the canonical Manager layout. Keep every Manager
-   view on the same 220px desktop sidebar, 72px topbar and Bootstrap grid. */
-.admin-shell {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.admin-sidebar {
-  width: var(--sidebar-width);
-  border-right: 1px solid var(--admin-sidebar-border);
-  box-shadow: var(--admin-sidebar-shadow);
-}
-
-.admin-main {
-  flex: 1;
-  width: auto;
-  margin-left: var(--sidebar-width);
-}
-
-.admin-navbar,
-.report-page .admin-navbar {
-  min-height: 72px;
-  padding: 0.75rem 1.5rem;
-  box-shadow: var(--admin-shadow-sm);
-}
-
-.admin-navbar > .container-fluid,
-.report-page .admin-navbar > .container-fluid {
-  min-height: 0;
-  padding-right: 0 !important;
-  padding-left: 0 !important;
-}
-
-.navbar-actions,
-.report-page .navbar-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
-  margin-left: auto !important;
-}
-
-.icon-button,
-.report-page .icon-button {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 8px;
-}
-
-.profile-button,
-.report-page .profile-button {
-  min-height: 40px;
-  padding: 0.3rem 0.65rem;
-  gap: 0.45rem;
-  border-radius: 8px;
-}
-
-.profile-button::before,
-.report-page .profile-button::before {
-  width: 30px;
-  height: 30px;
-  flex-basis: 30px;
-  border-radius: 7px;
-  font-size: 0.76rem;
-}
-
-.report-page .profile-name {
-  display: inline !important;
-}
-
-.dashboard-content > .container-fluid,
-.report-page .dashboard-content > .container-fluid {
-  padding: 1rem !important;
-}
-
-.page-heading,
-.report-page .report-heading {
-  margin-bottom: 1.35rem !important;
-}
-
-.page-heading-copy,
-.report-page .report-heading .page-heading-copy {
-  gap: 1rem;
-}
-
-.page-icon,
-.report-page .report-heading .page-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  font-size: 1.25rem;
-}
-
-.report-page,
-body.report-page {
-  --sidebar-mini-width: 72px;
-  font-size: 1rem;
-}
-
-.report-page .report-heading .eyebrow {
-  font-size: 0.78rem;
-}
-
-.report-page .report-heading h1 {
-  font-size: 1.75rem;
-}
-
-.report-page .report-heading p.text-muted {
-  font-size: 0.9rem;
-}
-
-.btn,
-.report-page .btn {
-  min-height: 38px;
-  padding: 0.45rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-}
-
-.btn-sm,
-.report-page .btn-sm {
-  min-height: 31px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8125rem;
-}
-
-.form-control,
-.form-select,
-.report-page .form-control,
-.report-page .form-select {
-  min-height: 38px;
-  padding-top: 0.375rem;
-  padding-bottom: 0.375rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-}
-
-.form-control-sm,
-.form-select-sm,
-.report-page .form-control-sm,
-.report-page .form-select-sm {
-  min-height: 31px;
-  font-size: 0.8125rem;
-}
-
-.panel,
-.report-page .panel {
-  padding: 1rem 0.85rem;
-  border-radius: 8px;
-}
-
-.panel-header,
-.report-page .panel-header {
-  margin-bottom: 1rem;
-}
-
-.report-page .panel-header .section-title,
-.report-page .panel-header h2,
-.report-page .panel-header h3 {
-  font-size: 1.05rem;
-}
-
-.report-page .panel-header p,
-.report-page .report-filter-panel p.text-muted {
-  font-size: 0.82rem;
-}
-
-.report-page .report-tabs,
-.report-page .report-filter-panel,
-.report-page .report-kpi-grid {
-  margin-bottom: 1.25rem !important;
-}
-
-.report-page .report-tabs .nav-link {
-  padding: 0.5rem 0.9rem !important;
-  font-size: 0.82rem;
-}
-
-.report-page .report-filter-panel label {
-  font-size: 0.8rem;
-}
-
-.report-page .report-kpi-grid .panel {
-  min-height: 118px;
-  padding: 1rem;
-}
-
-.report-page .report-kpi-grid p {
-  font-size: 0.8rem;
-}
-
-.report-page .report-kpi-grid h2,
-.report-page .report-kpi-grid .h3 {
-  font-size: 1.45rem;
-}
-
-.report-page .report-kpi-grid small {
-  font-size: 0.75rem;
-}
-
-.report-page .report-kpi-grid .page-icon {
-  width: 38px;
-  height: 38px;
-  font-size: 0.95rem;
-}
-
-.report-page .chart-bars {
-  height: 292px;
-}
-
-.report-page .donut-chart {
-  width: 170px;
-  height: 170px;
-}
-
-.report-page .donut-chart span {
-  width: 98px;
-  height: 98px;
-  font-size: 1.4rem;
-}
-
-.report-page .table {
-  font-size: 0.875rem;
-}
-
-.report-page .table thead th {
-  font-size: 0.75rem;
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-/* Dense list filters use one row only when there is genuinely enough room.
-   Below 1400px the normal Bootstrap columns wrap predictably. */
-@media (min-width: 1400px) {
-  .inventory-filter-form,
-  .transaction-filter-form,
-  .product-filter-form,
-  .voucher-filter-form {
-    display: grid;
-    align-items: end;
-    gap: 0.75rem;
-    margin-right: 0;
-    margin-left: 0;
-  }
-
-  .inventory-filter-form {
-    grid-template-columns: minmax(220px, 1.7fr) repeat(3, minmax(140px, 1fr)) auto minmax(90px, 0.65fr);
-  }
-
-  .transaction-filter-form {
-    grid-template-columns: minmax(220px, 1.7fr) repeat(4, minmax(125px, 1fr)) auto;
-  }
-
-  .product-filter-form {
-    grid-template-columns: minmax(220px, 1.7fr) repeat(4, minmax(125px, 1fr)) auto minmax(90px, 0.65fr);
-  }
-
-  .voucher-filter-form {
-    grid-template-columns: minmax(220px, 1.7fr) repeat(5, minmax(120px, 1fr)) auto;
-  }
-
-  .inventory-filter-form > [class*="col-"],
-  .transaction-filter-form > [class*="col-"],
-  .product-filter-form > [class*="col-"],
-  .voucher-filter-form > [class*="col-"] {
-    width: auto;
-    max-width: none;
-    padding-right: 0;
-    padding-left: 0;
-  }
-}
-
-@media (min-width: 992px) {
-  .admin-navbar .sidebar-toggle {
-    display: none;
-  }
-
-  body.sidebar-mini .admin-sidebar {
-    width: var(--sidebar-width);
-  }
-
-  body.sidebar-mini .admin-main {
-    margin-left: var(--sidebar-width);
-  }
-
-  body.sidebar-mini .brand-copy,
-  body.sidebar-mini .nav-text,
-  body.sidebar-mini .sidebar-footer-text {
-    width: auto;
-    opacity: 1;
-    overflow: visible;
-  }
-
-  body.sidebar-mini .sidebar-header,
-  body.sidebar-mini .sidebar-footer {
-    margin-inline: 0;
-    padding-inline: 1.25rem;
-  }
-
-  body.sidebar-mini .sidebar-nav .nav-link {
-    justify-content: flex-start;
-    padding-inline: 0.9rem;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .admin-navbar .sidebar-toggle {
-    display: inline-grid;
-  }
-
-  .admin-navbar,
-  .report-page .admin-navbar {
-    min-height: 64px;
-    padding: 0.65rem 1rem;
-  }
-
-  .dashboard-content > .container-fluid,
-  .report-page .dashboard-content > .container-fluid {
-    padding: 0.85rem !important;
-  }
-}
-
-/* Report table filters are independent from page-level metrics/charts. */
-.report-products .report-filter-panel,
-.report-orders .report-filter-panel {
-  order: 5 !important;
-}
-
-.report-table-filter-form .form-label {
-  white-space: nowrap;
-}
-
-@media (min-width: 1400px) {
-  .report-table-filter-form {
-    display: grid;
-    align-items: end;
-    gap: 0.7rem;
-    margin-right: 0;
-    margin-left: 0;
-  }
-
-  .report-table-filter-form > [class*="col-"] {
-    width: auto;
-    max-width: none;
-    padding-right: 0;
-    padding-left: 0;
-  }
-
-  .report-overview-table-filter-form {
-    grid-template-columns: minmax(230px, 1.6fr) repeat(3, minmax(145px, 1fr)) minmax(85px, 0.55fr) auto;
-  }
-
-  .report-revenue-table-filter-form {
-    grid-template-columns: minmax(260px, 1.8fr) minmax(210px, 0.8fr) auto;
-  }
-
-  .report-product-table-filter-form {
-    grid-template-columns: repeat(2, minmax(125px, 0.8fr)) repeat(2, minmax(125px, 0.9fr)) minmax(175px, 1.2fr) minmax(180px, 1.3fr) minmax(90px, 0.55fr) auto;
-  }
-
-  .report-order-table-filter-form {
-    grid-template-columns: repeat(2, minmax(125px, 0.75fr)) repeat(2, minmax(135px, 0.9fr)) minmax(190px, 1.25fr) minmax(175px, 1fr) minmax(82px, 0.5fr) auto;
-  }
 }

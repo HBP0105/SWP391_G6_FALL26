@@ -6,10 +6,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +29,6 @@ public class ReportService {
             "name_asc", "name_desc",
             "id_desc", "id_asc"
     );
-    private static final Set<String> ORDER_SORTS = Set.of(
-            "date_desc", "date_asc", "amount_desc", "amount_asc", "id_desc", "id_asc"
-    );
-    private static final Set<String> REVENUE_SORTS = Set.of(
-            "period_asc", "period_desc", "revenue_desc", "revenue_asc", "orders_desc", "orders_asc"
-    );
 
     private final ReportDAO reportDAO;
 
@@ -56,15 +46,7 @@ public class ReportService {
         Map<String, Object> filters = new HashMap<>();
         LocalDate today = LocalDate.now();
         int currentYear = normalizeYear(yearStr, today.getYear());
-        String rawPeriod = normalizeText(period);
-        String normalizedPeriod;
-        if (rawPeriod.isEmpty()) {
-            normalizedPeriod = normalizeText(startDate).isEmpty() && normalizeText(endDate).isEmpty()
-                    ? "all"
-                    : "custom";
-        } else {
-            normalizedPeriod = normalizePeriod(rawPeriod);
-        }
+        String normalizedPeriod = normalizePeriod(period);
 
         switch (normalizedPeriod) {
             case "today" -> {
@@ -99,9 +81,6 @@ public class ReportService {
             case "all" -> {
                 startDate = "";
                 endDate = "";
-            }
-            case "custom" -> {
-                // Keep the user-provided date range unchanged.
             }
             default -> {
             }
@@ -171,23 +150,6 @@ public class ReportService {
             return "revenue_desc";
         }
         return value;
-    }
-
-    public String normalizeOrderSort(String sort) {
-        String value = normalizeText(sort).toLowerCase();
-        return ORDER_SORTS.contains(value) ? value : "date_desc";
-    }
-
-    public String normalizeRevenueSort(String sort) {
-        String value = normalizeText(sort).toLowerCase();
-        return REVENUE_SORTS.contains(value) ? value : "period_asc";
-    }
-
-    public String normalizeSearchKeyword(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return "";
-        }
-        return keyword.replaceAll("\\s+", "").trim().toLowerCase();
     }
 
     public Integer normalizePositiveId(Integer value) {
@@ -261,7 +223,7 @@ public class ReportService {
         int offset = (page - 1) * pageSize;
         return reportDAO.getProductPerformanceList(
                 startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId),
-                normalizeSearchKeyword(keyword), normalizeProductSort(sort), offset, pageSize
+                normalizeText(keyword), normalizeProductSort(sort), offset, pageSize
         );
     }
 
@@ -273,7 +235,7 @@ public class ReportService {
             String keyword) {
 
         return reportDAO.countProductPerformance(
-                startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId), normalizeSearchKeyword(keyword)
+                startDate, endDate, normalizePositiveId(categoryId), normalizePositiveId(brandId), normalizeText(keyword)
         );
     }
 
@@ -318,7 +280,6 @@ public class ReportService {
             String status,
             String paymentMethod,
             String keyword,
-            String sort,
             int page,
             int pageSize) {
 
@@ -327,7 +288,7 @@ public class ReportService {
         int offset = (page - 1) * pageSize;
         return reportDAO.getDetailedOrdersPaginated(
                 startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod),
-                normalizeSearchKeyword(keyword), normalizeOrderSort(sort), offset, pageSize
+                normalizeText(keyword), offset, pageSize
         );
     }
 
@@ -339,54 +300,8 @@ public class ReportService {
             String keyword) {
 
         return reportDAO.countDetailedOrders(
-                startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod), normalizeSearchKeyword(keyword)
+                startDate, endDate, normalizeOrderStatus(status), normalizePaymentMethod(paymentMethod), normalizeText(keyword)
         );
-    }
-
-    public List<Map<String, Object>> filterRevenueTrend(
-            List<Map<String, Object>> source, String keyword, String sort) {
-        String normalizedKeyword = normalizeSearchKeyword(keyword);
-        String normalizedSort = normalizeRevenueSort(sort);
-        List<Map<String, Object>> result = new ArrayList<>();
-        if (source != null) {
-            for (Map<String, Object> row : source) {
-                String label = String.valueOf(row.getOrDefault("periodLabel", ""))
-                        .replaceAll("\\s+", "").toLowerCase();
-                if (normalizedKeyword.isEmpty() || label.contains(normalizedKeyword)) {
-                    result.add(row);
-                }
-            }
-        }
-
-        if ("period_desc".equals(normalizedSort)) {
-            Collections.reverse(result);
-        } else if (!"period_asc".equals(normalizedSort)) {
-            Comparator<Map<String, Object>> comparator = switch (normalizedSort) {
-                case "revenue_desc" -> Comparator.comparing(this::revenueValue).reversed();
-                case "revenue_asc" -> Comparator.comparing(this::revenueValue);
-                case "orders_desc" -> Comparator.comparingInt(this::orderCountValue).reversed();
-                case "orders_asc" -> Comparator.comparingInt(this::orderCountValue);
-                default -> Comparator.comparingInt(row -> 0);
-            };
-            result.sort(comparator);
-        }
-        return result;
-    }
-
-    private BigDecimal revenueValue(Map<String, Object> row) {
-        Object value = row.get("revenue");
-        if (value instanceof BigDecimal) {
-            return (BigDecimal) value;
-        }
-        if (value instanceof Number) {
-            return BigDecimal.valueOf(((Number) value).doubleValue());
-        }
-        return BigDecimal.ZERO;
-    }
-
-    private int orderCountValue(Map<String, Object> row) {
-        Object value = row.get("ordersCount");
-        return value instanceof Number ? ((Number) value).intValue() : 0;
     }
 
     private String normalizePeriod(String period) {
@@ -395,7 +310,7 @@ public class ReportService {
             return "all";
         }
         return switch (value) {
-            case "all", "custom", "today", "last_7_days", "this_week", "this_month", "this_year", "last_30_days", "last_90_days" -> value;
+            case "all", "today", "last_7_days", "this_week", "this_month", "this_year", "last_30_days", "last_90_days" -> value;
             default -> "all";
         };
     }

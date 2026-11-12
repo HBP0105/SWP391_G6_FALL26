@@ -461,7 +461,7 @@ public class AIPerformanceDAO {
         String sql = """
                 SELECT p.ProductID, p.ProductName, p.Price, p.CategoryID, p.BrandID,
                        p.ConnectionType, p.NoiseCancelling, p.BatteryLife, p.Description,
-                       p.EmbeddingVector,
+                       p.EmbeddingVector, p.WaterResistance, p.Microphone, p.DriverSize, p.Weight, p.StockQuantity,
                        c.CategoryName, b.BrandName,
                        img.ImageURL
                 FROM Products p
@@ -483,11 +483,16 @@ public class AIPerformanceDAO {
                 map.put("price", rs.getBigDecimal("Price"));
                 map.put("categoryId", rs.getInt("CategoryID"));
                 map.put("brandId", rs.getInt("BrandID"));
-                map.put("categoryName", rs.getString("CategoryName") != null ? rs.getString("CategoryName") : "Tai nghe");
-                map.put("brandName", rs.getString("BrandName") != null ? rs.getString("BrandName") : "Chính hãng");
+                map.put("categoryName", rs.getString("CategoryName") != null ? rs.getString("CategoryName") : "Headphones");
+                map.put("brandName", rs.getString("BrandName") != null ? rs.getString("BrandName") : "Authentic");
                 map.put("connectionType", rs.getString("ConnectionType") != null ? rs.getString("ConnectionType") : "Wireless");
                 map.put("noiseCancelling", rs.getBoolean("NoiseCancelling"));
                 map.put("batteryLife", rs.getInt("BatteryLife"));
+                map.put("waterResistance", rs.getString("WaterResistance") != null ? rs.getString("WaterResistance") : "None");
+                map.put("microphone", rs.getBoolean("Microphone"));
+                map.put("driverSize", rs.getBigDecimal("DriverSize"));
+                map.put("weight", rs.getBigDecimal("Weight"));
+                map.put("stockQuantity", rs.getInt("StockQuantity"));
                 map.put("description", rs.getString("Description") != null ? rs.getString("Description") : "");
                 map.put("embeddingVector", rs.getString("EmbeddingVector"));
                 String img = rs.getString("ImageURL");

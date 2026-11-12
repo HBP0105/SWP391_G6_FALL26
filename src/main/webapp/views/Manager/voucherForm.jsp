@@ -14,7 +14,7 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261109-1">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
     </head>
     <body>
         <div class="admin-shell">
@@ -309,7 +309,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261109-1"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=2"></script>
         
         <script>
             document.addEventListener("DOMContentLoaded", function () {

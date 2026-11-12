@@ -370,6 +370,5 @@
         window.__initialToIndex = ${toIndex != null ? toIndex : 0};
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=1.3"></script>
-    <jsp:include page="/assets/components/aiChatbot.jsp" />
 </body>
 </html>
