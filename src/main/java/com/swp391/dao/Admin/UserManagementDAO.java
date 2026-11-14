@@ -139,6 +139,41 @@ public class UserManagementDAO {
         return roles;
     }
 
+    public Map<String, Object> getUserDetail(String userType, int userId) {
+        if (!"STAFF".equalsIgnoreCase(userType)) {
+            return null;
+        }
+        String sql = """
+                SELECT s.StaffID AS UserID, s.FullName, s.Email, s.Phone,
+                       r.RoleName, s.RoleID, s.Status, s.CreatedAt
+                FROM Staff s
+                INNER JOIN Roles r ON s.RoleID = r.RoleID
+                WHERE s.StaffID = ?
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                Map<String, Object> detail = new HashMap<>();
+                detail.put("userType", "STAFF");
+                detail.put("userId", rs.getInt("UserID"));
+                detail.put("fullName", rs.getString("FullName"));
+                detail.put("email", rs.getString("Email"));
+                detail.put("phone", rs.getString("Phone"));
+                detail.put("roleName", rs.getString("RoleName"));
+                detail.put("roleId", rs.getInt("RoleID"));
+                detail.put("status", rs.getString("Status"));
+                detail.put("createdAt", rs.getTimestamp("CreatedAt"));
+                return detail;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load administrator profile.", e);
+        }
+    }
+
     public boolean roleExists(int roleId) {
         String sql = "SELECT COUNT(*) FROM Roles WHERE RoleID = ? AND RoleName IN ('ADMIN', 'MANAGER')";
         try (Connection conn = dbContext.getConnection();
@@ -161,6 +196,69 @@ public class UserManagementDAO {
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             throw new RuntimeException("Unable to update staff role.", e);
+        }
+    }
+
+    public boolean updateStaffInfo(int staffId, String fullName, String phone) {
+        String sql = "UPDATE Staff SET FullName = ?, Phone = ?, UpdatedAt = GETDATE() WHERE StaffID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setNString(1, fullName);
+            ps.setString(2, phone == null || phone.isBlank() ? null : phone);
+            ps.setInt(3, staffId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to update administrator profile.", e);
+        }
+    }
+
+    public boolean resetStaffPassword(int staffId, String newPassword) {
+        String sql = "UPDATE Staff SET PasswordHash = ?, UpdatedAt = GETDATE() WHERE StaffID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newPassword);
+            ps.setInt(2, staffId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to update administrator password.", e);
+        }
+    }
+
+    public boolean verifyStaffPassword(int staffId, String currentPassword) {
+        String sql = "SELECT 1 FROM Staff WHERE StaffID = ? AND PasswordHash = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, staffId);
+            ps.setString(2, currentPassword);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to verify current password.", e);
+        }
+    }
+
+    public boolean phoneExistsInAnyAccount(String phone, int excludeStaffId) {
+        if (phone == null || phone.isBlank()) {
+            return false;
+        }
+        String sql = """
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1 FROM Staff WHERE Phone = ? AND StaffID <> ?
+                    UNION ALL
+                    SELECT 1 FROM Customers WHERE Phone = ?
+                ) THEN 1 ELSE 0 END
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, phone);
+            ps.setInt(2, excludeStaffId);
+            ps.setString(3, phone);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) == 1;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to verify phone uniqueness.", e);
         }
     }
 

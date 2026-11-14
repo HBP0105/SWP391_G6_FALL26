@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -55,10 +56,10 @@
                 %>
                 <ul class="header-links pull-left">
                     <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
                     <% } %>
                     <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
                     <% } %>
                 </ul>
                 <ul class="header-links pull-right">
@@ -149,7 +150,7 @@
                                                 </c:when>
                                                 <c:otherwise>
                                                     <!-- Nếu có ảnh từ DB thì in ra bình thường -->
-                                                    <img src="${item.imageUrl}" alt="${item.productName}" class="cart-item-img">
+                                                    <img src="${fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl)}" alt="${item.productName}" class="cart-item-img">
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>

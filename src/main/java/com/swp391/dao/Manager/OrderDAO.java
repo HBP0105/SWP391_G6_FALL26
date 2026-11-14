@@ -713,7 +713,7 @@ public class OrderDAO {
         List<Map<String, Object>> list = new ArrayList<>();
         String sqlWithCustomer = """
                 SELECT TOP 3 
-                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, p.ImageURL,
                   r.SimilarityScore, r.Reason, r.RecommendationType, 
                   c.CategoryName, b.BrandName 
                 FROM AIRecommendations r 
@@ -725,7 +725,6 @@ public class OrderDAO {
                 JOIN Products p ON r.ProductID = p.ProductID 
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
                 LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
                 WHERE r.CustomerID = ? 
                   AND (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
                 ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
@@ -733,7 +732,7 @@ public class OrderDAO {
 
         String fallbackSql = """
                 SELECT TOP 3 
-                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, p.ImageURL,
                   r.SimilarityScore, r.Reason, r.RecommendationType, 
                   c.CategoryName, b.BrandName 
                 FROM AIRecommendations r 
@@ -745,7 +744,6 @@ public class OrderDAO {
                 JOIN Products p ON r.ProductID = p.ProductID 
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
                 LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
                 WHERE (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
                 ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
                 """;
@@ -776,7 +774,7 @@ public class OrderDAO {
             if (list.isEmpty()) {
                 String activeProductsSql = """
                         SELECT TOP 3 
-                          0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, pi.ImageURL, 
+                          0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, p.ImageURL,
                           0.88 AS SimilarityScore, 
                           N'Similar headphone model recommended for customer retention call' AS Reason, 
                           'ALTERNATIVE' AS RecommendationType, 
@@ -784,7 +782,6 @@ public class OrderDAO {
                         FROM Products p 
                         LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
                         LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                        LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
                         WHERE p.Status = 'ACTIVE' 
                         ORDER BY p.ProductID DESC
                         """;

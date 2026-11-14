@@ -176,6 +176,12 @@ BEGIN TRY
         WHERE pi.ProductID = p.ProductID AND pi.IsPrimary = 1
     );
 
+    UPDATE p
+    SET p.ImageURL = pi.ImageURL
+    FROM Products p
+    JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1
+    WHERE p.ImageURL IS NULL;
+
     /* Initial import transaction for each product. */
     INSERT INTO InventoryTransactions
         (ProductID, TransactionType, Quantity, PreviousQuantity, NewQuantity, Reason, CreatedBy, CreatedAt)

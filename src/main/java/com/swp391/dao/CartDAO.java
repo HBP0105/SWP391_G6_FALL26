@@ -11,9 +11,8 @@ import java.util.logging.Logger;
 public class CartDAO extends DBContext{
     public CartItemDTO getProductInfo(int productId){
         CartItemDTO item = null;
-        String sql = "SELECT p.ProductID, p.ProductName, p.Price, pi.ImageURL " +
+        String sql = "SELECT p.ProductID, p.ProductName, p.Price, p.ImageURL " +
                      "FROM Products p " +
-                     "LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 " +
                      "WHERE p.ProductID = ?";
         try {
             Connection connection = getConnection();

@@ -134,6 +134,20 @@
     }
 })();
 
+/* ===== HOME CAROUSEL USABILITY ===== */
+(function () {
+    if (!window.jQuery) return;
+
+    // Product actions should not move away from the pointer while the customer
+    // is deciding. Keep manual arrows/swipe from the original template.
+    window.jQuery('.home-page .products-slick, .home-page .products-widget-slick').each(function () {
+        var $slider = window.jQuery(this);
+        if ($slider.hasClass('slick-initialized')) {
+            $slider.slick('slickPause');
+        }
+    });
+})();
+
 /* ===== TAB SLICK RE-ALIGNMENT ===== */
 (function () {
     if (window.jQuery) {
@@ -147,5 +161,31 @@
                 }
             }
         });
+    }
+})();
+
+/* ===== PRODUCT IMAGE FALLBACK ===== */
+(function () {
+    var contextPath = window.__contextPath || '';
+    var fallbackUrl = contextPath + '/assets/img/product01.png';
+
+    function useFallback(img) {
+        if (!img || img.getAttribute('data-fallback-applied') === '1') return;
+        img.setAttribute('data-fallback-applied', '1');
+        img.src = fallbackUrl;
+    }
+
+    function bindProductImages(root) {
+        var images = (root || document).querySelectorAll('.product-img img, .product-widget .product-img img');
+        images.forEach(function (img) {
+            img.addEventListener('error', function () { useFallback(img); });
+            if (img.complete && img.naturalWidth === 0) useFallback(img);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { bindProductImages(document); });
+    } else {
+        bindProductImages(document);
     }
 })();

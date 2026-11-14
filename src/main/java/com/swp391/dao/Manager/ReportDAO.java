@@ -31,7 +31,7 @@ public class ReportDAO {
         StringBuilder sql = new StringBuilder("""
             SELECT 
                 COUNT(*) AS TotalOrders,
-                ISNULL(SUM(CASE WHEN o.OrderStatus NOT IN ('CANCELLED') THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
+                ISNULL(SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
                 SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN 1 ELSE 0 END) AS CompletedOrders,
                 SUM(CASE WHEN o.OrderStatus = 'PENDING' THEN 1 ELSE 0 END) AS PendingOrders,
                 SUM(CASE WHEN o.OrderStatus = 'SHIPPING' THEN 1 ELSE 0 END) AS ShippingOrders,
@@ -71,9 +71,8 @@ public class ReportDAO {
                     stats.put("shippingOrders", shipping);
                     stats.put("cancelledOrders", cancelled);
 
-                    int validOrderCount = totalOrders - cancelled;
-                    if (validOrderCount > 0 && totalRevenue != null && totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
-                        stats.put("avgOrderValue", totalRevenue.divide(BigDecimal.valueOf(validOrderCount), 2, RoundingMode.HALF_UP));
+                    if (completed > 0 && totalRevenue != null && totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                        stats.put("avgOrderValue", totalRevenue.divide(BigDecimal.valueOf(completed), 2, RoundingMode.HALF_UP));
                     }
 
                     if (totalOrders > 0) {
@@ -91,7 +90,7 @@ public class ReportDAO {
             SELECT ISNULL(SUM(oi.Quantity), 0) AS UnitsSold
             FROM OrderItems oi
             JOIN Orders o ON oi.OrderID = o.OrderID
-            WHERE o.OrderStatus NOT IN ('CANCELLED')
+            WHERE o.OrderStatus = 'DELIVERED'
         """);
         List<Object> unitParams = new ArrayList<>();
         appendDateFilter(unitsSql, unitParams, startDate, endDate);
@@ -142,7 +141,7 @@ public class ReportDAO {
                 COUNT(o.OrderID) AS OrdersCount,
                 ISNULL(SUM(o.TotalAmount), 0) AS Revenue
             FROM Orders o
-            WHERE YEAR(o.OrderDate) = ? AND o.OrderStatus NOT IN ('CANCELLED')
+            WHERE YEAR(o.OrderDate) = ? AND o.OrderStatus = 'DELIVERED'
             GROUP BY MONTH(o.OrderDate)
             ORDER BY [Month]
         """;
@@ -271,7 +270,7 @@ public class ReportDAO {
             JOIN Orders o ON oi.OrderID = o.OrderID
             LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
             LEFT JOIN Brands b ON p.BrandID = b.BrandID
-            WHERE o.OrderStatus NOT IN ('CANCELLED')
+            WHERE o.OrderStatus = 'DELIVERED'
         """);
 
         List<Object> params = new ArrayList<>();
@@ -329,7 +328,7 @@ public class ReportDAO {
             JOIN Products p ON c.CategoryID = p.CategoryID
             JOIN OrderItems oi ON p.ProductID = oi.ProductID
             JOIN Orders o ON oi.OrderID = o.OrderID
-            WHERE o.OrderStatus NOT IN ('CANCELLED')
+            WHERE o.OrderStatus = 'DELIVERED'
         """);
 
         List<Object> params = new ArrayList<>();
@@ -456,21 +455,24 @@ public class ReportDAO {
         stats.put("deliveredRevenue", BigDecimal.ZERO);
         stats.put("shippingRevenue", BigDecimal.ZERO);
         stats.put("pendingRevenue", BigDecimal.ZERO);
-        stats.put("cancelledRevenue", BigDecimal.ZERO);
         stats.put("totalOrders", 0);
         stats.put("validOrders", 0);
+        stats.put("shippingOrders", 0);
+        stats.put("pendingOrders", 0);
+        stats.put("completionRate", 0.0);
         stats.put("avgOrderValue", BigDecimal.ZERO);
         stats.put("unitsSold", 0);
 
         StringBuilder sql = new StringBuilder("""
             SELECT 
                 COUNT(*) AS TotalOrders,
-                SUM(CASE WHEN o.OrderStatus NOT IN ('CANCELLED') THEN 1 ELSE 0 END) AS ValidOrders,
-                ISNULL(SUM(CASE WHEN o.OrderStatus NOT IN ('CANCELLED') THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
+                SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN 1 ELSE 0 END) AS ValidOrders,
+                SUM(CASE WHEN o.OrderStatus = 'SHIPPING' THEN 1 ELSE 0 END) AS ShippingOrders,
+                SUM(CASE WHEN o.OrderStatus = 'PENDING' THEN 1 ELSE 0 END) AS PendingOrders,
+                ISNULL(SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
                 ISNULL(SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN o.TotalAmount ELSE 0 END), 0) AS DeliveredRevenue,
                 ISNULL(SUM(CASE WHEN o.OrderStatus = 'SHIPPING' THEN o.TotalAmount ELSE 0 END), 0) AS ShippingRevenue,
-                ISNULL(SUM(CASE WHEN o.OrderStatus = 'PENDING' THEN o.TotalAmount ELSE 0 END), 0) AS PendingRevenue,
-                ISNULL(SUM(CASE WHEN o.OrderStatus = 'CANCELLED' THEN o.TotalAmount ELSE 0 END), 0) AS CancelledRevenue
+                ISNULL(SUM(CASE WHEN o.OrderStatus = 'PENDING' THEN o.TotalAmount ELSE 0 END), 0) AS PendingRevenue
             FROM Orders o
             WHERE 1=1
         """);
@@ -489,22 +491,27 @@ public class ReportDAO {
                 if (rs.next()) {
                     int totalOrders = rs.getInt("TotalOrders");
                     int validOrders = rs.getInt("ValidOrders");
+                    int shippingOrders = rs.getInt("ShippingOrders");
+                    int pendingOrders = rs.getInt("PendingOrders");
                     BigDecimal totalRev = rs.getBigDecimal("TotalRevenue");
                     BigDecimal delRev = rs.getBigDecimal("DeliveredRevenue");
                     BigDecimal shipRev = rs.getBigDecimal("ShippingRevenue");
                     BigDecimal penRev = rs.getBigDecimal("PendingRevenue");
-                    BigDecimal canRev = rs.getBigDecimal("CancelledRevenue");
 
                     stats.put("totalOrders", totalOrders);
                     stats.put("validOrders", validOrders);
+                    stats.put("shippingOrders", shippingOrders);
+                    stats.put("pendingOrders", pendingOrders);
                     stats.put("totalRevenue", totalRev != null ? totalRev : BigDecimal.ZERO);
                     stats.put("deliveredRevenue", delRev != null ? delRev : BigDecimal.ZERO);
                     stats.put("shippingRevenue", shipRev != null ? shipRev : BigDecimal.ZERO);
                     stats.put("pendingRevenue", penRev != null ? penRev : BigDecimal.ZERO);
-                    stats.put("cancelledRevenue", canRev != null ? canRev : BigDecimal.ZERO);
 
                     if (validOrders > 0 && totalRev != null && totalRev.compareTo(BigDecimal.ZERO) > 0) {
                         stats.put("avgOrderValue", totalRev.divide(BigDecimal.valueOf(validOrders), 2, RoundingMode.HALF_UP));
+                    }
+                    if (totalOrders > 0) {
+                        stats.put("completionRate", Math.round((validOrders * 1000.0) / totalOrders) / 10.0);
                     }
                 }
             }
@@ -517,7 +524,7 @@ public class ReportDAO {
             SELECT ISNULL(SUM(oi.Quantity), 0) AS UnitsSold
             FROM OrderItems oi
             JOIN Orders o ON oi.OrderID = o.OrderID
-            WHERE o.OrderStatus NOT IN ('CANCELLED')
+            WHERE o.OrderStatus = 'DELIVERED'
         """);
         List<Object> unitParams = new ArrayList<>();
         appendDateFilter(unitsSql, unitParams, startDate, endDate);
@@ -560,7 +567,7 @@ public class ReportDAO {
                         o.TotalAmount,
                         (SELECT ISNULL(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalUnits
                     FROM Orders o
-                    WHERE o.OrderStatus NOT IN ('CANCELLED')
+                    WHERE o.OrderStatus = 'DELIVERED'
             """);
 
             List<Object> params = new ArrayList<>();
@@ -647,7 +654,7 @@ public class ReportDAO {
                         o.TotalAmount,
                         (SELECT ISNULL(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalUnits
                     FROM Orders o
-                    WHERE o.OrderStatus NOT IN ('CANCELLED') AND YEAR(o.OrderDate) = ?
+                    WHERE o.OrderStatus = 'DELIVERED' AND YEAR(o.OrderDate) = ?
                 ) t
                 GROUP BY MONTH(t.OrderDate)
                 ORDER BY [Month] ASC
@@ -710,7 +717,7 @@ public class ReportDAO {
             SELECT 
                 ISNULL(p.PaymentMethod, 'COD') AS PaymentMethod,
                 COUNT(o.OrderID) AS OrdersCount,
-                ISNULL(SUM(CASE WHEN o.OrderStatus NOT IN ('CANCELLED') THEN o.TotalAmount ELSE 0 END), 0) AS Revenue
+                ISNULL(SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN o.TotalAmount ELSE 0 END), 0) AS Revenue
             FROM Orders o
             LEFT JOIN Payments p ON o.OrderID = p.OrderID
             WHERE 1=1
@@ -799,7 +806,7 @@ public class ReportDAO {
                     SUM(oi.Quantity * oi.UnitPrice) AS Revenue
                 FROM OrderItems oi
                 JOIN Orders o ON oi.OrderID = o.OrderID
-                WHERE o.OrderStatus NOT IN ('CANCELLED')
+                WHERE o.OrderStatus = 'DELIVERED'
         """);
 
         List<Object> params = new ArrayList<>();
@@ -950,7 +957,7 @@ public class ReportDAO {
                     SUM(oi.Quantity * oi.UnitPrice) AS Revenue
                 FROM OrderItems oi
                 JOIN Orders o ON oi.OrderID = o.OrderID
-                WHERE o.OrderStatus NOT IN ('CANCELLED')
+                WHERE o.OrderStatus = 'DELIVERED'
         """);
 
         List<Object> params = new ArrayList<>();
@@ -1092,7 +1099,7 @@ public class ReportDAO {
         StringBuilder sql = new StringBuilder("""
             SELECT 
                 COUNT(*) AS TotalOrders,
-                ISNULL(SUM(CASE WHEN o.OrderStatus NOT IN ('CANCELLED') THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
+                ISNULL(SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN o.TotalAmount ELSE 0 END), 0) AS TotalRevenue,
                 SUM(CASE WHEN o.OrderStatus = 'DELIVERED' THEN 1 ELSE 0 END) AS CompletedOrders,
                 SUM(CASE WHEN o.OrderStatus = 'PENDING' THEN 1 ELSE 0 END) AS PendingOrders,
                 SUM(CASE WHEN o.OrderStatus = 'SHIPPING' THEN 1 ELSE 0 END) AS ShippingOrders,
@@ -1142,9 +1149,8 @@ public class ReportDAO {
                     stats.put("shippingOrders", shipping);
                     stats.put("cancelledOrders", cancelled);
 
-                    int validOrderCount = totalOrders - cancelled;
-                    if (validOrderCount > 0 && totalRev != null && totalRev.compareTo(BigDecimal.ZERO) > 0) {
-                        stats.put("avgOrderValue", totalRev.divide(BigDecimal.valueOf(validOrderCount), 2, RoundingMode.HALF_UP));
+                    if (completed > 0 && totalRev != null && totalRev.compareTo(BigDecimal.ZERO) > 0) {
+                        stats.put("avgOrderValue", totalRev.divide(BigDecimal.valueOf(completed), 2, RoundingMode.HALF_UP));
                     }
 
                     if (totalOrders > 0) {

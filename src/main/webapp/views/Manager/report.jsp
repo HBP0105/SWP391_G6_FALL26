@@ -18,10 +18,10 @@
                   href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
             <link rel="stylesheet"
-                  href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+                  href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
         </head>
 
-        <body>
+        <body class="report-page">
 
             <div class="admin-shell">
 
@@ -177,7 +177,7 @@
                         <div class="container-fluid px-3 px-lg-4 py-4">
 
                             <!-- PAGE HEADING -->
-                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                            <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
 
                                 <div class="page-heading-copy">
                                     <span class="page-icon">
@@ -204,7 +204,7 @@
                             </div>
 
                             <!-- REPORT NAVIGATION TABS -->
-                            <div class="mb-4">
+                            <div class="report-tabs mb-4">
                                 <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                     <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' || empty currentTab ? 'active' : 'text-body'}" 
                                        href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -225,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <section class="panel mb-4">
+                            <section class="panel report-filter-panel mb-4">
 
                                 <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                     <div>
@@ -288,18 +288,18 @@
 
                             </section>
 
-                            <div class="row g-3 mb-4">
+                            <div class="report-kpi-grid row g-3 mb-4">
 
                                 <div class="col-12 col-sm-6 col-xl-3">
                                     <div class="panel h-100">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <p class="text-muted mb-1">Total Revenue</p>
+                                                <p class="text-muted mb-1">Realized Revenue</p>
                                                 <h2 class="h3 mb-1">
-                                                    $<fmt:formatNumber value="${overviewStats.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                    <fmt:formatNumber value="${overviewStats.totalRevenue}" type="number" maxFractionDigits="0"/> VND
                                                 </h2>
                                                 <small class="text-success">
-                                                    <i class="bi bi-check-circle me-1"></i>Active & delivered sales
+                                                    <i class="bi bi-check-circle me-1"></i>Delivered orders only
                                                 </small>
                                             </div>
                                             <span class="page-icon">
@@ -347,16 +347,16 @@
                                     <div class="panel h-100">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <p class="text-muted mb-1">Avg Order Value</p>
+                                                <p class="text-muted mb-1">Completion Rate</p>
                                                 <h2 class="h3 mb-1">
-                                                    $<fmt:formatNumber value="${overviewStats.avgOrderValue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                    <fmt:formatNumber value="${overviewStats.totalOrders > 0 ? ((overviewStats.completedOrders * 100.0) / overviewStats.totalOrders) : 0}" maxFractionDigits="1"/>%
                                                 </h2>
                                                 <small class="${overviewStats.cancellationRate > 15 ? 'text-danger' : 'text-muted'}">
                                                     <i class="bi bi-x-circle me-1"></i>${overviewStats.cancellationRate}% Cancellation
                                                 </small>
                                             </div>
                                             <span class="page-icon">
-                                                <i class="bi bi-calculator"></i>
+                                                <i class="bi bi-speedometer2"></i>
                                             </span>
                                         </div>
                                     </div>
@@ -374,7 +374,7 @@
                                                     <i class="bi bi-graph-up"></i>
                                                     <span>Revenue Performance (${currentYear})</span>
                                                 </h2>
-                                                <p class="text-muted mb-0">Monthly breakdown of gross headphone sales.</p>
+                                                <p class="text-muted mb-0">Monthly breakdown of delivered headphone sales.</p>
                                             </div>
 
                                             <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="d-inline-flex align-items-center gap-1">
@@ -389,7 +389,7 @@
 
                                         <div class="chart-bars" style="grid-template-columns: repeat(12, minmax(18px, 1fr));">
                                             <c:forEach var="item" items="${monthlyRevenue}">
-                                                <div class="chart-column" title="${item.monthName}: $<fmt:formatNumber value='${item.revenue}' type='number' maxFractionDigits='0'/> (${item.ordersCount} orders)">
+                                                <div class="chart-column" title="${item.monthName}: <fmt:formatNumber value='${item.revenue}' type='number' maxFractionDigits='0'/> VND (${item.ordersCount} orders)">
                                                     <span style="--bar-size: ${item.barHeight}%;"></span>
                                                     ${item.monthName}
                                                 </div>
@@ -463,7 +463,7 @@
                                                     <i class="bi bi-trophy"></i>
                                                     <span>Top Selling Products</span>
                                                 </h2>
-                                                <p class="text-muted mb-0">Highest grossing and top performing headphones.</p>
+                                                <p class="text-muted mb-0">Top performing headphones from delivered orders.</p>
                                             </div>
                                             <a href="${pageContext.request.contextPath}/Manager/products" class="btn btn-light btn-sm">
                                                 View Products
@@ -502,13 +502,13 @@
                                                                         <span class="badge text-bg-light">${p.categoryName}</span>
                                                                     </td>
                                                                     <td>
-                                                                        $<fmt:formatNumber value="${p.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                                        <fmt:formatNumber value="${p.price}" type="number" maxFractionDigits="0"/> VND
                                                                     </td>
                                                                     <td class="fw-bold text-primary">
                                                                         ${p.unitsSold}
                                                                     </td>
                                                                     <td class="fw-bold text-success">
-                                                                        $<fmt:formatNumber value="${p.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                                        <fmt:formatNumber value="${p.totalRevenue}" type="number" maxFractionDigits="0"/> VND
                                                                     </td>
                                                                 </tr>
                                                             </c:forEach>
@@ -547,7 +547,7 @@
                                                                 <span class="fw-semibold">${cat.categoryName}</span>
                                                                 <span class="text-muted small">
                                                                     ${cat.unitsSold} units | 
-                                                                    <strong class="text-body">$<fmt:formatNumber value="${cat.revenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/></strong>
+                                                                    <strong class="text-body"><fmt:formatNumber value="${cat.revenue}" type="number" maxFractionDigits="0"/> VND</strong>
                                                                     (${cat.sharePct}%)
                                                                 </span>
                                                             </div>
@@ -635,7 +635,7 @@
                                                                 </span>
                                                             </td>
                                                             <td class="fw-bold">
-                                                                $<fmt:formatNumber value="${ord.totalAmount}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                                <fmt:formatNumber value="${ord.totalAmount}" type="number" maxFractionDigits="0"/> VND
                                                             </td>
                                                             <td>
                                                                 <c:choose>
@@ -696,7 +696,7 @@
             </div>
 
                                             <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-            <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+            <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
 
             <script>
                 function exportReportToCSV() {

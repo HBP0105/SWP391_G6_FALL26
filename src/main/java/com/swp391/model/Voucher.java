@@ -90,6 +90,14 @@ public class Voucher {
         return discountValue;
     }
 
+    /**
+     * Value used by the manager voucher form. Keeping this formatting in the
+     * model avoids exposing BigDecimal scale (for example 15.00) in the input.
+     */
+    public String getDiscountValueForInput() {
+        return discountValue == null ? "" : discountValue.stripTrailingZeros().toPlainString();
+    }
+
     public void setDiscountValue(BigDecimal discountValue) {
         this.discountValue = discountValue;
     }

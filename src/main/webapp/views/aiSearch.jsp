@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -467,7 +468,7 @@
                                     <span class="ai-match-badge"><i class="fa fa-bolt"></i> ${p.matchPercentage}% Match</span>
                                     <span class="ai-visual-tag">${not empty p.visualTag ? p.visualTag : 'Recommended'}</span>
                                     <div class="ai-prod-img-box">
-                                        <img src="${p.imageUrl}" alt="${p.productName}" onerror="this.src='${pageContext.request.contextPath}/assets/img/product01.png'">
+                                        <img src="${empty p.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(p.imageUrl, 'http') ? p.imageUrl : pageContext.request.contextPath.concat('/').concat(p.imageUrl))}" alt="${p.productName}" onerror="this.src='${pageContext.request.contextPath}/assets/img/product01.png'">
                                     </div>
                                     <div style="flex: 1; display: flex; flex-direction: column;">
                                         <div class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">

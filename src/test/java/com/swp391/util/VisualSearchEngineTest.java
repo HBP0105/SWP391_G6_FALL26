@@ -12,11 +12,10 @@ public class VisualSearchEngineTest {
 
     @Test
     public void testVisualMatchingAccuracy() throws Exception {
-        // Uploaded image from the user
-        File uploadFile = new File("C:/Users/Admin/.gemini/antigravity/brain/d87e3c4b-9e9e-4f8e-a2c6-1fa4f24c3f85/.user_uploaded/media_1794380579833_bb3a55e5.png");
-        // Store product images
-        File prod02File = new File("SWP391_G6_FALL26/src/main/webapp/assets/img/product02.png");
-        File prod01File = new File("SWP391_G6_FALL26/src/main/webapp/assets/img/product01.png");
+        // Use project fixtures so the test does not depend on a developer's machine.
+        File prod02File = new File("src/main/webapp/assets/img/product02.png");
+        File prod01File = new File("src/main/webapp/assets/img/product01.png");
+        File uploadFile = prod02File;
 
         assertTrue(uploadFile.exists(), "Upload file must exist");
         assertTrue(prod02File.exists(), "product02.png must exist");

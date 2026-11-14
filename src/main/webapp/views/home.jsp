@@ -11,7 +11,7 @@
                     <meta name="viewport" content="width=device-width, initial-scale=1">
                     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-                    <title>Electro - HTML Ecommerce Template</title>
+                    <title>Headphone Shop</title>
 
                     <!-- Google font -->
                     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
@@ -28,7 +28,7 @@
                     <link type="text/css" rel="stylesheet"
                         href="${pageContext.request.contextPath}/assets/css/style.css" />
                     <link type="text/css" rel="stylesheet"
-                        href="${pageContext.request.contextPath}/assets/css/home.css" />
+                        href="${pageContext.request.contextPath}/assets/css/home.css?v=20261114-3" />
                     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
                     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
                     <!--[if lt IE 9]>
@@ -38,13 +38,54 @@
 
                 </head>
 
-                <body>
+                <body class="home-page">
                     <c:set var="activeNav" value="home" scope="request" />
                     <jsp:include page="/assets/components/header.jsp" />
 
+                    <c:set var="featuredProduct" value="${not empty topSellingProducts ? topSellingProducts[0] : null}" />
+                    <section class="home-hero" aria-labelledby="home-hero-title">
+                        <div class="container">
+                            <div class="home-hero-panel">
+                                <div class="home-hero-copy">
+                                    <span class="home-eyebrow"><i class="fa fa-bolt"></i> Premium audio, picked for you</span>
+                                    <h1 id="home-hero-title">Hear every detail.<br><span>Feel every beat.</span></h1>
+                                    <p>Discover headphones and earbuds selected for sound quality, comfort and everyday performance.</p>
+                                    <div class="home-hero-actions">
+                                        <a class="primary-btn" href="${pageContext.request.contextPath}/productList">Shop products</a>
+                                        <a class="home-secondary-btn" href="${pageContext.request.contextPath}/ai-search">
+                                            <i class="fa fa-magic"></i> Try AI Search
+                                        </a>
+                                    </div>
+                                    <ul class="home-hero-benefits" aria-label="Shopping benefits">
+                                        <li><i class="fa fa-check-circle"></i> Genuine products</li>
+                                        <li><i class="fa fa-truck"></i> Fast delivery</li>
+                                        <li><i class="fa fa-headphones"></i> Audio-first support</li>
+                                    </ul>
+                                </div>
+
+                                <c:if test="${not empty featuredProduct}">
+                                    <a class="home-featured-product"
+                                       href="${pageContext.request.contextPath}/productDetail?id=${featuredProduct.productId}"
+                                       aria-label="View ${featuredProduct.productName}">
+                                        <span class="featured-badge">Top pick</span>
+                                        <div class="featured-image-wrap">
+                                            <img src="${empty featuredProduct.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product05.png') : (fn:startsWith(featuredProduct.imageUrl, 'http') ? featuredProduct.imageUrl : pageContext.request.contextPath.concat('/').concat(featuredProduct.imageUrl))}"
+                                                 alt="${featuredProduct.productName}"
+                                                 onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/product05.png';">
+                                        </div>
+                                        <div class="featured-product-info">
+                                            <span>${featuredProduct.categoryName}</span>
+                                            <strong>${featuredProduct.productName}</strong>
+                                            <b><fmt:formatNumber value="${featuredProduct.price}" type="number" groupingUsed="true" /> &#8363;</b>
+                                        </div>
+                                    </a>
+                                </c:if>
+                            </div>
+                        </div>
+                    </section>
 
                     <!-- SECTION -->
-                    <div class="section">
+                    <div class="section home-collections">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
@@ -53,12 +94,14 @@
                                 <div class="col-md-4 col-xs-6">
                                     <div class="shop">
                                         <div class="shop-img">
-                                            <img src="${pageContext.request.contextPath}/assets/img/shop01.png"
-                                                alt="Headphones">
+                                            <c:set var="headphoneBannerImage" value="${not empty topHeadphones ? topHeadphones[0].imageUrl : ''}" />
+                                            <img src="${empty headphoneBannerImage ? pageContext.request.contextPath.concat('/assets/img/shop03.png') : (fn:startsWith(headphoneBannerImage, 'http') ? headphoneBannerImage : pageContext.request.contextPath.concat('/').concat(headphoneBannerImage))}"
+                                                alt="Headphones"
+                                                onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/shop03.png';">
                                         </div>
                                         <div class="shop-body">
                                             <h3>Headphones<br>Collection</h3>
-                                            <a href="#" class="cta-btn">Shop now <i
+                                            <a href="${pageContext.request.contextPath}/productList?category=1" class="cta-btn">Shop now <i
                                                     class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
@@ -69,12 +112,14 @@
                                 <div class="col-md-4 col-xs-6">
                                     <div class="shop">
                                         <div class="shop-img">
-                                            <img src="${pageContext.request.contextPath}/assets/img/shop03.png"
-                                                alt="Earbuds">
+                                            <c:set var="earbudBannerImage" value="${not empty topEarbuds ? topEarbuds[0].imageUrl : ''}" />
+                                            <img src="${empty earbudBannerImage ? pageContext.request.contextPath.concat('/assets/img/shop03.png') : (fn:startsWith(earbudBannerImage, 'http') ? earbudBannerImage : pageContext.request.contextPath.concat('/').concat(earbudBannerImage))}"
+                                                alt="Earbuds"
+                                                onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/shop03.png';">
                                         </div>
                                         <div class="shop-body">
                                             <h3>Earbuds<br>Collection</h3>
-                                            <a href="#" class="cta-btn">Shop now <i
+                                            <a href="${pageContext.request.contextPath}/productList?category=2" class="cta-btn">Shop now <i
                                                     class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
@@ -85,12 +130,14 @@
                                 <div class="col-md-4 col-xs-6">
                                     <div class="shop">
                                         <div class="shop-img">
-                                            <img src="${pageContext.request.contextPath}/assets/img/shop02.png"
-                                                alt="Wireless Audio">
+                                            <c:set var="wirelessBannerImage" value="${not empty topSellingProducts ? topSellingProducts[0].imageUrl : ''}" />
+                                            <img src="${empty wirelessBannerImage ? pageContext.request.contextPath.concat('/assets/img/shop03.png') : (fn:startsWith(wirelessBannerImage, 'http') ? wirelessBannerImage : pageContext.request.contextPath.concat('/').concat(wirelessBannerImage))}"
+                                                alt="Wireless Audio"
+                                                onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/shop03.png';">
                                         </div>
                                         <div class="shop-body">
                                             <h3>Wireless Audio<br>Collection</h3>
-                                            <a href="#" class="cta-btn">Shop now <i
+                                            <a href="${pageContext.request.contextPath}/productList" class="cta-btn">Shop now <i
                                                     class="fa fa-arrow-circle-right"></i></a>
                                         </div>
                                     </div>
@@ -106,7 +153,7 @@
                     <!-- AI RECOMMENDATION SECTION -->
                     <c:if
                         test="${(not empty sessionScope.customer or not empty sessionScope.user) and not empty aiRecommendations}">
-                        <div class="section">
+                        <div class="section home-products-section home-ai-section">
                             <!-- container -->
                             <div class="container">
                                 <!-- row -->
@@ -145,7 +192,7 @@
                                                             <div class="product">
                                                                 <div class="product-img">
                                                                     <c:set var="pImg" value="${product.imageUrl}" />
-                                                                    <img src="${pImg.startsWith('http') ? pImg : pageContext.request.contextPath.concat('/').concat(pImg)}"
+                                                                    <img src="${empty pImg ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(pImg, 'http') ? pImg : pageContext.request.contextPath.concat('/').concat(pImg))}"
                                                                         alt="${product.productName}">
                                                                     <div class="product-label">
                                                                         <span class="sale ai-match"><i
@@ -237,7 +284,7 @@
                                                                             <div class="product-img">
                                                                                 <c:set var="pImg"
                                                                                     value="${product.imageUrl}" />
-                                                                                <img src="${pImg.startsWith('http') ? pImg : pageContext.request.contextPath.concat('/').concat(pImg)}"
+                                                                                <img src="${empty pImg ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(pImg, 'http') ? pImg : pageContext.request.contextPath.concat('/').concat(fn:startsWith(pImg, '/') ? fn:substring(pImg, 1, fn:length(pImg)) : pImg))}"
                                                                                     alt="${product.productName}">
                                                                                 <div class="product-label">
                                                                                     <span class="sale ai-match"><i
@@ -346,7 +393,7 @@
                     <!-- /AI RECOMMENDATION SECTION -->
 
                     <!-- SECTION -->
-                    <div class="section">
+                    <div class="section home-products-section">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
@@ -381,7 +428,7 @@
                                                         <!-- product -->
                                                         <div class="product">
                                                             <div class="product-img">
-                                                                <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                                <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                                     alt="${product.productName}">
                                                                 <div class="product-label">
                                                                     <span class="new">NEW</span>
@@ -459,7 +506,7 @@
                                                                     <!-- product -->
                                                                     <div class="product">
                                                                         <div class="product-img">
-                                                                            <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                                            <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                                                 alt="${product.productName}">
                                                                             <div class="product-label">
                                                                                 <span class="new">NEW</span>
@@ -512,9 +559,16 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="add-to-cart">
-                                                                            <button class="add-to-cart-btn"><i
-                                                                                    class="fa fa-shopping-cart"></i> add
-                                                                                to cart</button>
+                                                                            <form action="${pageContext.request.contextPath}/cart"
+                                                                                method="POST" style="margin: 0;">
+                                                                                <input type="hidden" name="action" value="add">
+                                                                                <input type="hidden" name="productId"
+                                                                                    value="${product.productId}">
+                                                                                <input type="hidden" name="quantity" value="1">
+                                                                                <button type="submit" class="add-to-cart-btn"><i
+                                                                                        class="fa fa-shopping-cart"></i> add
+                                                                                    to cart</button>
+                                                                            </form>
                                                                         </div>
                                                                     </div>
                                                                     <!-- /product -->
@@ -544,7 +598,7 @@
                     <!-- /SECTION -->
 
                     <!-- HOT DEAL SECTION -->
-                    <div id="hot-deal" class="section">
+                    <div id="hot-deal" class="section home-hot-deal">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
@@ -579,7 +633,7 @@
                                         </ul>
                                         <h2 class="text-uppercase">hot deal this week</h2>
                                         <p>New Collection Up to 50% OFF</p>
-                                        <a class="primary-btn cta-btn" href="#">Shop now</a>
+                                        <a class="primary-btn cta-btn" href="${pageContext.request.contextPath}/productList">Shop now</a>
                                     </div>
                                 </div>
                             </div>
@@ -590,7 +644,7 @@
                     <!-- /HOT DEAL SECTION -->
 
                     <!-- SECTION -->
-                    <div class="section">
+                    <div class="section home-products-section">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
@@ -625,7 +679,7 @@
                                                         <!-- product -->
                                                         <div class="product">
                                                             <div class="product-img">
-                                                                <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                                <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                                     alt="${product.productName}">
                                                             </div>
                                                             <div class="product-body">
@@ -701,7 +755,7 @@
                                                                     <!-- product -->
                                                                     <div class="product">
                                                                         <div class="product-img">
-                                                                            <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                                            <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                                                 alt="${product.productName}">
                                                                         </div>
                                                                         <div class="product-body">
@@ -751,9 +805,16 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="add-to-cart">
-                                                                            <button class="add-to-cart-btn"><i
-                                                                                    class="fa fa-shopping-cart"></i> add
-                                                                                to cart</button>
+                                                                            <form action="${pageContext.request.contextPath}/cart"
+                                                                                method="POST" style="margin: 0;">
+                                                                                <input type="hidden" name="action" value="add">
+                                                                                <input type="hidden" name="productId"
+                                                                                    value="${product.productId}">
+                                                                                <input type="hidden" name="quantity" value="1">
+                                                                                <button type="submit" class="add-to-cart-btn"><i
+                                                                                        class="fa fa-shopping-cart"></i> add
+                                                                                    to cart</button>
+                                                                            </form>
                                                                         </div>
                                                                     </div>
                                                                     <!-- /product -->
@@ -782,7 +843,7 @@
                     </div>
                     <!-- /SECTION -->
                     <!-- SECTION -->
-                    <div class="section">
+                    <div class="section home-widget-section">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
@@ -802,12 +863,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -823,12 +884,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -856,12 +917,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -877,12 +938,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -912,12 +973,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -933,12 +994,12 @@
                                                 <!-- product widget -->
                                                 <div class="product-widget">
                                                     <div class="product-img">
-                                                        <img src="${pageContext.request.contextPath}/${product.imageUrl}"
+                                                        <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}"
                                                             alt="${product.productName}">
                                                     </div>
                                                     <div class="product-body">
                                                         <p class="product-category">${product.categoryName}</p>
-                                                        <h3 class="product-name"><a href="#">${product.productName}</a>
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${product.productId}">${product.productName}</a>
                                                         </h3>
                                                         <h4 class="product-price">
                                                             <fmt:formatNumber value="${product.price}" type="number"
@@ -960,31 +1021,27 @@
                     <!-- /SECTION -->
 
                     <!-- NEWSLETTER -->
-                    <div id="newsletter" class="section">
+                    <div id="newsletter" class="section home-newsletter">
                         <!-- container -->
                         <div class="container">
                             <!-- row -->
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="newsletter">
-                                        <p>Sign Up for the <strong>NEWSLETTER</strong></p>
-                                        <form>
-                                            <input class="input" type="email" placeholder="Enter Your Email">
-                                            <button class="newsletter-btn"><i class="fa fa-envelope"></i>
-                                                Subscribe</button>
-                                        </form>
+                                        <p>Need help choosing the right <strong>HEADPHONES?</strong></p>
+                                        <a class="primary-btn" href="${pageContext.request.contextPath}/information?topic=help"><i class="fa fa-headphones"></i> Get Shopping Help</a>
                                         <ul class="newsletter-follow">
                                             <li>
-                                                <a href="#"><i class="fa fa-facebook"></i></a>
+                                                <span aria-label="Facebook"><i class="fa fa-facebook"></i></span>
                                             </li>
                                             <li>
-                                                <a href="#"><i class="fa fa-twitter"></i></a>
+                                                <span aria-label="Twitter"><i class="fa fa-twitter"></i></span>
                                             </li>
                                             <li>
-                                                <a href="#"><i class="fa fa-instagram"></i></a>
+                                                <span aria-label="Instagram"><i class="fa fa-instagram"></i></span>
                                             </li>
                                             <li>
-                                                <a href="#"><i class="fa fa-pinterest"></i></a>
+                                                <span aria-label="Pinterest"><i class="fa fa-pinterest"></i></span>
                                             </li>
                                         </ul>
                                     </div>
@@ -1007,14 +1064,12 @@
                                     <div class="col-md-3 col-xs-6">
                                         <div class="footer">
                                             <h3 class="footer-title">About Us</h3>
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                                                tempor
-                                                incididunt ut.</p>
+                                            <p>Authentic headphones and earbuds selected for sound quality, comfort and everyday reliability.</p>
                                             <ul class="footer-links">
-                                                <li><a href="#"><i class="fa fa-map-marker"></i>1734 Stonecoal Road</a>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i>Contact information</a>
                                                 </li>
-                                                <li><a href="#"><i class="fa fa-phone"></i>+021-95-51-84</a></li>
-                                                <li><a href="#"><i class="fa fa-envelope-o"></i>email@email.com</a></li>
+                                                <li><a href="tel:+8421955184"><i class="fa fa-phone"></i>+021-95-51-84</a></li>
+                                                <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i>support@headphone-shop.com</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -1023,11 +1078,11 @@
                                         <div class="footer">
                                             <h3 class="footer-title">Categories</h3>
                                             <ul class="footer-links">
-                                                <li><a href="#">Hot deals</a></li>
-                                                <li><a href="#">Laptops</a></li>
-                                                <li><a href="#">Smartphones</a></li>
-                                                <li><a href="#">Cameras</a></li>
-                                                <li><a href="#">Accessories</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot deals</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/ai-search">AI Search</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -1038,11 +1093,11 @@
                                         <div class="footer">
                                             <h3 class="footer-title">Information</h3>
                                             <ul class="footer-links">
-                                                <li><a href="#">About Us</a></li>
-                                                <li><a href="#">Contact Us</a></li>
-                                                <li><a href="#">Privacy Policy</a></li>
-                                                <li><a href="#">Orders and Returns</a></li>
-                                                <li><a href="#">Terms & Conditions</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=about">About Us</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=contact">Contact Us</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=privacy">Privacy Policy</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/my-orders">Orders and Returns</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=terms">Terms & Conditions</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -1051,11 +1106,11 @@
                                         <div class="footer">
                                             <h3 class="footer-title">Service</h3>
                                             <ul class="footer-links">
-                                                <li><a href="#">My Account</a></li>
-                                                <li><a href="#">View Cart</a></li>
-                                                <li><a href="#">Wishlist</a></li>
-                                                <li><a href="#">Track My Order</a></li>
-                                                <li><a href="#">Help</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/profile">My Account</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/cart">View Cart</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/wishlist">Wishlist</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/my-orders">Track My Order</a></li>
+                                                <li><a href="${pageContext.request.contextPath}/information?topic=help">Help</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -1073,12 +1128,12 @@
                                 <div class="row">
                                     <div class="col-md-12 text-center">
                                         <ul class="footer-payments">
-                                            <li><a href="#"><i class="fa fa-cc-visa"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-credit-card"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-cc-paypal"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-cc-mastercard"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-cc-discover"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-cc-amex"></i></a></li>
+                                            <li><span title="Visa"><i class="fa fa-cc-visa"></i></span></li>
+                                            <li><span title="Card payment"><i class="fa fa-credit-card"></i></span></li>
+                                            <li><span title="PayPal"><i class="fa fa-cc-paypal"></i></span></li>
+                                            <li><span title="Mastercard"><i class="fa fa-cc-mastercard"></i></span></li>
+                                            <li><span title="Discover"><i class="fa fa-cc-discover"></i></span></li>
+                                            <li><span title="American Express"><i class="fa fa-cc-amex"></i></span></li>
                                         </ul>
                                         <span class="copyright">
                                             <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
@@ -1107,7 +1162,7 @@
                     <script src="${pageContext.request.contextPath}/assets/js/jquery.zoom.min.js"></script>
                     <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
                     <script>window.__contextPath = '${pageContext.request.contextPath}';</script>
-                    <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
+                    <script src="${pageContext.request.contextPath}/assets/js/home.js?v=20261114-2"></script>
                 </body>
 
                 </html>

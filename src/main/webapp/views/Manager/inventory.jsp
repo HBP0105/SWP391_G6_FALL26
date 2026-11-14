@@ -24,7 +24,7 @@
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
 
     </head>
 
@@ -231,7 +231,7 @@
                                     <li>
 
                                         <a class="dropdown-item"
-                                           href="${pageContext.request.contextPath}/Manager/profile">
+                                           href="${pageContext.request.contextPath}/Manager/Profile">
 
                                             Profile
 
@@ -1226,7 +1226,7 @@
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
 
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
 
 
 

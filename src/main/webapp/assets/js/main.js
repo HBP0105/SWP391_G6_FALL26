@@ -1,3 +1,25 @@
+(function loadSessionStatusHeartbeat() {
+	if (window.__sessionStatusHeartbeatLoading || window.__sessionStatusHeartbeatStarted) return;
+	window.__sessionStatusHeartbeatLoading = true;
+	var source = document.currentScript && document.currentScript.src ? document.currentScript.src : '';
+	var contextPath = window.__contextPath || '';
+	if (!contextPath && source) {
+		try {
+			var path = new URL(source, window.location.href).pathname;
+			var marker = '/assets/js/main.js';
+			var index = path.indexOf(marker);
+			contextPath = index >= 0 ? path.substring(0, index) : '';
+		} catch (ignored) {
+			contextPath = '';
+		}
+	}
+	window.__contextPath = contextPath;
+	var script = document.createElement('script');
+	script.src = contextPath + '/assets/js/session-status.js?v=20261114-1';
+	script.async = true;
+	document.head.appendChild(script);
+})();
+
 (function ($) {
 	"use strict"
 

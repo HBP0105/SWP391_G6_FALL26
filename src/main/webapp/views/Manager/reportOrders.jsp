@@ -16,10 +16,10 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
     </head>
 
-    <body>
+    <body class="report-page report-orders">
 
         <div class="admin-shell">
 
@@ -139,7 +139,7 @@
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
                         <!-- PAGE HEADING -->
-                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                             <div class="page-heading-copy">
                                 <span class="page-icon">
                                     <i class="bi bi-receipt"></i>
@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- REPORT NAVIGATION TABS -->
-                        <div class="mb-4">
+                        <div class="report-tabs mb-4">
                             <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                 <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' ? 'active' : 'text-body'}" 
                                    href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -186,7 +186,7 @@
                         </div>
 
                         <!-- 8 ORDER KPI SUMMARY CARDS -->
-                        <div class="row g-3 mb-4">
+                        <div class="report-kpi-grid row g-3 mb-4">
                             <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
@@ -282,10 +282,10 @@
                                         <div>
                                             <p class="text-muted mb-1">Average Order Value</p>
                                             <h2 class="h3 mb-1">
-                                                $<fmt:formatNumber value="${orderStats.avgOrderValue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${orderStats.avgOrderValue}" type="number" maxFractionDigits="0"/> VND
                                             </h2>
                                             <small class="text-muted">
-                                                <i class="bi bi-calculator me-1"></i>Per non-cancelled order
+                                                <i class="bi bi-calculator me-1"></i>Per delivered order
                                             </small>
                                         </div>
                                         <span class="page-icon">
@@ -299,9 +299,9 @@
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <p class="text-muted mb-1">Total Revenue</p>
+                                            <p class="text-muted mb-1">Realized Revenue</p>
                                             <h2 class="h3 mb-1 text-success">
-                                                $<fmt:formatNumber value="${orderStats.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${orderStats.totalRevenue}" type="number" maxFractionDigits="0"/> VND
                                             </h2>
                                             <small class="text-success">
                                                 <i class="bi bi-graph-up me-1"></i>Realized order volume
@@ -378,7 +378,7 @@
 
                                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                                 <span class="text-muted small">Total Value:</span>
-                                                                <strong class="text-success">$<fmt:formatNumber value="${pm.totalAmount}" type="number" minFractionDigits="2" maxFractionDigits="2"/></strong>
+                                                                <strong class="text-success"><fmt:formatNumber value="${pm.totalAmount}" type="number" maxFractionDigits="0"/> VND</strong>
                                                             </div>
 
                                                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -409,7 +409,7 @@
                         </div>
 
                         <!-- FILTER SECTION FOR DETAILED ORDERS -->
-                        <section class="panel mb-4">
+                        <section class="panel report-filter-panel mb-4">
                             <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>
                                     <h2 class="h5 mb-1 section-title">
@@ -574,7 +574,7 @@
                                                             </c:choose>
                                                         </td>
                                                         <td class="fw-bold">
-                                                            $<fmt:formatNumber value="${ord.totalAmount}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            <fmt:formatNumber value="${ord.totalAmount}" type="number" maxFractionDigits="0"/> VND
                                                         </td>
                                                         <td>
                                                             <c:choose>
@@ -706,7 +706,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
 
         <script>
             function exportOrdersToCSV() {

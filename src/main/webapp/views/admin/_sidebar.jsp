@@ -1,6 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<script>
+    window.__contextPath = '${pageContext.request.contextPath}';
+</script>
+<script defer src="${pageContext.request.contextPath}/assets/js/session-status.js?v=20261114-1"></script>
 <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <a class="brand-mark" href="${pageContext.request.contextPath}/admin/revenue-report">
@@ -36,6 +40,21 @@
            href="${pageContext.request.contextPath}/admin/users">
             <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
             <span class="nav-text">User & Access Management</span>
+        </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/categories') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/categories">
+            <span class="nav-icon"><i class="bi bi-tags-fill"></i></span>
+            <span class="nav-text">Categories</span>
+        </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/brands') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/brands">
+            <span class="nav-icon"><i class="bi bi-award-fill"></i></span>
+            <span class="nav-text">Brands</span>
+        </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/profile') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/profile">
+            <span class="nav-icon"><i class="bi bi-person-badge-fill"></i></span>
+            <span class="nav-text">My Profile</span>
         </a>
     </nav>
 </aside>

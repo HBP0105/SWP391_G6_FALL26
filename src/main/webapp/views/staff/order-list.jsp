@@ -19,7 +19,7 @@
   <!-- Admin_Manager Vendor & Custom Styles -->
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/bootstrap.min.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminhmd-style.css">
 
   <style>
@@ -79,7 +79,7 @@
           <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
           <span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/ProductManagement">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/products">
           <span class="nav-icon"><i class="bi bi-box-seam"></i></span>
           <span class="nav-text">Products</span>
         </a>
@@ -91,7 +91,7 @@
           <span class="nav-icon"><i class="bi bi-boxes"></i></span>
           <span class="nav-text">Inventory</span>
         </a>
-        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/VoucherManagement">
+        <a class="nav-link" href="${pageContext.request.contextPath}/Manager/Voucher">
           <span class="nav-icon"><i class="bi bi-ticket-perforated"></i></span>
           <span class="nav-text">Vouchers</span>
         </a>
@@ -672,7 +672,7 @@
 
   <!-- Admin_Manager JS Bundle & Main Script -->
   <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
   
   <!-- Client-side Search, Date Validation, Modal, Export CSV & Theme Toggle Script -->
   <script>

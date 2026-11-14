@@ -38,7 +38,7 @@
                                 <ul class="breadcrumb-tree">
                                     <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
         <c:if test="${not empty product}">
-        <li><a href="#">${product.categoryName}</a></li>
+        <li><a href="${pageContext.request.contextPath}/productList?category=${product.categoryId}">${product.categoryName}</a></li>
         <li class="active">${product.productName}</li>
         </c:if>
         <c:if test="${empty product}">
@@ -72,7 +72,7 @@
                         <%-- ========== PRODUCT FOUND ========== --%>
                         <c:otherwise>
                             <%-- Prepare image src once --%>
-                            <c:set var="imgSrc" value="${pageContext.request.contextPath}/${product.imageUrl}" />
+                            <c:set var="imgSrc" value="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}" />
 
                             <!-- Product Image Slider -->
                             <div class="col-md-5 col-md-push-2">
@@ -226,21 +226,21 @@
                                     <%-- Meta links --%>
                                     <ul class="product-links">
                                         <li>Category:</li>
-                                        <li><a href="#">${product.categoryName}</a></li>
+                                        <li><a href="${pageContext.request.contextPath}/productList?category=${product.categoryId}">${product.categoryName}</a></li>
                                     </ul>
                                     <c:if test="${not empty product.brandName}">
                                         <ul class="product-links">
                                             <li>Brand:</li>
-                                            <li><a href="#">${product.brandName}</a></li>
+                                            <li><a href="${pageContext.request.contextPath}/productList?q=${product.brandName}">${product.brandName}</a></li>
                                         </ul>
                                     </c:if>
 
                                     <ul class="product-links">
                                         <li>Share:</li>
-                                        <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-google-plus"></i></a></li>
-                                        <li><a href="#"><i class="fa fa-envelope"></i></a></li>
+                                        <li><span aria-label="Facebook"><i class="fa fa-facebook"></i></span></li>
+                                        <li><span aria-label="Twitter"><i class="fa fa-twitter"></i></span></li>
+                                        <li><span aria-label="Google"><i class="fa fa-google-plus"></i></span></li>
+                                        <li><a href="mailto:support@headphone-shop.com?subject=${product.productName}"><i class="fa fa-envelope"></i></a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -547,7 +547,7 @@
                                 <div class="product">
                                     <div class="product-img">
                                         <c:set var="itemImg" value="${item.imageUrl}"/>
-                                        <img src="${itemImg.startsWith('http') ? itemImg : pageContext.request.contextPath.concat('/').concat(itemImg)}" alt="${item.productName}">
+                                        <img src="${empty itemImg ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(itemImg, 'http') ? itemImg : pageContext.request.contextPath.concat('/').concat(itemImg))}" alt="${item.productName}">
                                         <div class="product-label">
                                             <span class="sale ai-match"><i class="fa fa-bolt"></i> ${item.matchPercentage}% MATCH</span>
                                             <span class="new">AI PICK</span>
@@ -617,16 +617,13 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="newsletter">
-                            <p>Sign Up for the <strong>NEWSLETTER</strong></p>
-                            <form>
-                                <input class="input" type="email" placeholder="Enter Your Email">
-                                <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
-                            </form>
+                            <p>Need help choosing the right <strong>HEADPHONES?</strong></p>
+                            <a class="primary-btn" href="${pageContext.request.contextPath}/information?topic=help"><i class="fa fa-headphones"></i> Get Shopping Help</a>
                             <ul class="newsletter-follow">
-                                <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                <li><a href="#"><i class="fa fa-instagram"></i></a></li>
-                                <li><a href="#"><i class="fa fa-pinterest"></i></a></li>
+                                <li><span aria-label="Facebook"><i class="fa fa-facebook"></i></span></li>
+                                <li><span aria-label="Twitter"><i class="fa fa-twitter"></i></span></li>
+                                <li><span aria-label="Instagram"><i class="fa fa-instagram"></i></span></li>
+                                <li><span aria-label="Pinterest"><i class="fa fa-pinterest"></i></span></li>
                             </ul>
                         </div>
                     </div>
@@ -643,11 +640,11 @@
                         <div class="col-md-3 col-xs-6">
                             <div class="footer">
                                 <h3 class="footer-title">About Us</h3>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.</p>
+                                <p>Authentic headphones and earbuds selected for sound quality, comfort and everyday reliability.</p>
                                 <ul class="footer-links">
-                                    <li><a href="#"><i class="fa fa-map-marker"></i>1734 Stonecoal Road</a></li>
-                                    <li><a href="#"><i class="fa fa-phone"></i>+021-95-51-84</a></li>
-                                    <li><a href="#"><i class="fa fa-envelope-o"></i>email@email.com</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i>Contact information</a></li>
+                                    <li><a href="tel:+8421955184"><i class="fa fa-phone"></i>+021-95-51-84</a></li>
+                                    <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i>support@headphone-shop.com</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -655,9 +652,9 @@
                             <div class="footer">
                                 <h3 class="footer-title">Categories</h3>
                                 <ul class="footer-links">
-                                    <li><a href="#">Headphones</a></li>
-                                    <li><a href="#">Earbuds</a></li>
-                                    <li><a href="#">Accessories</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList">All Products</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -666,11 +663,11 @@
                             <div class="footer">
                                 <h3 class="footer-title">Information</h3>
                                 <ul class="footer-links">
-                                    <li><a href="#">About Us</a></li>
-                                    <li><a href="#">Contact Us</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                    <li><a href="#">Orders and Returns</a></li>
-                                    <li><a href="#">Terms &amp; Conditions</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=about">About Us</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=contact">Contact Us</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=privacy">Privacy Policy</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=returns">Orders and Returns</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=terms">Terms &amp; Conditions</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -678,11 +675,11 @@
                             <div class="footer">
                                 <h3 class="footer-title">Service</h3>
                                 <ul class="footer-links">
-                                    <li><a href="#">My Account</a></li>
-                                    <li><a href="#">View Cart</a></li>
-                                    <li><a href="#">Wishlist</a></li>
-                                    <li><a href="#">Track My Order</a></li>
-                                    <li><a href="#">Help</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/profile">My Account</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/cart">View Cart</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/wishlist">Wishlist</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/my-orders">Track My Order</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=help">Help</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -695,10 +692,10 @@
                     <div class="row">
                         <div class="col-md-12 text-center">
                             <ul class="footer-payments">
-                                <li><a href="#"><i class="fa fa-cc-visa"></i></a></li>
-                                <li><a href="#"><i class="fa fa-credit-card"></i></a></li>
-                                <li><a href="#"><i class="fa fa-cc-paypal"></i></a></li>
-                                <li><a href="#"><i class="fa fa-cc-mastercard"></i></a></li>
+                                <li><span title="Visa"><i class="fa fa-cc-visa"></i></span></li>
+                                <li><span title="Card payment"><i class="fa fa-credit-card"></i></span></li>
+                                <li><span title="PayPal"><i class="fa fa-cc-paypal"></i></span></li>
+                                <li><span title="Mastercard"><i class="fa fa-cc-mastercard"></i></span></li>
                             </ul>
                             <span class="copyright">
                                 Copyright &copy; <script>document.write(new Date().getFullYear());</script> All rights reserved
