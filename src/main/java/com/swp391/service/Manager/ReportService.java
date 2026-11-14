@@ -48,6 +48,14 @@ public class ReportService {
         int currentYear = normalizeYear(yearStr, today.getYear());
         String normalizedPeriod = normalizePeriod(period);
 
+        // A date range entered directly from a report form is a custom period.
+        // Without this distinction, an omitted "period" parameter was normalized
+        // to "all" and the user's start/end dates were silently cleared.
+        if (normalizeText(period).isEmpty()
+                && (!normalizeText(startDate).isEmpty() || !normalizeText(endDate).isEmpty())) {
+            normalizedPeriod = "custom";
+        }
+
         switch (normalizedPeriod) {
             case "today" -> {
                 startDate = today.toString();
@@ -81,6 +89,9 @@ public class ReportService {
             case "all" -> {
                 startDate = "";
                 endDate = "";
+            }
+            case "custom" -> {
+                // Keep the dates submitted by the user; validation runs below.
             }
             default -> {
             }
@@ -310,7 +321,7 @@ public class ReportService {
             return "all";
         }
         return switch (value) {
-            case "all", "today", "last_7_days", "this_week", "this_month", "this_year", "last_30_days", "last_90_days" -> value;
+            case "all", "custom", "today", "last_7_days", "this_week", "this_month", "this_year", "last_30_days", "last_90_days" -> value;
             default -> "all";
         };
     }

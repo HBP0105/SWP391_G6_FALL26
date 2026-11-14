@@ -288,17 +288,28 @@
                                 </div>
                             </div>
 
+                            <c:if test="${not empty reportFilterError}">
+                                <div class="alert alert-danger py-2 mb-3" role="alert">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    <c:out value="${reportFilterError}"/>
+                                </div>
+                            </c:if>
+
                             <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end">
                                 <input type="hidden" name="tab" value="products">
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Start Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}">
+                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}"
+                                           max="${not empty endDate ? endDate : today}"
+                                           oninput="this.form.elements['endDate'].min = this.value;">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}">
+                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}"
+                                           min="${startDate}" max="${today}"
+                                           oninput="this.form.elements['startDate'].max = this.value || '${today}';">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">

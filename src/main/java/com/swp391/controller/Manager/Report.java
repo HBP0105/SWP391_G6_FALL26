@@ -63,7 +63,7 @@ public class Report extends HttpServlet {
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
         String status = valueOrDefault(rawStatus, "ALL").toUpperCase();
-        String selectedPeriod = valueOrDefault(period, "all");
+        String selectedPeriod = initialSelectedPeriod(period, rawStartDate, rawEndDate);
         int currentYear = LocalDate.now().getYear();
 
         try {
@@ -119,7 +119,7 @@ public class Report extends HttpServlet {
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
         String groupBy = valueOrDefault(rawGroupBy, "month").toLowerCase();
-        String selectedPeriod = valueOrDefault(period, "all");
+        String selectedPeriod = initialSelectedPeriod(period, rawStartDate, rawEndDate);
         int currentYear = LocalDate.now().getYear();
 
         try {
@@ -170,7 +170,7 @@ public class Report extends HttpServlet {
         String startDate = valueOrEmpty(rawStartDate);
         String endDate = valueOrEmpty(rawEndDate);
         String sort = reportService.normalizeProductSort(rawSort);
-        String selectedPeriod = valueOrDefault(period, "all");
+        String selectedPeriod = initialSelectedPeriod(period, rawStartDate, rawEndDate);
 
         List<Map<String, Object>> productList = Collections.emptyList();
         Map<String, Object> summary = new HashMap<>();
@@ -241,7 +241,7 @@ public class Report extends HttpServlet {
         String endDate = valueOrEmpty(rawEndDate);
         String status = valueOrDefault(rawStatus, "ALL").toUpperCase();
         String paymentMethod = valueOrDefault(rawPaymentMethod, "ALL").toUpperCase();
-        String selectedPeriod = valueOrDefault(period, "all");
+        String selectedPeriod = initialSelectedPeriod(period, rawStartDate, rawEndDate);
 
         Map<String, Object> orderStats = new HashMap<>();
         List<Map<String, Object>> paymentStats = Collections.emptyList();
@@ -340,5 +340,15 @@ public class Report extends HttpServlet {
     private String valueOrDefault(String value, String defaultValue) {
         String normalized = valueOrEmpty(value);
         return normalized.isEmpty() ? defaultValue : normalized;
+    }
+
+    private String initialSelectedPeriod(String period, String startDate, String endDate) {
+        String normalizedPeriod = valueOrEmpty(period).toLowerCase();
+        if (!normalizedPeriod.isEmpty()) {
+            return normalizedPeriod;
+        }
+        return !valueOrEmpty(startDate).isEmpty() || !valueOrEmpty(endDate).isEmpty()
+                ? "custom"
+                : "all";
     }
 }
