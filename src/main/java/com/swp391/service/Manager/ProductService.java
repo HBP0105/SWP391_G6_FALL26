@@ -190,6 +190,20 @@ public class ProductService {
         return productDao.deleteProduct(id);
     }
 
+    public boolean activateProduct(int id) {
+        if (id <= 0 || productDao.getProductById(id) == null) {
+            return false;
+        }
+        return productDao.activateProduct(id);
+    }
+
+    public boolean hardDeleteProduct(int id) {
+        if (id <= 0 || productDao.getProductById(id) == null) {
+            return false;
+        }
+        return productDao.hardDeleteProduct(id);
+    }
+
 
     private void validateProduct(
             String name,

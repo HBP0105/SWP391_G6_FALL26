@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="en_US" scope="page"/>
@@ -221,6 +221,21 @@
                             </div>
                         </div>
 
+                        <c:if test="${not empty sessionScope.error}">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>${sessionScope.error}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <c:remove var="error" scope="session"/>
+                        </c:if>
+                        <c:if test="${not empty sessionScope.success}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>${sessionScope.success}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <c:remove var="success" scope="session"/>
+                        </c:if>
+
                         <section class="panel">
                             <div class="panel-header">
                                 <div>
@@ -399,19 +414,38 @@
 
                                                         <td class="text-end">
                                                             <a href="${pageContext.request.contextPath}/Manager/products?action=edit&id=${product.productId}"
-                                                               class="btn btn-light btn-sm">
-                                                                Edit
+                                                               class="btn btn-light btn-sm" title="Edit product">
+                                                                <i class="bi bi-pencil"></i> Edit
                                                             </a>
 
-                                                            <a href="${pageContext.request.contextPath}/Manager/products?action=delete&id=${product.productId}"
-                                                               class="btn btn-light btn-sm"
-                                                               onclick="return confirm('Delete this product?');">
-                                                                Delete
-                                                            </a>
+                                                            <c:choose>
+                                                                <c:when test="${product.status eq 'INACTIVE'}">
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=activate&id=${product.productId}"
+                                                                       class="btn btn-outline-success btn-sm"
+                                                                       onclick="return confirm('Restore this product to Active?');"
+                                                                       title="Restore product">
+                                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                                    </a>
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=hardDelete&id=${product.productId}"
+                                                                       class="btn btn-outline-danger btn-sm"
+                                                                       onclick="return confirm('Permanently delete this product from database?');"
+                                                                       title="Delete permanently">
+                                                                        <i class="bi bi-trash"></i> Delete Perm
+                                                                    </a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=delete&id=${product.productId}"
+                                                                       class="btn btn-outline-danger btn-sm"
+                                                                       onclick="return confirm('Are you sure you want to delete this product?');"
+                                                                       title="Delete product">
+                                                                        <i class="bi bi-trash"></i> Delete
+                                                                    </a>
+                                                                </c:otherwise>
+                                                            </c:choose>
 
                                                             <a href="${pageContext.request.contextPath}/Manager/products?action=detail&id=${product.productId}"
-                                                               class="btn btn-light btn-sm">
-                                                                Detail
+                                                               class="btn btn-light btn-sm" title="View details">
+                                                                <i class="bi bi-eye"></i> Detail
                                                             </a>
                                                         </td>
                                                     </tr>
