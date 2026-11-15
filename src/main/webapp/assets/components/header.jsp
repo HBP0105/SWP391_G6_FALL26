@@ -200,20 +200,32 @@
         <div id="responsive-nav">
             <!-- NAV -->
             <ul class="main-nav nav navbar-nav">
-                <li class="${activeNav == 'home' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/home">Home</a></li>
-                <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
-                <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(1) ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a>
-                </li>
-                <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(2) ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a>
-                </li>
-                <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
-                <li class="${activeNav == 'ai-search' ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/ai-search">
-                        <i class="fa fa-magic" style="color: #D10024; margin-right: 4px;"></i>AI Search
-                    </a>
-                </li>
+                <c:choose>
+                    <%-- Các trang thuộc luồng Customer cá nhân: Giỏ hàng, Đơn hàng, Kho địa chỉ, Thanh toán --%>
+                    <c:when test="${activeNav == 'my-orders' || activeNav == 'addresses' || activeNav == 'cart' || activeNav == 'checkout'}">
+                        <li class="${activeNav == 'home' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                        <li class="${activeNav == 'my-orders' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
+                        <li class="${activeNav == 'addresses' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
+                        <li class="${activeNav == 'cart' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/cart">Cart</a></li>
+                    </c:when>
+                    <%-- Trang chủ Home và các trang chung khác: Giữ nguyên menu gốc chuẩn của dự án --%>
+                    <c:otherwise>
+                        <li class="${activeNav == 'home' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                        <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
+                        <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(1) ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a>
+                        </li>
+                        <li class="${activeNav == 'search' && selectedCategoryIds != null && selectedCategoryIds.contains(2) ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/productList?category=2">Earbuds</a>
+                        </li>
+                        <li class="${activeNav == 'compare' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/compare">Compare</a></li>
+                        <li class="${activeNav == 'ai-search' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/ai-search">
+                                <i class="fa fa-magic" style="color: #D10024; margin-right: 4px;"></i>AI Search
+                            </a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
             </ul>
             <!-- /NAV -->
         </div>

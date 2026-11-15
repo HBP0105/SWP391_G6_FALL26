@@ -27,88 +27,9 @@
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/orderDetail.css" />
 </head>
 <body>
-    <!-- HEADER -->
-    <header>
-        <div id="top-header">
-            <div class="container">
-                <%@ page import="com.swp391.model.Customer" %>
-                <%@ page import="com.swp391.model.Staff" %>
-                <%
-                    Object currentUser = session.getAttribute("customer");
-                    if (currentUser == null) {
-                        currentUser = session.getAttribute("user");
-                    }
-                    String displayPhone = "";
-                    String displayEmail = "";
-                    String displayName = "";
-                    if (currentUser instanceof Customer) {
-                        Customer c = (Customer) currentUser;
-                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
-                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
-                        displayName = c.getFullName() != null ? c.getFullName() : "";
-                    } else if (currentUser instanceof Staff) {
-                        Staff s = (Staff) currentUser;
-                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
-                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
-                        displayName = s.getFullName() != null ? s.getFullName() : "";
-                    }
-                %>
-                <ul class="header-links pull-left">
-                    <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
-                    <% } %>
-                    <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
-                    <% } %>
-                </ul>
-                <ul class="header-links pull-right">
-                    <% if (currentUser == null) { %>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/login">
-                            <i class="fa fa-user-o"></i> My Account
-                        </a>
-                    </li>
-                    <% } else { %>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/profile">
-                            <i class="fa fa-user"></i> <%= displayName %>
-                        </a>
-                    </li>
-                    <% } %>
-                </ul>
-            </div>
-        </div>
-
-        <div id="header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="header-logo">
-                            <a href="${pageContext.request.contextPath}/home" class="logo">
-                                <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-    <!-- /HEADER -->
-
-    <!-- NAVIGATION -->
-    <nav id="navigation">
-        <div class="container">
-            <div id="responsive-nav">
-                <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
-                    <li class="active"><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
-                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
-                    <li><a href="${pageContext.request.contextPath}/cart">Cart</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- /NAVIGATION -->
+    <!-- HEADER (dùng chung với trang Home) -->
+    <c:set var="activeNav" value="my-orders" scope="request" />
+    <jsp:include page="/assets/components/header.jsp" />
 
     <c:set var="order" value="${requestScope.order}" />
 
@@ -119,6 +40,12 @@
                 <a href="${pageContext.request.contextPath}/my-orders" class="btn btn-default btn-sm">
                     &laquo; Back to My Orders
                 </a>
+                <c:if test="${order.orderStatus eq 'SHIPPING'}">
+                    <button type="button" class="btn btn-success btn-sm" style="margin-left: 5px;"
+                            data-toggle="modal" data-target="#receivedDetailModal">
+                        <i class="fa fa-check-circle"></i> Order Received
+                    </button>
+                </c:if>    
                 <c:if test="${order.orderStatus eq 'PENDING' or order.orderStatus eq 'CONFIRMED'}">
                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cancelDetailModal">
                         Cancel This Order
@@ -131,7 +58,12 @@
                     <strong>Order Cancelled!</strong> Order <strong>#ORD-${order.orderId}</strong> has been cancelled.
                 </div>
             </c:if>
-
+            <!-- ORDER DELIVERED SUCCESS ALERT -->
+            <c:if test="${param.deliveredSuccess eq 'true'}">
+                <div class="alert alert-success">
+                    <i class="fa fa-check-circle"></i> <strong>Order Completed!</strong> Order <strong>#ORD-${order.orderId}</strong> has been marked as <strong>DELIVERED</strong>. Thank you for shopping with us!
+                </div>
+            </c:if>        
             <!-- KHỐI 1: TIÊU ĐỀ ĐƠN HÀNG & TIẾN TRÌNH TRẠNG THÁI -->
             <div class="detail-box">
                 <div class="detail-header-row">
@@ -152,6 +84,9 @@
                     <c:when test="${order.orderStatus eq 'CANCELLED'}">
                         <p class="text-danger detail-cancelled-msg">
                             This order has been cancelled.
+                            <c:if test="${not empty order.cancelReason}">
+                                <br><span style="font-size: 13px; color: #555;"><strong>Cancellation Reason:</strong> <c:out value="${order.cancelReason}" /></span>
+                            </c:if>
                         </p>
                     </c:when>
                     <c:otherwise>
@@ -298,23 +233,80 @@
         </div>
     </div>
 
-    <!-- MODAL XÁC NHẬN HỦY ĐƠN -->
+    <!-- MODAL CANCEL ORDER WITH REASONS -->
     <div id="cancelDetailModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="border-radius: 6px; overflow: hidden; border: none; box-shadow: 0 5px 25px rgba(0,0,0,0.2);">
+                <form action="${pageContext.request.contextPath}/order-detail" method="POST" id="cancelDetailForm" onsubmit="return validateDetailCancel();">
+                    <input type="hidden" name="action" value="cancel">
+                    <input type="hidden" name="orderId" value="${order.orderId}">
+
+                    
+                    <div class="modal-header" style="background-color: #D10024; color: #fff; padding: 15px 20px;">
+                        <button type="button" class="close" data-dismiss="modal" style="color: #fff; opacity: 0.9; font-size: 24px;">&times;</button>
+                        <h4 class="modal-title" style="font-weight: 700; color: #fff;">
+                            <i class="fa fa-times-circle"></i> Cancel Order #ORD-${order.orderId}
+                        </h4>
+                    </div>
+
+                    <div class="modal-body" style="padding: 20px;">
+                        <p class="text-muted" style="margin-bottom: 15px; font-size: 13px;">
+                            Please specify the reason for cancelling this order. This reason will be logged into system records.
+                        </p>
+
+                        
+                        <div class="form-group">
+                            <label style="font-weight: 600; font-size: 13px;">Select Cancellation Reason: <span class="text-danger">*</span></label>
+                            <select class="form-control" id="detailPresetReason" onchange="onDetailPresetReasonChange();" style="height: 40px; font-size: 13px;">
+                                <option value="">-- Choose a cancellation reason --</option>
+                                <option value="Change of mind / No longer needed">Change of mind / No longer needed</option>
+                                <option value="Need to change shipping address or phone number">Need to change shipping address or phone number</option>
+                                <option value="Want to change payment method">Want to change payment method</option>
+                                <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                                <option value="Ordered by mistake / Duplicate order">Ordered by mistake / Duplicate order</option>
+                                <option value="Delivery time takes too long">Delivery time takes too long</option>
+                                <option value="OTHER">Other reason (Type specific reason below)...</option>
+                            </select>
+                        </div>
+
+                        <!-- Ô nhập lý do chi tiết -->
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-weight: 600; font-size: 13px;">
+                                Detailed Reason / Note: <span id="detailReasonAsterisk" class="text-danger" style="display: none;">*</span>
+                            </label>
+                            <textarea class="form-control" name="cancelReason" id="detailCancelReasonText" rows="3" 
+                                      placeholder="Enter detailed reason for cancellation..." style="resize: vertical; font-size: 13px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="background-color: #f8f9fa; border-top: 1px solid #eee; padding: 12px 20px;">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger" style="background-color: #D10024; border-color: #D10024; font-weight: 600;">
+                            <i class="fa fa-times"></i> Confirm Cancellation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRM ORDER RECEIVED -->
+    <div id="receivedDetailModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Cancel Order</h4>
+                    <h4 class="modal-title">Confirm Received</h4>
                 </div>
                 <form action="${pageContext.request.contextPath}/order-detail" method="POST" class="modal-form-clean">
                     <div class="modal-body">
-                        <input type="hidden" name="action" value="cancel">
+                        <input type="hidden" name="action" value="received">
                         <input type="hidden" name="orderId" value="${order.orderId}">
-                        <p class="modal-confirm-text">Are you sure you want to cancel order <strong>#ORD-${order.orderId}</strong>?</p>
+                        <p class="modal-confirm-text">Have you received order <strong>#ORD-${order.orderId}</strong> in good condition?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-                        <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+                        <button type="submit" class="btn btn-success">Yes, Received</button>
                     </div>
                 </form>
             </div>
@@ -337,5 +329,34 @@
     <script src="${pageContext.request.contextPath}/assets/js/jquery.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/bootstrap.min.js"></script>
     <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+    <script>
+        function onDetailPresetReasonChange() {
+            var preset = document.getElementById('detailPresetReason').value;
+            var reasonInput = document.getElementById('detailCancelReasonText');
+            var asterisk = document.getElementById('detailReasonAsterisk');
+
+            if (preset === 'OTHER') {
+                reasonInput.value = '';
+                reasonInput.focus();
+                asterisk.style.display = 'inline';
+            } else if (preset) {
+                reasonInput.value = preset;
+                asterisk.style.display = 'none';
+            } else {
+                reasonInput.value = '';
+                asterisk.style.display = 'none';
+            }
+        }
+
+        function validateDetailCancel() {
+            var reason = document.getElementById('detailCancelReasonText').value.trim();
+            if (!reason) {
+                alert('Please select or enter a reason for cancelling the order!');
+                document.getElementById('detailPresetReason').focus();
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>

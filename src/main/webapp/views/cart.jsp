@@ -27,94 +27,9 @@
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cart.css" />
 </head>
 <body>
-    <!-- HEADER -->
-    <header>
-        <!-- TOP HEADER -->
-        <div id="top-header">
-            <div class="container">
-                <%@ page import="com.swp391.model.Customer" %>
-                <%@ page import="com.swp391.model.Staff" %>
-                <%
-                    Object currentUser = session.getAttribute("customer");
-                    if (currentUser == null) {
-                        currentUser = session.getAttribute("user");
-                    }
-                    String displayPhone = "";
-                    String displayEmail = "";
-                    String displayName = "";
-                    if (currentUser instanceof Customer) {
-                        Customer c = (Customer) currentUser;
-                        displayPhone = c.getPhone() != null ? c.getPhone() : "";
-                        displayEmail = c.getEmail() != null ? c.getEmail() : "";
-                        displayName = c.getFullName() != null ? c.getFullName() : "";
-                    } else if (currentUser instanceof Staff) {
-                        Staff s = (Staff) currentUser;
-                        displayPhone = s.getPhone() != null ? s.getPhone() : "";
-                        displayEmail = s.getEmail() != null ? s.getEmail() : "";
-                        displayName = s.getFullName() != null ? s.getFullName() : "";
-                    }
-                %>
-                <ul class="header-links pull-left">
-                    <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
-                    <% } %>
-                    <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
-                    <% } %>
-                </ul>
-                <ul class="header-links pull-right">
-                    <% if (currentUser == null) { %>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/login">
-                            <i class="fa fa-user-o"></i> My Account
-                        </a>
-                    </li>
-                    <% } else { %>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/profile">
-                            <i class="fa fa-user"></i> <%= displayName %>
-                        </a>
-                    </li>
-                    <% } %>
-                </ul>
-            </div>
-        </div>
-        <!-- /TOP HEADER -->
-
-        <!-- MAIN HEADER -->
-        <div id="header">
-            <div class="container">
-                <div class="row">
-                    <!-- LOGO -->
-                    <div class="col-md-3">
-                        <div class="header-logo">
-                            <a href="${pageContext.request.contextPath}/home" class="logo">
-                                <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
-                            </a>
-                        </div>
-                    </div>
-                    <!-- /LOGO -->
-                </div>
-            </div>
-        </div>
-        <!-- /MAIN HEADER -->
-    </header>
-    <!-- /HEADER -->
-
-    <!-- NAVIGATION -->
-    <nav id="navigation">
-        <div class="container">
-            <div id="responsive-nav">
-                <ul class="main-nav nav navbar-nav">
-                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
-                    <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
-                    <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
-                    <li class="active"><a href="${pageContext.request.contextPath}/cart">Cart</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- /NAVIGATION -->
+    <!-- HEADER (dùng chung với trang Home) -->
+    <c:set var="activeNav" value="cart" scope="request" />
+    <jsp:include page="/assets/components/header.jsp" />
 
     <!-- CART SECTION -->
     <div class="section cart-section">
