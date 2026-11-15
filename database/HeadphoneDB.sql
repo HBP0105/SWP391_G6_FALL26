@@ -317,6 +317,7 @@ CREATE TABLE Orders (
     OrderStatus VARCHAR(30) NOT NULL DEFAULT 'PENDING',
     OrderDate DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2,
+    CancelReason NVARCHAR(500) NULL,
 
     CONSTRAINT FK_Orders_Customers
         FOREIGN KEY (CustomerID)
@@ -2097,4 +2098,34 @@ VALUES
 (3, 2, 'VIEW', N'Sony headphones', DATEADD(DAY, -71, GETDATE())),
 (4, 1, 'VIEW', N'Sony XM5', DATEADD(DAY, -76, GETDATE())),
 (5, 5, 'VIEW', N'AirPods Max', DATEADD(DAY, -81, GETDATE()));
+GO
+
+-- =========================================================
+-- ADDITIONAL SYNCHRONIZATION & SEED DATA (CancelReason, Staff, Vouchers)
+-- =========================================================
+IF COL_LENGTH('dbo.Orders', 'CancelReason') IS NULL
+BEGIN
+    ALTER TABLE dbo.Orders ADD CancelReason NVARCHAR(500) NULL;
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM Staff WHERE Email = 'admin@headphoneshop.vn')
+    INSERT INTO Staff (RoleID, FullName, Email, PasswordHash, Phone, Status)
+    SELECT RoleID, N'Alex Nguyen (Admin)', 'admin@headphoneshop.vn', '123456', '0901000001', 'ACTIVE'
+    FROM Roles WHERE RoleName = 'ADMIN';
+IF NOT EXISTS (SELECT 1 FROM Staff WHERE Email = 'manager@headphoneshop.vn')
+    INSERT INTO Staff (RoleID, FullName, Email, PasswordHash, Phone, Status)
+    SELECT RoleID, N'Brian Tran (Manager)', 'manager@headphoneshop.vn', '123456', '0901000002', 'ACTIVE'
+    FROM Roles WHERE RoleName = 'MANAGER';
+GO
+
+IF NOT EXISTS (SELECT 1 FROM Vouchers WHERE VoucherCode = 'WELCOME10')
+BEGIN
+    DECLARE @ManagerID INT = (SELECT TOP 1 StaffID FROM Staff WHERE Email = 'manager@headphoneshop.vn');
+    INSERT INTO Vouchers (VoucherCode, Description, DiscountType, DiscountValue, MinOrderAmount, MaxDiscount, StartDate, EndDate, UsageLimit, UsedCount, Status, CreatedBy)
+    VALUES
+    ('WELCOME10',  N'Giảm 10% tối đa 500.000đ cho đơn đầu tiên', 'PERCENT', 10,     1000000, 500000, '2026-01-01', '2026-12-31 23:59:59', 500, 0, 'ACTIVE', @ManagerID),
+    ('SAVE200K',   N'Giảm trực tiếp 200.000đ cho đơn từ 2 triệu', 'FIXED',   200000, 2000000, NULL,   '2026-01-01', '2026-12-31 23:59:59', 200, 0, 'ACTIVE', @ManagerID),
+    ('EARPHONE15', N'Giảm 15% tối đa 300.000đ cho đơn từ 1.5 triệu', 'PERCENT', 15,  1500000, 300000, '2026-01-01', '2026-12-31 23:59:59', 100, 0, 'ACTIVE', @ManagerID);
+END
 GO
