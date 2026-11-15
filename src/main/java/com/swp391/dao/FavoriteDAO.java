@@ -142,14 +142,13 @@ public class FavoriteDAO {
         String sql = "SELECT f.FavoriteID, f.CustomerID, f.ProductID, f.CreatedAt AS FavoriteCreatedAt, " +
                 "       p.ProductName, p.Description, p.Price, p.StockQuantity, p.ConnectionType, " +
                 "       p.NoiseCancelling, p.BatteryLife, p.Status, " +
-                "       c.CategoryName, b.BrandName, img.ImageURL, " +
+                "       c.CategoryName, b.BrandName, p.ImageURL, " +
                 "       COALESCE(r.AvgRating, 0) AS AvgRating, " +
                 "       COALESCE(r.ReviewCount, 0) AS ReviewCount " +
                 "FROM Favorites f " +
                 "JOIN Products p ON f.ProductID = p.ProductID " +
                 "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                 "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                 "LEFT JOIN ( " +
                 "    SELECT ProductID, ROUND(AVG(CAST(Rating AS FLOAT)), 1) AS AvgRating, COUNT(*) AS ReviewCount " +
                 "    FROM Reviews " +
@@ -198,13 +197,12 @@ public class FavoriteDAO {
         String sql = "SELECT 0 AS FavoriteID, 0 AS CustomerID, p.ProductID, NULL AS FavoriteCreatedAt, " +
                 "       p.ProductName, p.Description, p.Price, p.StockQuantity, p.ConnectionType, " +
                 "       p.NoiseCancelling, p.BatteryLife, p.Status, " +
-                "       c.CategoryName, b.BrandName, img.ImageURL, " +
+                "       c.CategoryName, b.BrandName, p.ImageURL, " +
                 "       COALESCE(r.AvgRating, 0) AS AvgRating, " +
                 "       COALESCE(r.ReviewCount, 0) AS ReviewCount " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                 "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                 "LEFT JOIN ( " +
                 "    SELECT ProductID, ROUND(AVG(CAST(Rating AS FLOAT)), 1) AS AvgRating, COUNT(*) AS ReviewCount " +
                 "    FROM Reviews " +

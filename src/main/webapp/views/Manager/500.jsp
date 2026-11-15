@@ -12,7 +12,7 @@
   <link rel="stylesheet"
     href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
 
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
 </head>
 
 <body class="auth-body">
@@ -22,7 +22,7 @@
   </button>
   <main class="error-page">
     <section class="error-card">
-      <a class="auth-brand justify-content-center" href="index.html"><span class="brand-icon"><i
+      <a class="auth-brand justify-content-center" href="${pageContext.request.contextPath}/Manager/Dashboard"><span class="brand-icon"><i
             class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span><span><strong>Manager</strong><small>Error
             Center</small></span></a>
       <div class="error-code">500</div>
@@ -30,13 +30,13 @@
       <p class="text-muted mb-4"> The web server is experiencing an internal issue and cannot fulfill your request.</p>
       <div class="d-flex flex-wrap justify-content-center gap-2"><a class="btn btn-primary" href="${pageContext.request.contextPath}/Manager/Dashboard">><i
             class="bi bi-speedometer2" aria-hidden="true"></i> Back to Dashboard</a><a class="btn btn-outline-secondary"
-          href="login.html">Sign In</a></div>
+          href="${pageContext.request.contextPath}/login">Sign In</a></div>
     </section>
   </main>
 
   <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
 
-  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
 </body>
 
 </html>

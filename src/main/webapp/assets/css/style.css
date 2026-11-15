@@ -426,7 +426,8 @@ textarea.input {
   margin-right: 0px;
 }
 
-.header-links li a {
+.header-links li a,
+.header-links li .header-static {
   color: #FFF;
 }
 
@@ -1979,7 +1980,8 @@ textarea.input {
   margin-right: 0px;
 }
 
-.newsletter .newsletter-follow li a {
+.newsletter .newsletter-follow li a,
+.newsletter .newsletter-follow li span {
   position: relative;
   display: block;
   width: 40px;
@@ -2051,7 +2053,8 @@ textarea.input {
   margin-right: 5px;
 }
 
-.footer-payments li a {
+.footer-payments li a,
+.footer-payments li span {
   color: #15161D;
   font-size: 36px;
   display: block;

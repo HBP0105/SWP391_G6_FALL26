@@ -463,11 +463,10 @@ public class AIPerformanceDAO {
                        p.ConnectionType, p.NoiseCancelling, p.BatteryLife, p.Description,
                        p.EmbeddingVector, p.WaterResistance, p.Microphone, p.DriverSize, p.Weight, p.StockQuantity,
                        c.CategoryName, b.BrandName,
-                       img.ImageURL
+                       p.ImageURL
                 FROM Products p
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
                 LEFT JOIN Brands b ON p.BrandID = b.BrandID
-                LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1
                 WHERE p.Status = 'ACTIVE'
                 ORDER BY p.ProductID ASC
                 """;

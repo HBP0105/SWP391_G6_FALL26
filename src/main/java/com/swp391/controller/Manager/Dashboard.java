@@ -32,6 +32,7 @@ public class Dashboard extends HttpServlet {
         request.setAttribute("newProductsThisMonth", dashboardService.getNewProductsThisMonth());
         request.setAttribute("totalOrders", dashboardService.getTotalOrders());
         request.setAttribute("orderGrowthPercent", dashboardService.getOrderGrowthPercent());
+        request.setAttribute("totalRevenue", dashboardService.getTotalRevenue());
 
         int lowStock = dashboardService.getLowStockProducts();
         request.setAttribute("lowStockProducts", lowStock);

@@ -56,10 +56,10 @@
                 %>
                 <ul class="header-links pull-left">
                     <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
                     <% } %>
                     <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
                     <% } %>
                 </ul>
                 <ul class="header-links pull-right">
@@ -344,7 +344,7 @@
                                                                data-price="<fmt:formatNumber value='${item.price}' pattern='#,##0' />"
                                                                data-qty="${item.quantity}"
                                                                data-total="<fmt:formatNumber value='${item.price * item.quantity}' pattern='#,##0' />"
-                                                               data-img="${not empty item.imageUrl ? item.imageUrl : pageContext.request.contextPath.concat('/assets/img/product01.png')}"
+                                                               data-img="${empty item.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl))}"
                                                                data-desc="${not empty item.description ? item.description : 'High-quality audio device.'}"
                                                                data-conn="${not empty item.connectionType ? item.connectionType : 'Standard'}"
                                                                data-driver="${item.driverSize > 0 ? item.driverSize : 'Standard'}"
@@ -355,7 +355,7 @@
                                                                data-weight="${item.weight > 0 ? item.weight : 'N/A'}">
                                                                 <c:choose>
                                                                     <c:when test="${not empty item.imageUrl}">
-                                                                        <img src="${item.imageUrl}" class="product-img-thumb" alt="${item.productName}"
+                                                                        <img src="${fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl)}" class="product-img-thumb" alt="${item.productName}"
                                                                              onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/product01.png';">
                                                                     </c:when>
                                                                     <c:otherwise>
@@ -373,7 +373,7 @@
                                                                data-price="<fmt:formatNumber value='${item.price}' pattern='#,##0' />"
                                                                data-qty="${item.quantity}"
                                                                data-total="<fmt:formatNumber value='${item.price * item.quantity}' pattern='#,##0' />"
-                                                               data-img="${not empty item.imageUrl ? item.imageUrl : pageContext.request.contextPath.concat('/assets/img/product01.png')}"
+                                                               data-img="${empty item.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl))}"
                                                                data-desc="${not empty item.description ? item.description : 'High-quality audio device.'}"
                                                                data-conn="${not empty item.connectionType ? item.connectionType : 'Standard'}"
                                                                data-driver="${item.driverSize > 0 ? item.driverSize : 'Standard'}"

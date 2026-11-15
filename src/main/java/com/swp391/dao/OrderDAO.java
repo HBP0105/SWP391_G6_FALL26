@@ -98,12 +98,11 @@ public class OrderDAO extends DBContext {
         String sqlItems = "SELECT oi.ProductID, oi.Quantity, oi.UnitPrice, "
                         + "p.ProductName, p.Description, p.ConnectionType, p.DriverSize, "
                         + "p.NoiseCancelling, p.BatteryLife, p.Microphone, p.WaterResistance, p.Weight, "
-                        + "c.CategoryName, b.BrandName, pi.ImageURL "
+                        + "c.CategoryName, b.BrandName, p.ImageURL "
                         + "FROM OrderItems oi "
                         + "JOIN Products p ON oi.ProductID = p.ProductID "
                         + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
                         + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                        + "LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 "
                         + "WHERE oi.OrderID = ?";
 
         try {
@@ -233,12 +232,11 @@ public class OrderDAO extends DBContext {
         String sqlItems = "SELECT oi.ProductID, oi.Quantity, oi.UnitPrice, "
                         + "p.ProductName, p.Description, p.ConnectionType, p.DriverSize, "
                         + "p.NoiseCancelling, p.BatteryLife, p.Microphone, p.WaterResistance, p.Weight, "
-                        + "c.CategoryName, b.BrandName, pi.ImageURL "
+                        + "c.CategoryName, b.BrandName, p.ImageURL "
                         + "FROM OrderItems oi "
                         + "JOIN Products p ON oi.ProductID = p.ProductID "
                         + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
                         + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                        + "LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 "
                         + "WHERE oi.OrderID = ?";
 
         try {

@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setLocale value="en_US" scope="page"/>
@@ -15,31 +15,66 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
         <style>
-            @media (min-width: 1200px) {
-                .product-filter-form {
+            @media (min-width: 1100px) {
+                body.sidebar-mini .product-filter-form {
                     display: grid;
-                    grid-template-columns: minmax(0, 1.7fr) repeat(4, minmax(0, 1fr)) minmax(0, 2.1fr);
+                    grid-template-columns: minmax(0, 1.7fr) repeat(5, minmax(0, 1fr)) minmax(0, 2.1fr);
                     gap: 12px;
                     margin: 0;
                     align-items: end;
                 }
-                .product-filter-form > div {
+                body.sidebar-mini .product-filter-form > div {
                     width: auto;
                     max-width: none;
                     min-width: 0;
                     padding: 0;
                     margin: 0;
                 }
-                .product-filter-form .filter-actions {
+                body.sidebar-mini .product-filter-form .filter-actions {
                     flex-wrap: nowrap;
                     white-space: nowrap;
                 }
-                .product-filter-form .filter-actions .btn {
+                body.sidebar-mini .product-filter-form .filter-actions .btn {
                     font-size: 0.875rem;
                     padding-left: 0.65rem;
                     padding-right: 0.65rem;
+                }
+            }
+
+            @media (min-width: 1500px) {
+                body:not(.sidebar-mini) .product-filter-form {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1.7fr) repeat(5, minmax(0, 1fr)) minmax(0, 2.1fr);
+                    gap: 12px;
+                    margin: 0;
+                    align-items: end;
+                }
+                body:not(.sidebar-mini) .product-filter-form > div {
+                    width: auto;
+                    max-width: none;
+                    min-width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+                body:not(.sidebar-mini) .product-filter-form .filter-actions {
+                    flex-wrap: nowrap;
+                    white-space: nowrap;
+                }
+                body:not(.sidebar-mini) .product-filter-form .filter-actions .btn {
+                    font-size: 0.875rem;
+                    padding-left: 0.65rem;
+                    padding-right: 0.65rem;
+                }
+            }
+
+            @media (min-width: 1200px) and (max-width: 1499.98px) {
+                body:not(.sidebar-mini) .product-filter-form .filter-actions {
+                    width: auto;
+                    flex: 0 0 auto;
+                    flex-wrap: nowrap;
+                    white-space: nowrap;
                 }
             }
         </style>
@@ -186,6 +221,21 @@
                             </div>
                         </div>
 
+                        <c:if test="${not empty sessionScope.error}">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>${sessionScope.error}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <c:remove var="error" scope="session"/>
+                        </c:if>
+                        <c:if test="${not empty sessionScope.success}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>${sessionScope.success}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <c:remove var="success" scope="session"/>
+                        </c:if>
+
                         <section class="panel">
                             <div class="panel-header">
                                 <div>
@@ -213,7 +263,7 @@
                                                placeholder="Product, category or brand">
                                     </div>
 
-                                    <div class="col-xl-2 col-lg-4 col-md-6">
+                                    <div class="col-xl-3 col-lg-4 col-md-6 page-size-filter">
                                         <label class="form-label">Category</label>
                                         <select name="category" class="form-select">
                                             <option value="">All Categories</option>
@@ -364,19 +414,38 @@
 
                                                         <td class="text-end">
                                                             <a href="${pageContext.request.contextPath}/Manager/products?action=edit&id=${product.productId}"
-                                                               class="btn btn-light btn-sm">
-                                                                Edit
+                                                               class="btn btn-light btn-sm" title="Edit product">
+                                                                <i class="bi bi-pencil"></i> Edit
                                                             </a>
 
-                                                            <a href="${pageContext.request.contextPath}/Manager/products?action=delete&id=${product.productId}"
-                                                               class="btn btn-light btn-sm"
-                                                               onclick="return confirm('Delete this product?');">
-                                                                Delete
-                                                            </a>
+                                                            <c:choose>
+                                                                <c:when test="${product.status eq 'INACTIVE'}">
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=activate&id=${product.productId}"
+                                                                       class="btn btn-outline-success btn-sm"
+                                                                       onclick="return confirm('Restore this product to Active?');"
+                                                                       title="Restore product">
+                                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                                                    </a>
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=hardDelete&id=${product.productId}"
+                                                                       class="btn btn-outline-danger btn-sm"
+                                                                       onclick="return confirm('Permanently delete this product from database?');"
+                                                                       title="Delete permanently">
+                                                                        <i class="bi bi-trash"></i> Delete Perm
+                                                                    </a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <a href="${pageContext.request.contextPath}/Manager/products?action=delete&id=${product.productId}"
+                                                                       class="btn btn-outline-danger btn-sm"
+                                                                       onclick="return confirm('Are you sure you want to delete this product?');"
+                                                                       title="Delete product">
+                                                                        <i class="bi bi-trash"></i> Delete
+                                                                    </a>
+                                                                </c:otherwise>
+                                                            </c:choose>
 
                                                             <a href="${pageContext.request.contextPath}/Manager/products?action=detail&id=${product.productId}"
-                                                               class="btn btn-light btn-sm">
-                                                                Detail
+                                                               class="btn btn-light btn-sm" title="View details">
+                                                                <i class="bi bi-eye"></i> Detail
                                                             </a>
                                                         </td>
                                                     </tr>
@@ -468,6 +537,6 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
     </body>
 </html>

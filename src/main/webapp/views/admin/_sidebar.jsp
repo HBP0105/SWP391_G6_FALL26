@@ -1,6 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<script>
+    window.__contextPath = '${pageContext.request.contextPath}';
+</script>
+<script defer src="${pageContext.request.contextPath}/assets/js/session-status.js?v=20261114-1"></script>
 <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <a class="brand-mark" href="${pageContext.request.contextPath}/admin/revenue-report">

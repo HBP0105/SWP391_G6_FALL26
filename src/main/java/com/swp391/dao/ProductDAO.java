@@ -45,9 +45,14 @@ public class ProductDAO {
         p.setMicrophone(rs.getBoolean("Microphone"));
         p.setWaterResistance(rs.getString("WaterResistance"));
 
-        double weight = rs.getDouble("Weight");
-        if (!rs.wasNull()) {
-            p.setWeight(weight);
+        // Weight is optional in older/runtime database schemas.
+        try {
+            double weight = rs.getDouble("Weight");
+            if (!rs.wasNull()) {
+                p.setWeight(weight);
+            }
+        } catch (Exception ignored) {
+            // Keep the product usable when the optional column is absent.
         }
 
         p.setStatus(rs.getString("Status"));
@@ -94,19 +99,17 @@ public class ProductDAO {
 
         String sql;
         if (categoryId > 0) {
-            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL " +
+            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName " +
                     "FROM Products p " +
                     "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                     "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                    "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                     "WHERE p.Status = 'ACTIVE' AND p.CategoryID = ? " +
                     "ORDER BY p.CreatedAt DESC, p.ProductID DESC";
         } else {
-            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL " +
+            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName " +
                     "FROM Products p " +
                     "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                     "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                    "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                     "WHERE p.Status = 'ACTIVE' " +
                     "ORDER BY p.CreatedAt DESC, p.ProductID DESC";
         }
@@ -144,23 +147,21 @@ public class ProductDAO {
 
         String sql;
         if (categoryId > 0) {
-            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL, " +
+            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, " +
                     "ISNULL((SELECT SUM(oi.Quantity) FROM OrderItems oi WHERE oi.ProductID = p.ProductID), 0) AS TotalSold "
                     +
                     "FROM Products p " +
                     "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                     "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                    "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                     "WHERE p.Status = 'ACTIVE' AND p.CategoryID = ? " +
                     "ORDER BY TotalSold DESC, p.ProductID ASC";
         } else {
-            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL, " +
+            sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, " +
                     "ISNULL((SELECT SUM(oi.Quantity) FROM OrderItems oi WHERE oi.ProductID = p.ProductID), 0) AS TotalSold "
                     +
                     "FROM Products p " +
                     "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                     "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                    "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                     "WHERE p.Status = 'ACTIVE' " +
                     "ORDER BY TotalSold DESC, p.ProductID ASC";
         }
@@ -215,13 +216,12 @@ public class ProductDAO {
      * Get product by ID
      */
     public Product getProductById(int productId) {
-        String sql = "SELECT p.*, c.CategoryName, b.BrandName, img.ImageURL, "
+        String sql = "SELECT p.*, c.CategoryName, b.BrandName, "
                 + "ISNULL((SELECT AVG(CAST(r.Rating AS FLOAT)) FROM Reviews r WHERE r.ProductID = p.ProductID AND r.Status = 'VISIBLE'), 0) AS AvgRating, "
                 + "ISNULL((SELECT COUNT(r.ReviewID) FROM Reviews r WHERE r.ProductID = p.ProductID AND r.Status = 'VISIBLE'), 0) AS ReviewCount "
                 + "FROM Products p "
                 + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
                 + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                + "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 "
                 + "WHERE p.ProductID = ?";
         try (Connection conn = dbContext.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -250,11 +250,10 @@ public class ProductDAO {
      */
     public List<Product> searchProductsByName(String keyword, int limit) {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName, img.ImageURL " +
+        String sql = "SELECT TOP " + limit + " p.*, c.CategoryName, b.BrandName " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                 "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                 "WHERE p.Status = 'ACTIVE' AND p.ProductName LIKE ? " +
                 "ORDER BY p.ProductName ASC";
         try (Connection conn = dbContext.getConnection();
@@ -277,11 +276,10 @@ public class ProductDAO {
      */
     public List<Product> searchProducts(String keyword) {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT p.*, c.CategoryName, b.BrandName, img.ImageURL " +
+        String sql = "SELECT p.*, c.CategoryName, b.BrandName " +
                 "FROM Products p " +
                 "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID " +
                 "LEFT JOIN Brands b ON p.BrandID = b.BrandID " +
-                "LEFT JOIN ProductImages img ON p.ProductID = img.ProductID AND img.IsPrimary = 1 " +
                 "WHERE p.Status = 'ACTIVE' AND p.ProductName LIKE ? " +
                 "ORDER BY p.ProductName ASC";
         try (Connection conn = dbContext.getConnection();
@@ -381,13 +379,11 @@ public class ProductDAO {
             orderBy = "ORDER BY p.CreatedAt DESC, p.ProductID DESC ";
         }
 
-        String sql = "SELECT p.*, c.CategoryName, b.BrandName, img.ImageURL, "
+        String sql = "SELECT p.*, c.CategoryName, b.BrandName, "
                 + "ISNULL(rv.AvgRating, 0) AS AvgRating, ISNULL(rv.ReviewCount, 0) AS ReviewCount "
                 + "FROM Products p "
                 + "LEFT JOIN Categories c ON p.CategoryID = c.CategoryID "
                 + "LEFT JOIN Brands b ON p.BrandID = b.BrandID "
-                + "OUTER APPLY (SELECT TOP 1 pi.ImageURL FROM ProductImages pi "
-                + "             WHERE pi.ProductID = p.ProductID AND pi.IsPrimary = 1) img "
                 + "OUTER APPLY (SELECT AVG(CAST(r.Rating AS FLOAT)) AS AvgRating, COUNT(*) AS ReviewCount "
                 + "             FROM Reviews r WHERE r.ProductID = p.ProductID AND r.Status = 'VISIBLE') rv "
                 + buildFilterWhere(keyword, categoryIds, brandIds, minPrice, maxPrice, params)

@@ -154,6 +154,8 @@ CREATE TABLE Products (
     Description NVARCHAR(MAX),
     Price DECIMAL(18,2) NOT NULL,
     StockQuantity INT NOT NULL DEFAULT 0,
+    ImageURL VARCHAR(500),
+    EmbeddingVector NVARCHAR(MAX),
 
     ConnectionType VARCHAR(30),
     DriverSize DECIMAL(5,2),
@@ -902,6 +904,11 @@ SELECT p.ProductID,
        'local_assets/product0' + CAST(((p.ProductID - 1) % 9 + 1) AS VARCHAR(10)),
        1
 FROM Products p;
+
+UPDATE p
+SET p.ImageURL = pi.ImageURL
+FROM Products p
+JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1;
 GO
 
 -- =========================================================

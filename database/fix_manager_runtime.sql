@@ -15,6 +15,20 @@ BEGIN
 END
 GO
 
+IF COL_LENGTH('dbo.Products', 'Weight') IS NULL
+BEGIN
+    ALTER TABLE dbo.Products
+    ADD Weight DECIMAL(7,2) NULL;
+END
+GO
+
+IF COL_LENGTH('dbo.Products', 'EmbeddingVector') IS NULL
+BEGIN
+    ALTER TABLE dbo.Products
+    ADD EmbeddingVector NVARCHAR(MAX) NULL;
+END
+GO
+
 IF OBJECT_ID('dbo.ProductImages', 'U') IS NOT NULL
 BEGIN
     UPDATE p

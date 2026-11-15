@@ -93,8 +93,7 @@ public class VoucherService {
         }
 
         // Check unique code
-        Voucher existing = voucherDao.getVoucherByCode(voucher.getVoucherCode());
-        if (existing != null) {
+        if (voucherDao.isVoucherCodeExists(voucher.getVoucherCode(), null)) {
             throw new IllegalArgumentException("Voucher code '" + voucher.getVoucherCode() + "' already exists.");
         }
 
@@ -108,6 +107,12 @@ public class VoucherService {
         validateVoucher(voucher);
 
         // Normalize
+        if (voucher.getVoucherCode() != null) {
+            voucher.setVoucherCode(voucher.getVoucherCode().trim().toUpperCase());
+            if (voucherDao.isVoucherCodeExists(voucher.getVoucherCode(), voucher.getVoucherId())) {
+                throw new IllegalArgumentException("Voucher code '" + voucher.getVoucherCode() + "' already exists for another voucher.");
+            }
+        }
         if (voucher.getDescription() != null) {
             voucher.setDescription(voucher.getDescription().trim());
         }

@@ -16,10 +16,10 @@
         <link rel="stylesheet"
               href="${pageContext.request.contextPath}/assets/Admin_Manager/vendors/bootstrap-icons/bootstrap-icons.css">
         <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css">
+              href="${pageContext.request.contextPath}/assets/Admin_Manager/css/style.css?v=20261114-1">
     </head>
 
-    <body>
+    <body class="report-page report-products">
 
         <div class="admin-shell">
 
@@ -139,7 +139,7 @@
                     <div class="container-fluid px-3 px-lg-4 py-4">
 
                         <!-- PAGE HEADING -->
-                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <div class="report-heading d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                             <div class="page-heading-copy">
                                 <span class="page-icon">
                                     <i class="bi bi-box-seam"></i>
@@ -148,7 +148,7 @@
                                     <p class="eyebrow mb-1">Manager / Analytics</p>
                                     <h1 class="h3 mb-1">Product Performance</h1>
                                     <p class="text-muted mb-0">
-                                        Monitor units sold, order frequency, gross revenue, category, and brand sales metrics.
+                                        Monitor units sold, delivered revenue, category, and brand sales metrics.
                                     </p>
                                 </div>
                             </div>
@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- REPORT NAVIGATION TABS -->
-                        <div class="mb-4">
+                        <div class="report-tabs mb-4">
                             <div class="nav nav-pills gap-2 p-1 rounded-3 border shadow-sm d-inline-flex flex-wrap" style="background: var(--admin-surface, #ffffff);">
                                 <a class="nav-link px-3 py-2 fw-semibold ${currentTab == 'overview' ? 'active' : 'text-body'}" 
                                    href="${pageContext.request.contextPath}/Manager/Report?tab=overview">
@@ -186,7 +186,7 @@
                         </div>
 
                         <!-- KPI SUMMARY CARDS -->
-                        <div class="row g-3 mb-4">
+                        <div class="report-kpi-grid row g-3 mb-4">
                             <div class="col-12 col-sm-6 col-xl-3">
                                 <div class="panel h-100">
                                     <div class="d-flex justify-content-between align-items-start">
@@ -227,10 +227,10 @@
                                         <div>
                                             <p class="text-muted mb-1">Total Product Revenue</p>
                                             <h2 class="h3 mb-1 text-success">
-                                                $<fmt:formatNumber value="${summary.totalRevenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${summary.totalRevenue}" type="number" maxFractionDigits="0"/> VND
                                             </h2>
                                             <small class="text-success">
-                                                <i class="bi bi-cash me-1"></i>Gross product sales
+                                                <i class="bi bi-cash me-1"></i>Delivered product sales
                                             </small>
                                         </div>
                                         <span class="page-icon">
@@ -246,7 +246,7 @@
                                         <div>
                                             <p class="text-muted mb-1">Avg Revenue / Product</p>
                                             <h2 class="h3 mb-1">
-                                                $<fmt:formatNumber value="${summary.avgRevenuePerProduct}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                <fmt:formatNumber value="${summary.avgRevenuePerProduct}" type="number" maxFractionDigits="0"/> VND
                                             </h2>
                                             <small class="text-muted">
                                                 <i class="bi bi-calculator me-1"></i>Per evaluated product
@@ -261,7 +261,7 @@
                         </div>
 
                         <!-- PRODUCT FILTER PANEL -->
-                        <section class="panel mb-4">
+                        <section class="panel report-filter-panel mb-4">
                             <div class="panel-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <div>
                                     <h2 class="h5 mb-1 section-title">
@@ -288,17 +288,28 @@
                                 </div>
                             </div>
 
+                            <c:if test="${not empty reportFilterError}">
+                                <div class="alert alert-danger py-2 mb-3" role="alert">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    <c:out value="${reportFilterError}"/>
+                                </div>
+                            </c:if>
+
                             <form action="${pageContext.request.contextPath}/Manager/Report" method="GET" class="row g-3 align-items-end">
                                 <input type="hidden" name="tab" value="products">
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">Start Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}">
+                                    <input type="date" class="form-control form-control-sm" name="startDate" value="${startDate}"
+                                           max="${not empty endDate ? endDate : today}"
+                                           oninput="this.form.elements['endDate'].min = this.value;">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                     <label class="form-label small text-muted mb-1">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}">
+                                    <input type="date" class="form-control form-control-sm" name="endDate" value="${endDate}"
+                                           min="${startDate}" max="${today}"
+                                           oninput="this.form.elements['startDate'].max = this.value || '${today}';">
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-3 col-xl-2">
@@ -505,7 +516,7 @@
                                                             <span class="badge text-bg-light">${p.categoryName}</span>
                                                         </td>
                                                         <td class="text-end text-muted">
-                                                            $<fmt:formatNumber value="${p.price}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            <fmt:formatNumber value="${p.price}" type="number" maxFractionDigits="0"/> VND
                                                         </td>
                                                         <td class="text-center fw-bold text-primary">
                                                             ${p.unitsSold}
@@ -514,7 +525,7 @@
                                                             <span class="badge text-bg-light border">${p.orderCount}</span>
                                                         </td>
                                                         <td class="text-end fw-bold text-success">
-                                                            $<fmt:formatNumber value="${p.revenue}" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                            <fmt:formatNumber value="${p.revenue}" type="number" maxFractionDigits="0"/> VND
                                                         </td>
                                                     </tr>
                                                 </c:forEach>
@@ -621,7 +632,7 @@
         </div>
 
         <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/bootstrap.bundle.min.js"></script>
-        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/Admin_Manager/js/main.js?v=20261114-1"></script>
 
         <script>
             function exportProductsToCSV() {

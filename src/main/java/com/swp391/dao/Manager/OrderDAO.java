@@ -714,4 +714,113 @@ public class OrderDAO {
             }
         }
     }
+
+    public List<Map<String, Object>> getAIRecommendationsForOrder(int customerId, int orderId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sqlWithCustomer = """
+                SELECT TOP 3 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, p.ImageURL,
+                  r.SimilarityScore, r.Reason, r.RecommendationType, 
+                  c.CategoryName, b.BrandName 
+                FROM AIRecommendations r 
+                LEFT JOIN (
+                    SELECT TOP 1 MinSimilarityThreshold 
+                    FROM AIConfigurations 
+                    ORDER BY ConfigID DESC
+                ) cfg ON 1=1 
+                JOIN Products p ON r.ProductID = p.ProductID 
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                WHERE r.CustomerID = ? 
+                  AND (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
+                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
+                """;
+
+        String fallbackSql = """
+                SELECT TOP 3 
+                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, p.ImageURL,
+                  r.SimilarityScore, r.Reason, r.RecommendationType, 
+                  c.CategoryName, b.BrandName 
+                FROM AIRecommendations r 
+                LEFT JOIN (
+                    SELECT TOP 1 MinSimilarityThreshold 
+                    FROM AIConfigurations 
+                    ORDER BY ConfigID DESC
+                ) cfg ON 1=1 
+                JOIN Products p ON r.ProductID = p.ProductID 
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                WHERE (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
+                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
+                """;
+
+        try (Connection conn = dbContext.getConnection()) {
+            boolean hasCustomerRecs = false;
+            if (customerId > 0) {
+                try (PreparedStatement ps = conn.prepareStatement(sqlWithCustomer)) {
+                    ps.setInt(1, customerId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            hasCustomerRecs = true;
+                            list.add(mapAIRecRow(rs));
+                        }
+                    }
+                }
+            }
+
+            if (!hasCustomerRecs) {
+                try (PreparedStatement psFallback = conn.prepareStatement(fallbackSql); ResultSet rs = psFallback.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(mapAIRecRow(rs));
+                    }
+                }
+            }
+
+            // Fallback sang sản phẩm đang Active nếu bảng AIRecommendations chưa có dữ liệu
+            if (list.isEmpty()) {
+                String activeProductsSql = """
+                        SELECT TOP 3 
+                          0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, p.ImageURL,
+                          0.88 AS SimilarityScore, 
+                          N'Similar headphone model recommended for customer retention call' AS Reason, 
+                          'ALTERNATIVE' AS RecommendationType, 
+                          c.CategoryName, b.BrandName 
+                        FROM Products p 
+                        LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
+                        LEFT JOIN Brands b ON p.BrandID = b.BrandID 
+                        WHERE p.Status = 'ACTIVE' 
+                        ORDER BY p.ProductID DESC
+                        """;
+                try (PreparedStatement psAct = conn.prepareStatement(activeProductsSql); ResultSet rsAct = psAct.executeQuery()) {
+                    while (rsAct.next()) {
+                        list.add(mapAIRecRow(rsAct));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error loading AI Recommendations for customer #" + customerId, e);
+        }
+        return list;
+    }
+
+    private Map<String, Object> mapAIRecRow(ResultSet rs) throws SQLException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("recommendationID", rs.getLong("RecommendationID"));
+        map.put("productID", rs.getInt("ProductID"));
+        map.put("productName", rs.getString("ProductName"));
+        map.put("price", rs.getBigDecimal("Price"));
+        map.put("imageUrl", rs.getString("ImageURL"));
+
+        BigDecimal sim = rs.getBigDecimal("SimilarityScore");
+        double rawVal = sim != null ? sim.doubleValue() : 0.0;
+        double simPercent = rawVal <= 1.0 ? rawVal * 100.0 : rawVal;
+        map.put("similarityScore", simPercent);
+        map.put("similarityPercent", String.format(java.util.Locale.US, "%.1f", simPercent));
+
+        map.put("reason", rs.getString("Reason"));
+        map.put("recommendationType", rs.getString("RecommendationType"));
+        map.put("categoryName", rs.getString("CategoryName"));
+        map.put("brandName", rs.getString("BrandName"));
+        return map;
+    }
 }

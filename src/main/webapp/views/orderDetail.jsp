@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -54,10 +55,10 @@
                 %>
                 <ul class="header-links pull-left">
                     <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
                     <% } %>
                     <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
                     <% } %>
                 </ul>
                 <ul class="header-links pull-right">
@@ -251,7 +252,7 @@
                                     <td class="text-center align-middle">
                                         <c:choose>
                                             <c:when test="${not empty item.imageUrl}">
-                                                <img src="${item.imageUrl}" class="product-thumb" alt="${item.productName}"
+                                                <img src="${fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl)}" class="product-thumb" alt="${item.productName}"
                                                      onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/product01.png';">
                                             </c:when>
                                             <c:otherwise>

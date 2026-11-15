@@ -537,7 +537,7 @@
                                 <div class="rate-product-thumb">
                                     <c:choose>
                                         <c:when test="${not empty product}">
-                                            <img src="${pageContext.request.contextPath}/${product.imageUrl}" alt="${fn:escapeXml(product.productName)}"
+                                            <img src="${empty product.imageUrl ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(product.imageUrl, 'http') ? product.imageUrl : pageContext.request.contextPath.concat('/').concat(product.imageUrl))}" alt="${fn:escapeXml(product.productName)}"
                                                  onerror="this.src='${pageContext.request.contextPath}/assets/img/product01.png'">
                                         </c:when>
                                         <c:otherwise>

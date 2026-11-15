@@ -242,6 +242,15 @@ public class Product {
     }
 
     public void setImageUrl(String imageUrl) {
+        if (imageUrl != null) {
+            imageUrl = imageUrl.trim();
+            // JSP pages prepend the application context for local assets. Keeping
+            // local paths relative avoids producing a protocol-relative URL such
+            // as //assets/img/... when data was saved with a leading slash.
+            if (imageUrl.startsWith("/") && !imageUrl.startsWith("//")) {
+                imageUrl = imageUrl.substring(1);
+            }
+        }
         this.imageUrl = imageUrl;
     }
 

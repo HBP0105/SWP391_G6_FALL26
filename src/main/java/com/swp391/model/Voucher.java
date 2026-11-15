@@ -90,6 +90,36 @@ public class Voucher {
         return discountValue;
     }
 
+    /**
+     * Value used by the manager voucher form. Keeping this formatting in the
+     * model avoids exposing BigDecimal scale (for example 15.00) in the input.
+     */
+    public String getDiscountValueForInput() {
+        return discountValue == null ? "" : discountValue.stripTrailingZeros().toPlainString();
+    }
+
+    public String getMinOrderAmountForInput() {
+        return minOrderAmount == null ? "" : minOrderAmount.stripTrailingZeros().toPlainString();
+    }
+
+    public String getMaxDiscountForInput() {
+        return maxDiscount == null ? "" : maxDiscount.stripTrailingZeros().toPlainString();
+    }
+
+    public String getStartDateForInput() {
+        if (startDate == null) {
+            return "";
+        }
+        return startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+    }
+
+    public String getEndDateForInput() {
+        if (endDate == null) {
+            return "";
+        }
+        return endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+    }
+
     public void setDiscountValue(BigDecimal discountValue) {
         this.discountValue = discountValue;
     }
@@ -163,6 +193,13 @@ public class Voucher {
             return "";
         }
         return endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) {
+            return "";
+        }
+        return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
     public Integer getCreatedBy() {

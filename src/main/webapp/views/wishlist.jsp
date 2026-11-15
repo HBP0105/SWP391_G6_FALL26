@@ -552,7 +552,7 @@
                     <a href="${pageContext.request.contextPath}/productDetail?id=${item.productId}" class="steam-capsule-col">
                         <c:choose>
                             <c:when test="${not empty item.imageUrl}">
-                                <img src="${item.imageUrl}" alt="${fn:escapeXml(item.productName)}"
+                                <img src="${fn:startsWith(item.imageUrl, 'http') ? item.imageUrl : pageContext.request.contextPath.concat('/').concat(item.imageUrl)}" alt="${fn:escapeXml(item.productName)}"
                                      onerror="this.src='${pageContext.request.contextPath}/assets/img/product01.png'"/>
                             </c:when>
                             <c:otherwise>

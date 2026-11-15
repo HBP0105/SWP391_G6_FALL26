@@ -298,6 +298,41 @@ public class UserManagementDAO {
         return roles;
     }
 
+    public Map<String, Object> getUserDetail(String userType, int userId) {
+        if (!"STAFF".equalsIgnoreCase(userType)) {
+            return null;
+        }
+        String sql = """
+                SELECT s.StaffID AS UserID, s.FullName, s.Email, s.Phone,
+                       r.RoleName, s.RoleID, s.Status, s.CreatedAt
+                FROM Staff s
+                INNER JOIN Roles r ON s.RoleID = r.RoleID
+                WHERE s.StaffID = ?
+                """;
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                Map<String, Object> detail = new HashMap<>();
+                detail.put("userType", "STAFF");
+                detail.put("userId", rs.getInt("UserID"));
+                detail.put("fullName", rs.getString("FullName"));
+                detail.put("email", rs.getString("Email"));
+                detail.put("phone", rs.getString("Phone"));
+                detail.put("roleName", rs.getString("RoleName"));
+                detail.put("roleId", rs.getInt("RoleID"));
+                detail.put("status", rs.getString("Status"));
+                detail.put("createdAt", rs.getTimestamp("CreatedAt"));
+                return detail;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load administrator profile.", e);
+        }
+    }
+
     public boolean roleExists(int roleId) {
         return getRoleNameById(roleId) != null;
     }
@@ -605,6 +640,9 @@ public class UserManagementDAO {
         }
     }
 
+    public boolean phoneExistsInAnyAccount(String phone, int excludeStaffId) {
+        return phoneExistsInAnyAccount(phone, Integer.valueOf(excludeStaffId));
+    }
     public boolean updateStatus(String userType, int userId, String status) {
         String table;
         String idColumn;

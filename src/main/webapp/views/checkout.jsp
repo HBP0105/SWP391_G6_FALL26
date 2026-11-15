@@ -65,10 +65,10 @@
                 %>
                 <ul class="header-links pull-left">
                     <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
                     <% } %>
                     <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
                     <% } %>
                 </ul>
                 <ul class="header-links pull-right">
@@ -97,7 +97,7 @@
                     <!-- LOGO -->
                     <div class="col-md-3">
                         <div class="header-logo">
-                            <a href="${pageContext.request.contextPath}/views/home.jsp" class="logo">
+                            <a href="${pageContext.request.contextPath}/home" class="logo">
                                 <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Logo">
                             </a>
                         </div>
@@ -118,7 +118,7 @@
                     <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
                     <li><a href="${pageContext.request.contextPath}/my-orders">My Order</a></li>
                     <li><a href="${pageContext.request.contextPath}/addresses">Address Repository</a></li>
-                    <li class="active"><a href="#">Checkout</a></li>
+                    <li class="active"><span>Checkout</span></li>
                 </ul>
             </div>
         </div>

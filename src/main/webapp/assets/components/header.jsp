@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page import="com.swp391.model.Customer" %>
 <%@ page import="com.swp391.model.Staff" %>
 <script>
@@ -11,12 +13,12 @@
     <div id="top-header">
         <div class="container">
             <ul class="header-links pull-left">
-                <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
-                <li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
+                <li><a href="tel:+8421955184"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
+                <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i> support@headphone-shop.com</a></li>
+                <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i> Contact</a></li>
             </ul>
             <ul class="header-links pull-right">
-                <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+                <li><span class="header-static"><i class="fa fa-money"></i> VND</span></li>
                     <%
                         Object currentUser = session.getAttribute("customer");
                         if (currentUser == null) {
@@ -116,39 +118,51 @@
                         <!-- /Wishlist -->
 
                         <!-- Cart -->
+                        <c:set var="headerCartCount" value="0" />
+                        <c:set var="headerCartSubtotal" value="0" />
+                        <c:forEach var="cartEntry" items="${sessionScope.cart}">
+                            <c:set var="headerCartCount" value="${headerCartCount + cartEntry.value.quantity}" />
+                            <c:set var="headerCartSubtotal" value="${headerCartSubtotal + (cartEntry.value.price * cartEntry.value.quantity)}" />
+                        </c:forEach>
                         <div class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                            <a href="${pageContext.request.contextPath}/cart" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fa fa-shopping-cart"></i>
                                 <span>Your Cart</span>
-                                <div class="qty">3</div>
+                                <div class="qty">${headerCartCount}</div>
                             </a>
                             <div class="cart-dropdown">
                                 <div class="cart-list">
-                                    <div class="product-widget">
-                                        <div class="product-img">
-                                            <img src="${pageContext.request.contextPath}/assets/img/product01.png" alt="">
-                                        </div>
-                                        <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-                                        </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
-                                    </div>
-
-                                    <div class="product-widget">
-                                        <div class="product-img">
-                                            <img src="${pageContext.request.contextPath}/assets/img/product02.png" alt="">
-                                        </div>
-                                        <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-                                        </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
-                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.cart}">
+                                            <c:forEach var="cartEntry" items="${sessionScope.cart}">
+                                                <c:set var="cartItem" value="${cartEntry.value}" />
+                                                <div class="product-widget">
+                                                    <div class="product-img">
+                                                        <c:set var="cartImage" value="${cartItem.imageUrl}" />
+                                                        <img src="${empty cartImage ? pageContext.request.contextPath.concat('/assets/img/product01.png') : (fn:startsWith(cartImage, 'http') ? cartImage : pageContext.request.contextPath.concat('/').concat(fn:startsWith(cartImage, '/') ? fn:substring(cartImage, 1, fn:length(cartImage)) : cartImage))}"
+                                                             alt="${cartItem.productName}"
+                                                             onerror="this.onerror=null;this.src='${pageContext.request.contextPath}/assets/img/product01.png';">
+                                                    </div>
+                                                    <div class="product-body">
+                                                        <h3 class="product-name"><a href="${pageContext.request.contextPath}/productDetail?id=${cartItem.productId}">${cartItem.productName}</a></h3>
+                                                        <h4 class="product-price"><span class="qty">${cartItem.quantity}x</span><fmt:formatNumber value="${cartItem.price}" type="number" groupingUsed="true" /> &#8363;</h4>
+                                                    </div>
+                                                    <form action="${pageContext.request.contextPath}/cart" method="post">
+                                                        <input type="hidden" name="action" value="remove">
+                                                        <input type="hidden" name="productId" value="${cartItem.productId}">
+                                                        <button type="submit" class="delete" aria-label="Remove ${cartItem.productName}"><i class="fa fa-close"></i></button>
+                                                    </form>
+                                                </div>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <p style="padding: 15px; margin: 0; text-align: center; color: #8D99AE;">Your cart is empty.</p>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <div class="cart-summary">
-                                    <small>3 Item(s) selected</small>
-                                    <h5>SUBTOTAL: $2940.00</h5>
+                                    <small>${headerCartCount} Item(s) selected</small>
+                                    <h5>SUBTOTAL: <fmt:formatNumber value="${headerCartSubtotal}" type="number" groupingUsed="true" /> &#8363;</h5>
                                 </div>
                                 <div class="cart-btns">
                                     <a href="${pageContext.request.contextPath}/cart">View Cart</a>
@@ -160,7 +174,7 @@
 
                         <!-- Menu Toggle -->
                         <div class="menu-toggle">
-                            <a href="#">
+                            <a href="${pageContext.request.contextPath}/productList" aria-label="Open product navigation">
                                 <i class="fa fa-bars"></i>
                                 <span>Menu</span>
                             </a>

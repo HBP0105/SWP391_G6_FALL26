@@ -179,6 +179,25 @@ public class ManagerDashBoard {
         return 0;
     }
 
+    public BigDecimal getTotalRevenue() {
+        String sql = """
+            SELECT ISNULL(SUM(TotalAmount), 0)
+            FROM Orders
+            WHERE OrderStatus = 'DELIVERED'
+        """;
+        try (Connection connection = new DBContext().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet result = statement.executeQuery()) {
+            if (result.next()) {
+                BigDecimal revenue = result.getBigDecimal(1);
+                return revenue != null ? revenue : BigDecimal.ZERO;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
     public List<OrderSummary> getRecentOrders() {
         List<OrderSummary> list = new ArrayList<>();
 

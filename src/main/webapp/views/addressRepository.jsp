@@ -54,10 +54,10 @@
                 %>
                 <ul class="header-links pull-left">
                     <% if (!displayPhone.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
+                    <li><a href="tel:<%= displayPhone %>"><i class="fa fa-phone"></i> <%= displayPhone %></a></li>
                     <% } %>
                     <% if (!displayEmail.isEmpty()) { %>
-                    <li><a href="#"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
+                    <li><a href="mailto:<%= displayEmail %>"><i class="fa fa-envelope-o"></i> <%= displayEmail %></a></li>
                     <% } %>
                 </ul>
                 <ul class="header-links pull-right">

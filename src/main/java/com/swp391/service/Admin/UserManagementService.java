@@ -665,4 +665,8 @@ public class UserManagementService {
     private String valueAsString(Object value) {
         return value == null ? "" : value.toString();
     }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
 }

@@ -199,12 +199,12 @@
             <div id="top-header">
                 <div class="container">
                     <ul class="header-links pull-left">
-                        <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                        <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
-                        <li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
+                        <li><a href="tel:+8421955184"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
+                        <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i> support@headphone-shop.com</a></li>
+                        <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i> Contact</a></li>
                     </ul>
                     <ul class="header-links pull-right">
-                        <li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
+                        <li><span class="header-static"><i class="fa fa-money"></i> VND</span></li>
                         <li>
                             <a href="${pageContext.request.contextPath}/profile">
                                 <i class="fa fa-user"></i> <%= fullName %>
@@ -222,7 +222,7 @@
                         <!-- LOGO -->
                         <div class="col-md-3">
                             <div class="header-logo">
-                                <a href="${pageContext.request.contextPath}/views/home.jsp" class="logo">
+                                <a href="${pageContext.request.contextPath}/home" class="logo">
                                     <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Headphone Store">
                                 </a>
                             </div>
@@ -232,7 +232,7 @@
                         <!-- SEARCH BAR -->
                         <div class="col-md-6">
                             <div class="header-search">
-                                <form action="${pageContext.request.contextPath}/views/home.jsp" method="get">
+                                <form action="${pageContext.request.contextPath}/productList" method="get">
                                     <select class="input-select">
                                         <option value="0">All Categories</option>
                                     </select>
@@ -247,19 +247,19 @@
                         <div class="col-md-3 clearfix">
                             <div class="header-ctn">
                                 <div>
-                                    <a href="#">
+                                    <a href="${pageContext.request.contextPath}/wishlist">
                                         <i class="fa fa-heart-o"></i>
                                         <span>Wishlist</span>
                                     </a>
                                 </div>
                                 <div>
-                                    <a href="#">
+                                    <a href="${pageContext.request.contextPath}/cart">
                                         <i class="fa fa-shopping-cart"></i>
                                         <span>Your Cart</span>
                                     </a>
                                 </div>
                                 <div class="menu-toggle">
-                                    <a href="#">
+                                    <a href="${pageContext.request.contextPath}/productList">
                                         <i class="fa fa-bars"></i>
                                         <span>Menu</span>
                                     </a>
@@ -279,7 +279,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <ul class="breadcrumb-tree">
-                            <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
+                            <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
                             <li class="active">Customer Profile</li>
                         </ul>
                     </div>
@@ -389,9 +389,9 @@
                                 <h3 class="footer-title">About Us</h3>
                                 <p>We offer premium headphones, earphones, and audio accessories with best quality and warranty.</p>
                                 <ul class="footer-links">
-                                    <li><a href="#"><i class="fa fa-map-marker"></i> 1734 Stonecoal Road</a></li>
-                                    <li><a href="#"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                                    <li><a href="#"><i class="fa fa-envelope-o"></i> email@email.com</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i> Contact information</a></li>
+                                    <li><a href="tel:+8421955184"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
+                                    <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i> support@headphone-shop.com</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -400,10 +400,10 @@
                             <div class="footer">
                                 <h3 class="footer-title">Categories</h3>
                                 <ul class="footer-links">
-                                    <li><a href="#">Hot Deals</a></li>
-                                    <li><a href="#">Headphones</a></li>
-                                    <li><a href="#">Wireless</a></li>
-                                    <li><a href="#">Accessories</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/home#hot-deal">Hot Deals</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList?category=1">Headphones</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList?category=2">Wireless Earbuds</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/productList">All Products</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -414,10 +414,10 @@
                             <div class="footer">
                                 <h3 class="footer-title">Information</h3>
                                 <ul class="footer-links">
-                                    <li><a href="#">About Us</a></li>
-                                    <li><a href="#">Contact Us</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                    <li><a href="#">Terms & Conditions</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=about">About Us</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=contact">Contact Us</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=privacy">Privacy Policy</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=terms">Terms & Conditions</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -427,8 +427,8 @@
                                 <h3 class="footer-title">Service</h3>
                                 <ul class="footer-links">
                                     <li><a href="${pageContext.request.contextPath}/profile">My Account</a></li>
-                                    <li><a href="${pageContext.request.contextPath}/views/home.jsp">Home</a></li>
-                                    <li><a href="#">Help</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/home">Home</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/information?topic=help">Help</a></li>
                                 </ul>
                             </div>
                         </div>
