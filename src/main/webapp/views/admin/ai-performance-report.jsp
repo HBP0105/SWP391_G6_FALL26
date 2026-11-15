@@ -88,7 +88,9 @@
                 <span class="profile-name d-none d-sm-inline fw-semibold">Administrator</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/home"><i class="bi bi-box-arrow-right me-2"></i>Exit to Store</a></li>
+                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/change-password"><i class="bi bi-key me-2 text-primary"></i>Change Password</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
               </ul>
             </div>
           </div>

@@ -193,50 +193,6 @@ public class OrderDAO {
     // =========================================================================
     // 2. SCREEN 1: ORDER LIST (PAGINATION, FILTERS & METRIC CARDS)
     // =========================================================================
-    private String getOrderListQuery() {
-        return """
-                SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.OrderDate, o.OrderStatus, o.UpdatedAt, o.CancelReason,
-                       o.ShippingName, o.ShippingPhone, o.ShippingAddress,
-                       c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
-                       (SELECT COALESCE(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalQuantity,
-                       (SELECT COALESCE(STRING_AGG(prod.ProductName, ', '), 'Tai nghe') FROM OrderItems oi 
-                JOIN Products prod ON oi.ProductID = prod.ProductID WHERE oi.OrderID = o.OrderID) AS ProductSummary
-                FROM Orders o
-                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
-                LEFT JOIN Payments p ON o.OrderID = p.OrderID
-                """;
-    }
-
-    private void applyFilters(StringBuilder sql, List<Object> params,
-            String startDate, String endDate, String status, String keyword) {
-        // 1. Loc theo trang thai don hang (PENDING, SHIPPING, DELIVERED,...)
-        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status.trim());
-        }
-
-        // 2. Loc tu ngay
-        if (startDate != null && !startDate.trim().isEmpty()) {
-            sql.append(" AND o.OrderDate >= ?");
-            params.add(startDate.trim());
-        }
-
-        // 3. Loc den ngay
-        if (endDate != null && !endDate.trim().isEmpty()) {
-            sql.append(" AND o.OrderDate < ?");
-            params.add(endDate.trim());
-        }
-
-        // 4. Tim kiem tu khoa theo Ma don, Ten khach hang hoac So dien thoai
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)");
-            String pattern = "%" + keyword.trim() + "%";
-            params.add(pattern);
-            params.add(pattern);
-            params.add(pattern);
-        }
-    }
 
     public Map<String, Integer> getOrderStatusCountsMap(String startDate, String endDate) {
         Map<String, Integer> map = new HashMap<>();
@@ -244,15 +200,23 @@ public class OrderDAO {
             map.put(st, 0);
         }
 
-        StringBuilder sql = new StringBuilder("SELECT o.OrderStatus, COUNT(o.OrderID) AS Qty FROM Orders o WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, null, null);
-        sql.append(" GROUP BY o.OrderStatus");
+        String sql = """
+                SELECT o.OrderStatus, COUNT(o.OrderID) AS Qty
+                FROM Orders o
+                WHERE (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                GROUP BY o.OrderStatus
+                """;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, start);
+            ps.setString(2, start);
+            ps.setString(3, end);
+            ps.setString(4, end);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String st = rs.getString("OrderStatus");
@@ -268,15 +232,33 @@ public class OrderDAO {
     }
 
     public int getTotalOrdersFilteredCount(String startDate, String endDate, String status, String keyword) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(o.OrderID) FROM Orders o "
-                + "LEFT JOIN Customers c ON o.CustomerID = c.CustomerID WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, status, keyword);
+        String sql = """
+                SELECT COUNT(o.OrderID)
+                FROM Orders o
+                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
+                WHERE (? = 'ALL' OR o.OrderStatus = ?)
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                  AND (? IS NULL OR CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)
+                """;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        String st = (status != null && !status.isBlank()) ? status.trim().toUpperCase() : "ALL";
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, st);
+            ps.setString(2, st);
+            ps.setString(3, start);
+            ps.setString(4, start);
+            ps.setString(5, end);
+            ps.setString(6, end);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -291,22 +273,46 @@ public class OrderDAO {
     public List<Order> getOrdersFiltered(String startDate, String endDate, String status,
             String keyword, int page, int pageSize) {
         List<Order> orders = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(getOrderListQuery()).append(" WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, status, keyword);
+        String sql = """
+                SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, 
+                       o.OrderStatus, o.CancelReason, o.OrderDate, o.UpdatedAt,
+                       c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
+                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
+                       (SELECT COALESCE(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalQuantity,
+                       (SELECT COALESCE(STRING_AGG(prod.ProductName, ', '), 'Tai nghe') FROM OrderItems oi 
+                JOIN Products prod ON oi.ProductID = prod.ProductID WHERE oi.OrderID = o.OrderID) AS ProductSummary
+                FROM Orders o
+                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
+                LEFT JOIN Payments p ON o.OrderID = p.OrderID
+                WHERE (? = 'ALL' OR o.OrderStatus = ?)
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                  AND (? IS NULL OR CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)
+                ORDER BY o.OrderDate DESC, o.OrderID DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
 
-        sql.append(" ORDER BY o.OrderDate DESC, o.OrderID DESC");
-        if (pageSize > 0) {
-            int currentPage = Math.max(page, 1);
-            sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-            params.add((currentPage - 1) * pageSize);
-            params.add(pageSize);
-        }
+        String st = (status != null && !status.isBlank()) ? status.trim().toUpperCase() : "ALL";
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
+        int currentPage = Math.max(page, 1);
+        int offset = (currentPage - 1) * pageSize;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, st);
+            ps.setString(2, st);
+            ps.setString(3, start);
+            ps.setString(4, start);
+            ps.setString(5, end);
+            ps.setString(6, end);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+            ps.setInt(11, offset);
+            ps.setInt(12, pageSize);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Order order = mapOrder(rs, false);
@@ -707,117 +713,5 @@ public class OrderDAO {
                 LOGGER.log(Level.WARNING, "Failed to close database connection", e);
             }
         }
-    }
-
-    public List<Map<String, Object>> getAIRecommendationsForOrder(int customerId, int orderId) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        String sqlWithCustomer = """
-                SELECT TOP 3 
-                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
-                  r.SimilarityScore, r.Reason, r.RecommendationType, 
-                  c.CategoryName, b.BrandName 
-                FROM AIRecommendations r 
-                LEFT JOIN (
-                    SELECT TOP 1 MinSimilarityThreshold 
-                    FROM AIConfigurations 
-                    ORDER BY ConfigID DESC
-                ) cfg ON 1=1 
-                JOIN Products p ON r.ProductID = p.ProductID 
-                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
-                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
-                WHERE r.CustomerID = ? 
-                  AND (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
-                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
-                """;
-
-        String fallbackSql = """
-                SELECT TOP 3 
-                  r.RecommendationID, r.ProductID, p.ProductName, p.Price, pi.ImageURL, 
-                  r.SimilarityScore, r.Reason, r.RecommendationType, 
-                  c.CategoryName, b.BrandName 
-                FROM AIRecommendations r 
-                LEFT JOIN (
-                    SELECT TOP 1 MinSimilarityThreshold 
-                    FROM AIConfigurations 
-                    ORDER BY ConfigID DESC
-                ) cfg ON 1=1 
-                JOIN Products p ON r.ProductID = p.ProductID 
-                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
-                LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
-                WHERE (cfg.MinSimilarityThreshold IS NULL OR r.SimilarityScore >= cfg.MinSimilarityThreshold) 
-                ORDER BY ISNULL(r.FinalScore, r.SimilarityScore) DESC, r.SimilarityScore DESC, r.CreatedAt DESC
-                """;
-
-        try (Connection conn = dbContext.getConnection()) {
-            boolean hasCustomerRecs = false;
-            if (customerId > 0) {
-                try (PreparedStatement ps = conn.prepareStatement(sqlWithCustomer)) {
-                    ps.setInt(1, customerId);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            hasCustomerRecs = true;
-                            list.add(mapAIRecRow(rs));
-                        }
-                    }
-                }
-            }
-
-            if (!hasCustomerRecs) {
-                try (PreparedStatement psFallback = conn.prepareStatement(fallbackSql); ResultSet rs = psFallback.executeQuery()) {
-                    while (rs.next()) {
-                        list.add(mapAIRecRow(rs));
-                    }
-                }
-            }
-
-            // Fallback sang sản phẩm đang Active nếu bảng AIRecommendations chưa có dữ liệu
-            if (list.isEmpty()) {
-                String activeProductsSql = """
-                        SELECT TOP 3 
-                          0 AS RecommendationID, p.ProductID, p.ProductName, p.Price, pi.ImageURL, 
-                          0.88 AS SimilarityScore, 
-                          N'Similar headphone model recommended for customer retention call' AS Reason, 
-                          'ALTERNATIVE' AS RecommendationType, 
-                          c.CategoryName, b.BrandName 
-                        FROM Products p 
-                        LEFT JOIN Categories c ON p.CategoryID = c.CategoryID 
-                        LEFT JOIN Brands b ON p.BrandID = b.BrandID 
-                        LEFT JOIN ProductImages pi ON p.ProductID = pi.ProductID AND pi.IsPrimary = 1 
-                        WHERE p.Status = 'ACTIVE' 
-                        ORDER BY p.ProductID DESC
-                        """;
-                try (PreparedStatement psAct = conn.prepareStatement(activeProductsSql); ResultSet rsAct = psAct.executeQuery()) {
-                    while (rsAct.next()) {
-                        list.add(mapAIRecRow(rsAct));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error loading AI Recommendations for customer #" + customerId, e);
-        }
-        return list;
-    }
-
-    private Map<String, Object> mapAIRecRow(ResultSet rs) throws SQLException {
-        Map<String, Object> map = new HashMap<>();
-        map.put("recommendationID", rs.getLong("RecommendationID"));
-        map.put("productID", rs.getInt("ProductID"));
-        map.put("productName", rs.getString("ProductName"));
-        map.put("price", rs.getBigDecimal("Price"));
-        map.put("imageUrl", rs.getString("ImageURL"));
-
-        BigDecimal sim = rs.getBigDecimal("SimilarityScore");
-        double rawVal = sim != null ? sim.doubleValue() : 0.0;
-        double simPercent = rawVal <= 1.0 ? rawVal * 100.0 : rawVal;
-        map.put("similarityScore", simPercent);
-        map.put("similarityPercent", String.format(java.util.Locale.US, "%.1f", simPercent));
-
-        map.put("reason", rs.getString("Reason"));
-        map.put("recommendationType", rs.getString("RecommendationType"));
-        map.put("categoryName", rs.getString("CategoryName"));
-        map.put("brandName", rs.getString("BrandName"));
-        return map;
     }
 }

@@ -2,7 +2,6 @@ package com.swp391.service.Manager;
 
 import com.swp391.dao.Manager.OrderDAO;
 import com.swp391.dao.Admin.AuditLogDAO;
-import com.swp391.service.Admin.AIPerformanceService;
 import com.swp391.model.Address;
 import com.swp391.model.Customer;
 import com.swp391.model.Order;
@@ -18,19 +17,16 @@ import java.util.Map;
 public class OrderService {
 
     private final OrderDAO orderDAO;
-    private final AIPerformanceService aiPerformanceService;
     private final AuditLogDAO auditLogDAO;
     private static final int MAX_EXPORT_LIMIT = 5000;
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
-        this.aiPerformanceService = new AIPerformanceService();
         this.auditLogDAO = new AuditLogDAO();
     }
 
     public OrderService(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
-        this.aiPerformanceService = new AIPerformanceService();
         this.auditLogDAO = new AuditLogDAO();
     }
 
@@ -248,8 +244,15 @@ public class OrderService {
      * Executes order status update: state machine validation, inventory restoration on CANCELLED,
      * or updating shipment and payment on SHIPPING/DELIVERED.
      */
-    public boolean updateOrderStatus(int orderId,String expectedCurrentStatus,String newStatus,String cancelReason,
-            String shippingProvider,String trackingNumber,String shipperName,String shipperPhone,List<OrderItem> items) {
+    public boolean updateOrderStatus(int orderId, String expectedCurrentStatus, String newStatus, String cancelReason,
+            String shippingProvider, String trackingNumber, String shipperName, String shipperPhone, List<OrderItem> items) {
+        return updateOrderStatus(orderId, expectedCurrentStatus, newStatus, cancelReason,
+                shippingProvider, trackingNumber, shipperName, shipperPhone, items, null);
+    }
+
+    public boolean updateOrderStatus(int orderId, String expectedCurrentStatus, String newStatus, String cancelReason,
+            String shippingProvider, String trackingNumber, String shipperName, String shipperPhone,
+            List<OrderItem> items, Integer staffId) {
 
         if (expectedCurrentStatus == null || newStatus == null) {
             return false;
@@ -262,7 +265,7 @@ public class OrderService {
 
         // 2. Business Rule: Require cancelReason and execute Atomic Transaction when status is CANCELLED
         if ("CANCELLED".equalsIgnoreCase(newStatus)) {
-            return cancelOrder(orderId, expectedCurrentStatus, cancelReason, items);
+            return cancelOrder(orderId, expectedCurrentStatus, cancelReason, items, staffId);
         }
 
         // 3. Execute Atomic Single-Connection Transaction for Orders, Shipments, and Payments
@@ -304,7 +307,7 @@ public class OrderService {
             if ("SHIPPING".equalsIgnoreCase(newStatus)) {
                 details += " (Carrier: " + provider + ", Tracking: " + tracking + ")";
             }
-            auditLogDAO.insertAuditLog(null, "UPDATE_STATUS", "Orders", "#ORD-" + orderId,
+            auditLogDAO.insertAuditLog(staffId, "UPDATE_STATUS", "Orders", "#ORD-" + orderId,
                     "Status: " + expectedCurrentStatus, details);
         }
 
@@ -337,6 +340,11 @@ public class OrderService {
      * Validates cancel reason and order items at Service layer before invoking DAO transaction.
      */
     public boolean cancelOrder(int orderId, String expectedCurrentStatus, String cancelReason, List<OrderItem> items) {
+        return cancelOrder(orderId, expectedCurrentStatus, cancelReason, items, null);
+    }
+
+    public boolean cancelOrder(int orderId, String expectedCurrentStatus, String cancelReason,
+            List<OrderItem> items, Integer staffId) {
         if (cancelReason == null || cancelReason.isBlank()) {
             return false;
         }
@@ -350,7 +358,7 @@ public class OrderService {
                 cancelReason.trim(), items
         );
         if (success) {
-            auditLogDAO.insertAuditLog(null, "CANCEL_ORDER", "Orders", "#ORD-" + orderId,
+            auditLogDAO.insertAuditLog(staffId, "CANCEL_ORDER", "Orders", "#ORD-" + orderId,
                     "Status: " + expectedCurrentStatus, "Status: CANCELLED (Reason: " + cancelReason.trim() + ")");
         }
         return success;
@@ -438,8 +446,14 @@ public class OrderService {
      * Business Operation: Process Order Status Update with centralized error
      * messages and business rule validations.
      */
-    public String processStatusUpdate(int orderId, String newStatus, String cancelReason,String shippingProvider, 
+    public String processStatusUpdate(int orderId, String newStatus, String cancelReason, String shippingProvider,
             String trackingNumber, String shipperName, String shipperPhone, List<OrderItem> items) {
+        return processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider,
+                trackingNumber, shipperName, shipperPhone, items, null);
+    }
+
+    public String processStatusUpdate(int orderId, String newStatus, String cancelReason, String shippingProvider,
+            String trackingNumber, String shipperName, String shipperPhone, List<OrderItem> items, Integer staffId) {
         if (orderId <= 0) {
             return "Invalid Order ID specified!";
         }
@@ -473,7 +487,7 @@ public class OrderService {
             return "Invalid status transition for Order #ORD-" + orderId + "!";
         }
         boolean success = updateOrderStatus(orderId, order.getOrderStatus(), newStatus, cancelReason,
-                shippingProvider, trackingNumber, shipperName, shipperPhone, finalItems);
+                shippingProvider, trackingNumber, shipperName, shipperPhone, finalItems, staffId);
         if (!success) {
             return "Failed to update order status for Order #ORD-" + orderId + "!";
         }
@@ -482,7 +496,12 @@ public class OrderService {
 
     public String processStatusUpdate(int orderId, String newStatus, String cancelReason,
             String shippingProvider, String trackingNumber, String shipperName, String shipperPhone) {
-        return processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, shipperName, shipperPhone, null);
+        return processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, shipperName, shipperPhone, null, null);
+    }
+
+    public String processStatusUpdate(int orderId, String newStatus, String cancelReason,
+            String shippingProvider, String trackingNumber, String shipperName, String shipperPhone, Integer staffId) {
+        return processStatusUpdate(orderId, newStatus, cancelReason, shippingProvider, trackingNumber, shipperName, shipperPhone, null, staffId);
     }
 
 
@@ -507,37 +526,6 @@ public class OrderService {
         bundle.put("payment", order.getPayment());
         bundle.put("items", items);
 
-        // Fetch AI 512-Vector recommendations for customer retention ONLY if order is CANCELLED
-        List<Map<String, Object>> aiRecommendations = new ArrayList<>();
-        if (order != null && "CANCELLED".equalsIgnoreCase(order.getOrderStatus())) {
-            int cancelledProductId = (items != null && !items.isEmpty()) ? items.get(0).getProductId() : 0;
-            aiRecommendations = getAlternativeRecommendationsForOrder(cancelledProductId, order.getCustomerID(), orderId);
-        }
-        bundle.put("aiRecommendations", aiRecommendations);
-
         return bundle;
-    }
-
-    private List<Map<String, Object>> getAlternativeRecommendationsForOrder(int cancelledProductId, int customerId, int orderId) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        if (cancelledProductId > 0 && aiPerformanceService != null) {
-            try {
-                List<Map<String, Object>> recs = aiPerformanceService.getRecommendedProductsForDetail(cancelledProductId, customerId, "cancel-order-" + orderId);
-                if (recs != null && !recs.isEmpty()) {
-                    for (Map<String, Object> r : recs) {
-                        Map<String, Object> map = new HashMap<>(r);
-                        map.put("productID", r.get("productId"));
-                        int match = r.containsKey("matchPercentage") ? (int) r.get("matchPercentage") : 85;
-                        map.put("similarityPercent", String.valueOf(match));
-                        map.put("recommendationType", "ALTERNATIVE");
-                        map.put("reason", "Alternative product: " + match + "% match in sound profile, specs & price point for customer retention");
-                        list.add(map);
-                    }
-                    return list;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return orderDAO.getAIRecommendationsForOrder(customerId, orderId);
     }
 }

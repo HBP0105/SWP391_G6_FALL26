@@ -37,5 +37,20 @@
             <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
             <span class="nav-text">User & Access Management</span>
         </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/categories') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/categories">
+            <span class="nav-icon"><i class="bi bi-tags-fill"></i></span>
+            <span class="nav-text">Categories</span>
+        </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/brands') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/brands">
+            <span class="nav-icon"><i class="bi bi-award-fill"></i></span>
+            <span class="nav-text">Brands</span>
+        </a>
+        <a class="nav-link ${fn:contains(pageContext.request.requestURI, '/profile') ? 'active' : ''}"
+           href="${pageContext.request.contextPath}/admin/profile">
+            <span class="nav-icon"><i class="bi bi-person-badge-fill"></i></span>
+            <span class="nav-text">My Profile</span>
+        </a>
     </nav>
 </aside>

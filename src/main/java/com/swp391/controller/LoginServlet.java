@@ -29,6 +29,14 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object loginError = session.getAttribute("loginError");
+            if (loginError != null) {
+                request.setAttribute("error", loginError.toString());
+                session.removeAttribute("loginError");
+            }
+        }
         request.getRequestDispatcher("/authen/login.jsp").forward(request, response);
     }
 
@@ -42,8 +50,13 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         // dang nhap Customer
-        Customer customer = customerDAO.login(email, password);
+        Customer customer = customerDAO.findByEmailAndPassword(email, password);
         if (customer != null) {
+            if (!"ACTIVE".equalsIgnoreCase(customer.getStatus())) {
+                request.setAttribute("error", buildLockedAccountMessage(customer.getStatus()));
+                request.getRequestDispatcher("/authen/login.jsp").forward(request, response);
+                return;
+            }
             HttpSession session = request.getSession();
             session.setAttribute("customer", customer);
             session.setAttribute("role", "CUSTOMER");
@@ -64,14 +77,18 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("wishlistCount", dbItems.size());
             session.setAttribute("wishlistModified", false);
 
-
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
 
         // dang nhap Staff
-        Staff staff = staffDAO.login(email, password);
+        Staff staff = staffDAO.findByEmailAndPassword(email, password);
         if (staff != null) {
+            if (!"ACTIVE".equalsIgnoreCase(staff.getStatus())) {
+                request.setAttribute("error", buildLockedAccountMessage(staff.getStatus()));
+                request.getRequestDispatcher("/authen/login.jsp").forward(request, response);
+                return;
+            }
             HttpSession session = request.getSession();
             session.setAttribute("user", staff);
             session.setAttribute("staff", staff);
@@ -85,10 +102,20 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/home");
             }
             return;
-     }
+        }
 
         // Dang nhap that bai
         request.setAttribute("error", "Email or password incorrect");
         request.getRequestDispatcher("/authen/login.jsp").forward(request, response);
+    }
+
+    private String buildLockedAccountMessage(String status) {
+        if ("BANNED".equalsIgnoreCase(status)) {
+            return "Your account has been banned. Please contact administrator.";
+        }
+        if ("INACTIVE".equalsIgnoreCase(status)) {
+            return "Your account is currently inactive. Please contact administrator.";
+        }
+        return "Your account is currently disabled. Please contact administrator.";
     }
 }

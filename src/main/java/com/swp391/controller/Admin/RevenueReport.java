@@ -38,6 +38,13 @@ public class RevenueReport extends HttpServlet {
 
         // Export Action: Export CSV Report
         if ("export".equals(action)) {
+            String dateError = revenueService.validateDateRange(startDate, endDate);
+            if (dateError != null) {
+                Map<String, Object> viewData = revenueService.getRevenueReportBundle(startDate, endDate, groupBy);
+                viewData.forEach(request::setAttribute);
+                request.getRequestDispatcher("/views/admin/revenue-report.jsp").forward(request, response);
+                return;
+            }
             exportToCSV(response, startDate, endDate, groupBy);
             return;
         }

@@ -1,5 +1,6 @@
 package com.swp391.controller.Manager;
 
+import com.swp391.model.Staff;
 import com.swp391.service.Manager.OrderService;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,7 +21,7 @@ import java.util.Map;
 @WebServlet(name = "OrderList", urlPatterns = {"/Manager/OrderManagement", "/staff/orders"})
 public class OrderList extends HttpServlet {
    
-    private static final int DEFAULT_PAGE_SIZE = 10; // Hằng số cấu hình kích thước trang mặc định (10 đơn hàng/trang)
+    private static final int DEFAULT_PAGE_SIZE = 10; 
     private OrderService orderService;
     
     @Override
@@ -43,7 +44,16 @@ public class OrderList extends HttpServlet {
 
         if ("detail".equals(action)) {
             String id = request.getParameter("id");
-            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement/Detail?id=" + id);
+            try {
+                int detailId = Integer.parseInt(id != null ? id.trim() : "");
+                if (detailId > 0) {
+                    response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement/Detail?id=" + detailId);
+                    return;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            request.getSession().setAttribute("msgErrorStatus", "Invalid Order ID specified!");
+            response.sendRedirect(request.getContextPath() + "/Manager/OrderManagement");
             return;
         }
 
@@ -132,13 +142,18 @@ public class OrderList extends HttpServlet {
         String shipperPhone = request.getParameter("shipperPhone");
 
         HttpSession session = request.getSession();
+        Integer staffId = null;
+        Object staffObj = session.getAttribute("staff");
+        if (staffObj instanceof Staff staff) {
+            staffId = staff.getStaffId();
+        }
         String errorMsg;
 
         try {
             
             errorMsg = orderService.processStatusUpdate(
                     orderId, newStatus, cancelReason, shippingProvider, trackingNumber,
-                    shipperName, shipperPhone);
+                    shipperName, shipperPhone, staffId);
 
             if (errorMsg == null) {
                 session.setAttribute("msgSuccess", "true");

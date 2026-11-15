@@ -8,7 +8,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -24,28 +23,11 @@ public class AdminAuthFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        HttpSession session = request.getSession(false);
-
-        if (session == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        Object roleObject = session.getAttribute("role");
-        String role = roleObject != null ? roleObject.toString() : null;
-
-        if (!"ADMIN".equalsIgnoreCase(role)) {
-            response.sendError(
-                    HttpServletResponse.SC_FORBIDDEN,
-                    "You do not have permission to access the Admin area."
-            );
-            return;
-        }
-
-        Object staff = session.getAttribute("staff");
-
-        if (staff == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        if (!StaffSessionGuard.authorize(
+                request,
+                response,
+                "ADMIN",
+                "You do not have permission to access the Admin area.")) {
             return;
         }
 
