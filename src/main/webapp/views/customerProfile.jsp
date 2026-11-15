@@ -193,85 +193,8 @@
     </head>
 
     <body>
-        <!-- HEADER -->
-        <header>
-            <!-- TOP HEADER -->
-            <div id="top-header">
-                <div class="container">
-                    <ul class="header-links pull-left">
-                        <li><a href="tel:+8421955184"><i class="fa fa-phone"></i> +021-95-51-84</a></li>
-                        <li><a href="mailto:support@headphone-shop.com"><i class="fa fa-envelope-o"></i> support@headphone-shop.com</a></li>
-                        <li><a href="${pageContext.request.contextPath}/information?topic=contact"><i class="fa fa-map-marker"></i> Contact</a></li>
-                    </ul>
-                    <ul class="header-links pull-right">
-                        <li><span class="header-static"><i class="fa fa-money"></i> VND</span></li>
-                        <li>
-                            <a href="${pageContext.request.contextPath}/profile">
-                                <i class="fa fa-user"></i> <%= fullName %>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <!-- /TOP HEADER -->
-
-            <!-- MAIN HEADER -->
-            <div id="header">
-                <div class="container">
-                    <div class="row">
-                        <!-- LOGO -->
-                        <div class="col-md-3">
-                            <div class="header-logo">
-                                <a href="${pageContext.request.contextPath}/home" class="logo">
-                                    <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="Headphone Store">
-                                </a>
-                            </div>
-                        </div>
-                        <!-- /LOGO -->
-
-                        <!-- SEARCH BAR -->
-                        <div class="col-md-6">
-                            <div class="header-search">
-                                <form action="${pageContext.request.contextPath}/productList" method="get">
-                                    <select class="input-select">
-                                        <option value="0">All Categories</option>
-                                    </select>
-                                    <input class="input" placeholder="Search products here">
-                                    <button class="search-btn">Search</button>
-                                </form>
-                            </div>
-                        </div>
-                        <!-- /SEARCH BAR -->
-
-                        <!-- ACCOUNT / CART -->
-                        <div class="col-md-3 clearfix">
-                            <div class="header-ctn">
-                                <div>
-                                    <a href="${pageContext.request.contextPath}/wishlist">
-                                        <i class="fa fa-heart-o"></i>
-                                        <span>Wishlist</span>
-                                    </a>
-                                </div>
-                                <div>
-                                    <a href="${pageContext.request.contextPath}/cart">
-                                        <i class="fa fa-shopping-cart"></i>
-                                        <span>Your Cart</span>
-                                    </a>
-                                </div>
-                                <div class="menu-toggle">
-                                    <a href="${pageContext.request.contextPath}/productList">
-                                        <i class="fa fa-bars"></i>
-                                        <span>Menu</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- /MAIN HEADER -->
-        </header>
-        <!-- /HEADER -->
+        <!-- HEADER (dùng chung với trang Home) -->
+        <jsp:include page="/assets/components/header.jsp" />
 
         <!-- BREADCRUMB -->
         <div id="breadcrumb" class="section">
@@ -308,6 +231,16 @@
                                 <li class="<%= !"changePassword".equals(activeTab) ? "active" : "" %>" id="tab-btn-info">
                                     <a href="javascript:void(0);" onclick="switchProfileTab('info')">
                                         <i class="fa fa-id-card-o"></i> Personal Information
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="${pageContext.request.contextPath}/my-orders">
+                                        <i class="fa fa-shopping-bag"></i> My Orders
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="${pageContext.request.contextPath}/addresses">
+                                        <i class="fa fa-map-marker"></i> Address Repository
                                     </a>
                                 </li>
                                 <li id="tab-btn-password">

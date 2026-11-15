@@ -87,7 +87,7 @@ public class OrderDAO extends DBContext {
      */
     public List<OrderDTO> getOrdersByCustomerId(int customerId) {
         List<OrderDTO> list = new ArrayList<>();
-        String sqlOrders = "SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, o.OrderStatus, "
+        String sqlOrders = "SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, o.OrderStatus, o.CancelReason, "
                          + "CONVERT(VARCHAR(19), o.OrderDate, 120) AS FormattedDate, "
                          + "pay.PaymentMethod, pay.PaymentStatus "
                          + "FROM Orders o "
@@ -124,6 +124,7 @@ public class OrderDAO extends DBContext {
                 order.setOrderDate(rsOrders.getString("FormattedDate"));
                 order.setPaymentMethod(rsOrders.getString("PaymentMethod"));
                 order.setPaymentStatus(rsOrders.getString("PaymentStatus"));
+                order.setCancelReason(rsOrders.getString("CancelReason"));
 
                 // Lấy danh sách sản phẩm của từng đơn hàng
                 PreparedStatement psItems = conn.prepareStatement(sqlItems);
@@ -199,14 +200,17 @@ public class OrderDAO extends DBContext {
     /**
      * Khách hàng tự hủy đơn hàng (Chỉ cho phép hủy khi đơn đang ở trạng thái PENDING hoặc CONFIRMED)
      */
-    public boolean cancelOrder(int orderId, int customerId) {
-        String sqlOrder = "UPDATE Orders SET OrderStatus = 'CANCELLED', UpdatedAt = GETDATE() "
+    public boolean cancelOrder(int orderId, int customerId, String cancelReason) {
+        String sqlOrder = "UPDATE Orders SET OrderStatus = 'CANCELLED', CancelReason = ?, UpdatedAt = GETDATE() "
                         + "WHERE OrderID = ? AND CustomerID = ? AND OrderStatus IN ('PENDING', 'CONFIRMED')";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sqlOrder);
-            ps.setInt(1, orderId);
-            ps.setInt(2, customerId);
+            ps.setString(1, (cancelReason != null && !cancelReason.trim().isEmpty()) 
+                            ? cancelReason.trim() 
+                            : "Customer requested order cancellation");
+            ps.setInt(2, orderId);
+            ps.setInt(3, customerId);
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (Exception e) {
@@ -215,11 +219,59 @@ public class OrderDAO extends DBContext {
         }
     }
 
+    public boolean cancelOrder(int orderId, int customerId) {
+        return cancelOrder(orderId, customerId, "Customer requested order cancellation");
+    }
+    
+    public boolean confirmDelivered(int orderId, int customerId) {
+        String sqlOrder = "UPDATE Orders SET OrderStatus = 'DELIVERED', UpdatedAt = GETDATE() "
+                        + "WHERE OrderID = ? AND CustomerID = ? AND OrderStatus = 'SHIPPING'";
+        String sqlShipment = "UPDATE Shipments SET ShippingStatus = 'DELIVERED', DeliveredAt = GETDATE() "
+                           + "WHERE OrderID = ?";
+        String sqlPayment = "UPDATE Payments SET PaymentStatus = 'SUCCESS', PaymentDate = ISNULL(PaymentDate, GETDATE()) "
+                          + "WHERE OrderID = ? AND PaymentMethod = 'COD' AND PaymentStatus <> 'SUCCESS'";
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); 
+            // 1. Cập nhật Orders sang DELIVERED
+            PreparedStatement psOrder = conn.prepareStatement(sqlOrder);
+            psOrder.setInt(1, orderId);
+            psOrder.setInt(2, customerId);
+            int rows = psOrder.executeUpdate();
+            if (rows > 0) {
+                // 2. Cập nhật bảng Shipments nếu có
+                PreparedStatement psShip = conn.prepareStatement(sqlShipment);
+                psShip.setInt(1, orderId);
+                psShip.executeUpdate();
+                // 3. Nếu là COD thì tự động ghi nhận thanh toán thành công
+                PreparedStatement psPay = conn.prepareStatement(sqlPayment);
+                psPay.setInt(1, orderId);
+                psPay.executeUpdate();
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (conn != null) conn.rollback();
+            } catch (Exception ex) {}
+            return false;
+        } finally {
+            try {
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (Exception ex) {}
+        }
+    }
+
     /**
      * Lấy thông tin chi tiết của 1 đơn hàng cụ thể (Kèm thông tin Thanh toán, Vận đơn và Thông số sản phẩm)
      */
     public OrderDTO getOrderDetailById(int orderId, int customerId) {
-        String sqlOrder = "SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, o.OrderStatus, "
+        String sqlOrder = "SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, o.OrderStatus, o.CancelReason, "
                         + "CONVERT(VARCHAR(19), o.OrderDate, 120) AS FormattedDate, "
                         + "pay.PaymentMethod, pay.PaymentStatus, pay.TransactionID, "
                         + "CONVERT(VARCHAR(19), pay.PaymentDate, 120) AS FormattedPayDate, "
@@ -263,6 +315,7 @@ public class OrderDAO extends DBContext {
                 order.setShippingProvider(rsOrder.getString("ShippingProvider"));
                 order.setTrackingNumber(rsOrder.getString("TrackingNumber"));
                 order.setEstimatedDeliveryDate(rsOrder.getString("EstDelivery"));
+                order.setCancelReason(rsOrder.getString("CancelReason"));
 
                 PreparedStatement psItems = conn.prepareStatement(sqlItems);
                 psItems.setInt(1, orderId);

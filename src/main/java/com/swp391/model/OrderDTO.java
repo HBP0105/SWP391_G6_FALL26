@@ -18,6 +18,7 @@ public class OrderDTO {
     private String shippingProvider;
     private String trackingNumber;
     private String estimatedDeliveryDate;
+    private String cancelReason;
     private List<CartItemDTO> items;
 
     public OrderDTO() {
@@ -161,5 +162,13 @@ public class OrderDTO {
 
     public void setEstimatedDeliveryDate(String estimatedDeliveryDate) {
         this.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
     }
 }

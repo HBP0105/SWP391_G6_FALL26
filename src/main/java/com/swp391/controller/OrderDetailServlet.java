@@ -65,9 +65,25 @@ public class OrderDetailServlet extends HttpServlet {
         if ("cancel".equals(action)) {
             try {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
-                orderDAO.cancelOrder(orderId, customer.getCustomerID());
+                String cancelReason = request.getParameter("cancelReason");
+                if (cancelReason == null || cancelReason.trim().isEmpty()) {
+                    cancelReason = "Customer requested order cancellation";
+                }
+                orderDAO.cancelOrder(orderId, customer.getCustomerID(), cancelReason);
                 response.sendRedirect(request.getContextPath() + "/order-detail?id=" + orderId + "&cancelSuccess=true");
                 return;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if ("received".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
+                boolean delivered = orderDAO.confirmDelivered(orderId, customer.getCustomerID());
+                if (delivered) {
+                    response.sendRedirect(request.getContextPath() + "/order-detail?id=" + orderId + "&deliveredSuccess=true");
+                    return;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

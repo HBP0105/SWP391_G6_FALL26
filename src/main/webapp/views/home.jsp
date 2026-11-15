@@ -230,11 +230,8 @@
                                                                             data-product-id="${product.productId}"
                                                                             title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                                 class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                                ${inWishlist ? 'style="color: #D10024;"'
-                                                                                : '' }></i><span
-                                                                                class="tooltipp">${inWishlist ? 'Product
-                                                                                is in wishlist' : 'add to
-                                                                                wishlist'}</span></button>
+                                                                                style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                                class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                         <button type="button" class="add-to-compare"
                                                                             data-product-id="${product.productId}"><i
                                                                                 class="fa fa-exchange"></i><span
@@ -325,13 +322,8 @@
                                                                                         data-product-id="${product.productId}"
                                                                                         title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                                             class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                                            ${inWishlist
-                                                                                            ? 'style="color: #D10024;"'
-                                                                                            : '' }></i><span
-                                                                                            class="tooltipp">${inWishlist
-                                                                                            ? 'Product is in wishlist' :
-                                                                                            'add to
-                                                                                            wishlist'}</span></button>
+                                                                                            style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                                            class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                                     <button type="button"
                                                                                         class="add-to-compare"
                                                                                         data-product-id="${product.productId}"><i
@@ -458,11 +450,8 @@
                                                                         data-product-id="${product.productId}"
                                                                         title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                             class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                            ${inWishlist ? 'style="color: #D10024;"'
-                                                                            : '' }></i><span
-                                                                            class="tooltipp">${inWishlist ? 'Product is
-                                                                            in wishlist' : 'add to
-                                                                            wishlist'}</span></button>
+                                                                            style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                            class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                     <button type="button" class="add-to-compare"
                                                                         data-product-id="${product.productId}"><i
                                                                             class="fa fa-exchange"></i><span
@@ -539,12 +528,8 @@
                                                                                     data-product-id="${product.productId}"
                                                                                     title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                                         class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                                        ${inWishlist
-                                                                                        ? 'style="color: #D10024;"' : ''
-                                                                                        }></i><span
-                                                                                        class="tooltipp">${inWishlist ?
-                                                                                        'Product is in wishlist' : 'add
-                                                                                        to wishlist'}</span></button>
+                                                                                        style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                                        class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                                 <button type="button"
                                                                                     class="add-to-compare"
                                                                                     data-product-id="${product.productId}"><i
@@ -706,11 +691,8 @@
                                                                         data-product-id="${product.productId}"
                                                                         title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                             class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                            ${inWishlist ? 'style="color: #D10024;"'
-                                                                            : '' }></i><span
-                                                                            class="tooltipp">${inWishlist ? 'Product is
-                                                                            in wishlist' : 'add to
-                                                                            wishlist'}</span></button>
+                                                                            style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                            class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                     <button type="button" class="add-to-compare"
                                                                         data-product-id="${product.productId}"><i
                                                                             class="fa fa-exchange"></i><span
@@ -785,12 +767,8 @@
                                                                                     data-product-id="${product.productId}"
                                                                                     title="${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}"><i
                                                                                         class="fa ${inWishlist ? 'fa-heart' : 'fa-heart-o'}"
-                                                                                        ${inWishlist
-                                                                                        ? 'style="color: #D10024;"' : ''
-                                                                                        }></i><span
-                                                                                        class="tooltipp">${inWishlist ?
-                                                                                        'Product is in wishlist' : 'add
-                                                                                        to wishlist'}</span></button>
+                                                                                        style="${inWishlist ? 'color: #D10024;' : ''}"></i><span
+                                                                                        class="tooltipp">${inWishlist ? 'Product is in wishlist' : 'add to wishlist'}</span></button>
                                                                                 <button type="button"
                                                                                     class="add-to-compare"
                                                                                     data-product-id="${product.productId}"><i
