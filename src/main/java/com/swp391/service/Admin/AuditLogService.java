@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service Layer for System Audit Logs (Feature 5).
- * Encapsulates business validation, pagination calculations, and activity logging.
+ * Service Layer for System Audit Logs (Feature 5). Encapsulates business
+ * validation, pagination calculations, and activity logging.
  */
 public class AuditLogService {
 
@@ -28,8 +28,7 @@ public class AuditLogService {
      * Prepares and packages all data required for the Audit Log Dashboard view.
      */
     public Map<String, Object> getAuditLogBundle(String startDate, String endDate,
-                                                 String action, String keyword,
-                                                 String pageParam, int pageSize) {
+            String action, String keyword,String pageParam, int pageSize) {
         Map<String, Object> bundle = new HashMap<>();
 
         String cleanStart = (startDate != null && !startDate.trim().isEmpty()) ? startDate.trim() : null;
@@ -47,6 +46,7 @@ public class AuditLogService {
                     cleanStart = null;
                 }
             } catch (Exception e) {
+                msgError = "Validation Error: Invalid 'From Date' format (expected YYYY-MM-DD)!";
                 cleanStart = null;
             }
         }
@@ -59,6 +59,7 @@ public class AuditLogService {
                     cleanEnd = null;
                 }
             } catch (Exception e) {
+                msgError = "Validation Error: Invalid 'To Date' format (expected YYYY-MM-DD)!";
                 cleanEnd = null;
             }
         }
@@ -100,21 +101,24 @@ public class AuditLogService {
         if (pageParam != null && !pageParam.trim().isEmpty()) {
             try {
                 page = Integer.parseInt(pageParam.trim());
-                if (page < 1) page = 1;
+                if (page < 1) {
+                    page = 1;
+                }
             } catch (NumberFormatException ignored) {
                 page = 1;
             }
         }
         int validPageSize = pageSize > 0 ? pageSize : 15;
 
-        int totalCount = auditLogDAO.getTotalAuditLogsCount(formattedStart, formattedEnd, cleanAction, cleanKeyword);
+        int totalCount = auditLogDAO.getTotalAuditLogsCount(formattedStart, formattedEnd,
+                cleanAction, cleanKeyword);
         int totalPages = (int) Math.ceil((double) totalCount / validPageSize);
         if (page > totalPages && totalPages > 0) {
             page = totalPages;
         }
 
-        List<AuditLog> logs = auditLogDAO.getAuditLogsFiltered(
-                formattedStart, formattedEnd, cleanAction, cleanKeyword, page, validPageSize);
+        List<AuditLog> logs = auditLogDAO.getAuditLogsFiltered(formattedStart, formattedEnd,
+                cleanAction, cleanKeyword, page, validPageSize);
 
         Map<String, Integer> metrics = auditLogDAO.getAuditLogMetrics();
         List<String> distinctActions = auditLogDAO.getDistinctActions();
@@ -132,6 +136,7 @@ public class AuditLogService {
         bundle.put("selectedKeyword", cleanKeyword != null ? cleanKeyword : "");
 
         bundle.put("currentPage", page);
+        bundle.put("page", page);
         bundle.put("pageSize", validPageSize);
         bundle.put("totalPages", totalPages);
         bundle.put("totalCount", totalCount);
@@ -143,7 +148,7 @@ public class AuditLogService {
      * Records a new activity log entry in the system.
      */
     public boolean logActivity(Integer staffId, String action, String entityName,
-                               String entityId, String oldData, String newData) {
+            String entityId, String oldData, String newData) {
         return auditLogDAO.insertAuditLog(staffId, action, entityName, entityId, oldData, newData);
     }
 }

@@ -32,25 +32,7 @@ public class CustomerDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Customer customer = new Customer();
-                    customer.setCustomerID(rs.getInt("CustomerID"));
-                    customer.setFullName(rs.getString("FullName"));
-                    customer.setEmail(rs.getString("Email"));
-                    customer.setPasswordHash(rs.getString("PasswordHash"));
-                    customer.setPhone(rs.getString("Phone"));
-                    customer.setStatus(rs.getString("Status"));
-
-                    Timestamp createdTs = rs.getTimestamp("CreatedAt");
-                    if (createdTs != null) {
-                        customer.setCreatedAt(createdTs.toLocalDateTime());
-                    }
-
-                    Timestamp updatedTs = rs.getTimestamp("UpdatedAt");
-                    if (updatedTs != null) {
-                        customer.setUpdatedAt(updatedTs.toLocalDateTime());
-                    }
-
-                    return customer;
+                    return mapCustomer(rs);
                 }
             }
         } catch (Exception e) {
@@ -131,30 +113,77 @@ public class CustomerDAO {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Customer customer = new Customer();
-                    customer.setCustomerID(rs.getInt("CustomerID"));
-                    customer.setFullName(rs.getString("FullName"));
-                    customer.setEmail(rs.getString("Email"));
-                    customer.setPasswordHash(rs.getString("PasswordHash"));
-                    customer.setPhone(rs.getString("Phone"));
-                    customer.setStatus(rs.getString("Status"));
-
-                    Timestamp createdTs = rs.getTimestamp("CreatedAt");
-                    if (createdTs != null) {
-                        customer.setCreatedAt(createdTs.toLocalDateTime());
-                    }
-
-                    Timestamp updatedTs = rs.getTimestamp("UpdatedAt");
-                    if (updatedTs != null) {
-                        customer.setUpdatedAt(updatedTs.toLocalDateTime());
-                    }
-
-                    return customer;
+                    return mapCustomer(rs);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Find customer by email and password regardless of status (for explicit lock/ban messaging).
+     */
+    public Customer findByEmailAndPassword(String email, String password) {
+        String sql = "SELECT CustomerID, FullName, Email, PasswordHash, Phone, Status, CreatedAt, UpdatedAt "
+                   + "FROM Customers "
+                   + "WHERE Email = ? AND PasswordHash = ?";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, password);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapCustomer(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Fetch current status of a customer account for live session validation.
+     */
+    public String getCustomerStatusById(int customerId) {
+        String sql = "SELECT Status FROM Customers WHERE CustomerID = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Status");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Customer mapCustomer(ResultSet rs) throws Exception {
+        Customer customer = new Customer();
+        customer.setCustomerID(rs.getInt("CustomerID"));
+        customer.setFullName(rs.getString("FullName"));
+        customer.setEmail(rs.getString("Email"));
+        customer.setPasswordHash(rs.getString("PasswordHash"));
+        customer.setPhone(rs.getString("Phone"));
+        customer.setStatus(rs.getString("Status"));
+
+        Timestamp createdTs = rs.getTimestamp("CreatedAt");
+        if (createdTs != null) {
+            customer.setCreatedAt(createdTs.toLocalDateTime());
+        }
+
+        Timestamp updatedTs = rs.getTimestamp("UpdatedAt");
+        if (updatedTs != null) {
+            customer.setUpdatedAt(updatedTs.toLocalDateTime());
+        }
+        return customer;
     }
 }

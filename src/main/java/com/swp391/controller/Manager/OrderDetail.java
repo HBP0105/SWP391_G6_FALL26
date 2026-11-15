@@ -1,5 +1,6 @@
 package com.swp391.controller.Manager;
 
+import com.swp391.model.Staff;
 import com.swp391.service.Manager.OrderService;
 
 import java.io.IOException;
@@ -34,7 +35,11 @@ public class OrderDetail extends HttpServlet {
         String idParam = request.getParameter("id");
         int orderId = 0;
         if (idParam != null && !idParam.trim().isEmpty()) {
+            try {
                 orderId = Integer.parseInt(idParam.trim());
+            } catch (NumberFormatException ignored) {
+                orderId = 0;
+            }
         }
 
         if (orderId <= 0) {
@@ -92,11 +97,16 @@ public class OrderDetail extends HttpServlet {
                 String shipperName = request.getParameter("shipperName");
                 String shipperPhone = request.getParameter("shipperPhone");
 
-                
+                HttpSession session = request.getSession();
+                Integer staffId = null;
+                Object staffObj = session.getAttribute("staff");
+                if (staffObj instanceof Staff staff) {
+                    staffId = staff.getStaffId();
+                }
+
                 String processUpdate = orderService.processStatusUpdate(
                         orderId, newStatus, cancelReason, shippingProvider, trackingNumber,
-                        shipperName, shipperPhone);
-                HttpSession session = request.getSession();
+                        shipperName, shipperPhone, staffId);
                 if (processUpdate == null) {
                     session.setAttribute("msgSuccess", "true");
                     session.setAttribute("msgSuccessOrderId", orderId);

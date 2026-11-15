@@ -66,7 +66,7 @@ public class CategoryDAO {
                     cat.setCategoryName(rs.getString("CategoryName"));
                     cat.setDescription(rs.getString("Description"));
                     cat.setStatus(rs.getString("Status"));
-
+                    
                     Timestamp createdTs = rs.getTimestamp("CreatedAt");
                     if (createdTs != null) {
                         cat.setCreatedAt(createdTs.toLocalDateTime());
@@ -123,7 +123,7 @@ public class CategoryDAO {
     public Map<String, Integer> getCategoryStats() {
         Map<String, Integer> stats = new HashMap<>();
         String sql = """
-                SELECT
+                SELECT 
                     COUNT(*) AS totalCount,
                     COALESCE(SUM(CASE WHEN Status = 'ACTIVE' THEN 1 ELSE 0 END), 0) AS activeCount,
                     COALESCE(SUM(CASE WHEN Status = 'INACTIVE' THEN 1 ELSE 0 END), 0) AS inactiveCount

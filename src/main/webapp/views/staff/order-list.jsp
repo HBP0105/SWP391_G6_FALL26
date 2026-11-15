@@ -195,14 +195,6 @@
             </div>
           </c:if>
 
-          <!-- Alert Notification Error Validation -->
-          <c:if test="${not empty msgError}">
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Validation Error:</strong> <c:out value="${msgError}"/>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          </c:if>
-
           <!-- 5 Stat Metric Cards -->
           <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
             <div class="col">
@@ -581,20 +573,20 @@
             <p class="text-secondary small mb-3">Please specify the reason for cancelling this order. This reason will be logged into system records.</p>
             
             <div class="mb-3">
-              <label class="form-label fw-semibold fs-7 mb-2">Select Standard Reason:</label>
-              <select class="form-select form-select-sm mb-2" id="modalPresetReason" onchange="onPresetReasonChange()">
+              <label class="form-label fw-semibold fs-7 mb-2">Select Cancellation Reason: <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" id="modalPresetReason" onchange="onPresetReasonChange()">
                 <option value="">-- Choose a standard reason --</option>
                 <option value="Customer requested order cancellation">Customer requested order cancellation</option>
                 <option value="Out of stock / Product currently unavailable">Out of stock / Product currently unavailable</option>
                 <option value="Invalid shipping address or contact phone">Invalid shipping address or contact phone</option>
                 <option value="Unable to contact customer after multiple attempts">Unable to contact customer after multiple attempts</option>
-                <option value="OTHER">Other reason (Type below)...</option>
+                <option value="OTHER">Other reason (Type specific reason below)...</option>
               </select>
             </div>
 
-            <div class="mb-2">
+            <div class="mb-2 d-none" id="customReasonContainer">
               <label class="form-label fw-semibold fs-7 mb-1">
-                Detailed Reason / Note: <span id="reasonAsterisk" class="text-danger d-none">*</span>
+                Detailed Reason / Note: <span class="text-danger">*</span>
               </label>
               <textarea class="form-control" name="cancelReason" id="modalCancelReason" rows="3" placeholder="Enter detailed reason for cancellation..."></textarea>
             </div>
@@ -677,6 +669,33 @@
   <!-- Client-side Search, Date Validation, Modal, Export CSV & Theme Toggle Script -->
   <script>
     // Smart Shipping Courier & Tracking Number Helpers
+    var defaultShippers = {
+      'Giao Hàng Nhanh (GHN)': { name: 'Nguyễn Hoàng Hưng (GHN Fleet)', phone: '0912345678' },
+      'Giao Hàng Tiết Kiệm (GHTK)': { name: 'Lê Quốc Giao (GHTK Hub)', phone: '0978654321' },
+      'Viettel Post (VTP)': { name: 'Trần Văn Vận (VTP Express)', phone: '0984123888' },
+      'Shopee Express (SPX)': { name: 'Phạm Minh Quân (SPX Logistics)', phone: '0938765432' },
+      'VNPost (Bưu điện Việt Nam)': { name: 'Đặng Văn Bưu (VNPost Dispatch)', phone: '0905123789' }
+    };
+
+    function getDefaultShipperForProvider(provider) {
+      if (!provider) return defaultShippers['Giao Hàng Nhanh (GHN)'];
+      if (defaultShippers[provider]) return defaultShippers[provider];
+      for (var key in defaultShippers) {
+        if (provider.indexOf(key) !== -1 || key.indexOf(provider) !== -1) {
+          return defaultShippers[key];
+        }
+      }
+      return defaultShippers['Giao Hàng Nhanh (GHN)'];
+    }
+
+    function isDefaultOrEmptyShipper(name, phone) {
+      if (!name || name.trim() === '' || name.trim().toLowerCase() === 'unassigned' || name.trim().toLowerCase() === 'n/a') return true;
+      for (var key in defaultShippers) {
+        if (defaultShippers[key].name === name.trim()) return true;
+      }
+      return false;
+    }
+
     function autoDetectShippingProvider(address) {
       if (!address) return 'Giao Hàng Nhanh (GHN)';
       var addr = address.toLowerCase();
@@ -705,6 +724,17 @@
       if (trackingInput) {
         trackingInput.value = generateTrackingNumber(provider);
       }
+      var nameInput = document.getElementById('shipModalShipperName');
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (nameInput && phoneInput) {
+        var curName = nameInput.value.trim();
+        var curPhone = phoneInput.value.trim();
+        if (isDefaultOrEmptyShipper(curName, curPhone)) {
+          var shipper = getDefaultShipperForProvider(provider);
+          nameInput.value = shipper.name;
+          phoneInput.value = shipper.phone;
+        }
+      }
     }
 
     // Open Ship Modal with Smart Auto-detection
@@ -723,8 +753,16 @@
         trackingInput.value = generateTrackingNumber(detectedProvider);
       }
 
-      document.getElementById('shipModalShipperName').value = shipperName || '';
-      document.getElementById('shipModalShipperPhone').value = shipperPhone || '';
+      var nameInput = document.getElementById('shipModalShipperName');
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (isDefaultOrEmptyShipper(shipperName, shipperPhone)) {
+        var defaultShipper = getDefaultShipperForProvider(detectedProvider);
+        nameInput.value = defaultShipper.name;
+        phoneInput.value = defaultShipper.phone;
+      } else {
+        nameInput.value = shipperName || '';
+        phoneInput.value = shipperPhone || '';
+      }
 
       var shipBtn = document.querySelector('#shipOrderModal button[type="submit"]');
       if (shipBtn) {
@@ -787,7 +825,10 @@
       document.getElementById('modalOrderDisplayId').innerText = '#ORD-' + orderId;
       document.getElementById('modalPresetReason').value = '';
       document.getElementById('modalCancelReason').value = '';
-      document.getElementById('reasonAsterisk').classList.add('d-none');
+      var container = document.getElementById('customReasonContainer');
+      if (container) {
+        container.classList.add('d-none');
+      }
 
       var cancelBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
       if (cancelBtn) {
@@ -804,29 +845,40 @@
     function onPresetReasonChange() {
       var preset = document.getElementById('modalPresetReason').value;
       var reasonInput = document.getElementById('modalCancelReason');
-      var asterisk = document.getElementById('reasonAsterisk');
+      var container = document.getElementById('customReasonContainer');
 
       if (preset === 'OTHER') {
+        container.classList.remove('d-none');
         reasonInput.value = '';
         reasonInput.focus();
-        asterisk.classList.remove('d-none');
-      } else if (preset) {
-        reasonInput.value = preset;
-        asterisk.classList.add('d-none');
       } else {
+        container.classList.add('d-none');
         reasonInput.value = '';
-        asterisk.classList.add('d-none');
       }
     }
 
     // Validate Cancel Modal Before Submit (Double-submit Protection)
     function validateCancelModal() {
       var preset = document.getElementById('modalPresetReason').value;
-      var reason = document.getElementById('modalCancelReason').value.trim();
-      if (!reason) {
-        alert('Please enter or select a reason for cancelling the order!');
+      var reasonInput = document.getElementById('modalCancelReason');
+
+      if (!preset) {
+        alert('Please select a cancellation reason!');
+        document.getElementById('modalPresetReason').focus();
         return false;
       }
+
+      if (preset === 'OTHER') {
+        var customReason = reasonInput.value.trim();
+        if (!customReason) {
+          alert('Please enter a specific reason for cancelling the order!');
+          reasonInput.focus();
+          return false;
+        }
+      } else {
+        reasonInput.value = preset;
+      }
+
       var submitBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
       if (submitBtn) {
         if (submitBtn.dataset.submitting === 'true') {
@@ -1005,24 +1057,6 @@
         });
       }
     });
-
-    // Dark / Light Mode Toggle handled by main.js
-    var themeToggleBtn = document.getElementById('themeToggleBtn');
-    var themeIcon = document.getElementById('themeIcon');
-    var htmlTag = document.documentElement;
-
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener('click', function() {
-        var currentTheme = htmlTag.getAttribute('data-theme');
-        if (currentTheme === 'dark') {
-          htmlTag.setAttribute('data-theme', 'light');
-          if (themeIcon) themeIcon.className = 'bi bi-moon-stars';
-        } else {
-          htmlTag.setAttribute('data-theme', 'dark');
-          if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
-        }
-      });
-    }
   </script>
 </body>
 </html>

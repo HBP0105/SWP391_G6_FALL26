@@ -182,3 +182,4 @@ public class BrandService {
         return input.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", " ").replace("\n", " ");
     }
 }
+

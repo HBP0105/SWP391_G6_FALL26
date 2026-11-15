@@ -57,6 +57,13 @@
     .bg-icon-warning { background: rgba(217, 119, 6, 0.1); color: #d97706; }
     .bg-icon-purple  { background: rgba(147, 51, 234, 0.1); color: #9333ea; }
 
+    .detail-metric-box {
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f8fafc;
+    }
+
     html[data-theme="dark"] body {
       background-color: var(--admin-bg, #0f172a) !important;
       color: var(--admin-text, #e5edf7) !important;
@@ -72,7 +79,8 @@
       color: var(--admin-text, #e5edf7) !important;
       border-color: var(--admin-border, #2f3b52) !important;
     }
-    html[data-theme="dark"] .mini-stat-card {
+    html[data-theme="dark"] .mini-stat-card,
+    html[data-theme="dark"] .detail-metric-box {
       background: var(--admin-surface, #182235) !important;
       border-color: var(--admin-border, #2f3b52) !important;
     }
@@ -96,14 +104,27 @@
       color: var(--admin-text, #e5edf7) !important;
       border-color: var(--admin-border, #2f3b52) !important;
     }
+    html[data-theme="dark"] .modal-footer.bg-light,
     html[data-theme="dark"] .user-info-banner {
       background: rgba(30, 41, 59, 0.7) !important;
       border-color: rgba(51, 65, 85, 0.8) !important;
+    }
+    html[data-theme="dark"] .text-dark {
+      color: #f1f5f9 !important;
     }
   </style>
 </head>
 
 <body>
+  <c:url var="exportCsvUrl" value="/admin/users">
+    <c:param name="action" value="exportCsv"/>
+    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+    <c:if test="${selectedUserType != 'ALL'}"><c:param name="userType" value="${selectedUserType}"/></c:if>
+    <c:if test="${selectedRole != 'ALL'}"><c:param name="role" value="${selectedRole}"/></c:if>
+    <c:if test="${selectedStatus != 'ALL'}"><c:param name="status" value="${selectedStatus}"/></c:if>
+    <c:if test="${selectedSort != 'newest'}"><c:param name="sort" value="${selectedSort}"/></c:if>
+  </c:url>
+
   <div class="admin-shell">
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
@@ -120,7 +141,7 @@
           </button>
 
           <span class="navbar-text fw-bold text-dark fs-6 d-none d-sm-inline">
-            <i class="bi bi-people-fill text-primary me-2"></i>User Directory & Role Access Control
+            <i class="bi bi-people-fill text-primary me-2"></i>User Directory &amp; Role Access Control
           </span>
 
           <div class="navbar-actions ms-auto d-flex align-items-center gap-2">
@@ -136,7 +157,7 @@
                 <span class="profile-name d-none d-sm-inline fw-semibold">Administrator</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/home"><i class="bi bi-shop me-2"></i>Storefront</a></li>
+                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/change-password"><i class="bi bi-key me-2 text-primary"></i>Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
               </ul>
@@ -152,13 +173,16 @@
           <!-- PAGE HEADING -->
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-              <h1 class="h4 mb-0 fw-bold text-dark">User & Access Management</h1>
-              <p class="text-muted small mb-0">Oversee customer and staff accounts, assign staff privileges, and manage account statuses.</p>
+              <h1 class="h4 mb-0 fw-bold text-dark">User &amp; Access Management</h1>
+              <p class="text-muted small mb-0">Manage customer &amp; staff directory, inspect account details, create staff, assign roles, and enforce account lock policies.</p>
             </div>
-            <div>
-              <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
-                <i class="bi bi-shield-check text-success me-1"></i>Role-Based Access Control (RBAC)
-              </span>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <a href="${exportCsvUrl}" class="btn btn-outline-success btn-sm fw-semibold">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV
+              </a>
+              <button type="button" class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+                <i class="bi bi-person-plus-fill me-1"></i>Add Staff
+              </button>
             </div>
           </div>
 
@@ -202,7 +226,7 @@
             <div class="col-6 col-md-3">
               <div class="mini-stat-card d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-muted extra-small fw-semibold text-uppercase">Staff & Admins</div>
+                  <div class="text-muted extra-small fw-semibold text-uppercase">Staff &amp; Admins</div>
                   <div class="h4 fw-bold text-purple mb-0" style="color: #9333ea;"><fmt:formatNumber value="${stats.totalStaff}" pattern="#,###"/></div>
                 </div>
                 <div class="mini-stat-icon bg-icon-purple"><i class="bi bi-person-gear"></i></div>
@@ -224,11 +248,11 @@
             </div>
           </div>
 
-          <!-- SEARCH & FILTER BAR -->
+          <!-- SEARCH & FILTER BAR (Fixed 10 items/page) -->
           <div class="card border-0 shadow-sm p-3 mb-3">
             <form method="get" action="${pageContext.request.contextPath}/admin/users" id="filterForm">
               <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                   <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-search me-1 text-primary"></i>Search Keyword:</label>
                   <input type="search" class="form-control form-control-sm" name="keyword" value="<c:out value='${keyword}'/>" placeholder="ID, name, email or phone..." autocomplete="off">
                 </div>
@@ -243,27 +267,38 @@
                 </div>
 
                 <div class="col-6 col-md-2">
-                  <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-funnel me-1 text-primary"></i>Status:</label>
-                  <select name="status" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
-                    <option value="ALL" ${selectedStatus == 'ALL' ? 'selected' : ''}>-- All Statuses --</option>
-                    <option value="ACTIVE" ${selectedStatus == 'ACTIVE' ? 'selected' : ''}>Active</option>
-                    <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Inactive</option>
-                    <option value="BANNED" ${selectedStatus == 'BANNED' ? 'selected' : ''}>Banned</option>
+                  <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-shield-check me-1 text-primary"></i>Role:</label>
+                  <select name="role" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
+                    <option value="ALL" ${selectedRole == 'ALL' ? 'selected' : ''}>-- All Roles --</option>
+                    <option value="ADMIN" ${selectedRole == 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                    <option value="MANAGER" ${selectedRole == 'MANAGER' ? 'selected' : ''}>MANAGER</option>
+                    <option value="CUSTOMER" ${selectedRole == 'CUSTOMER' ? 'selected' : ''}>CUSTOMER</option>
                   </select>
                 </div>
 
                 <div class="col-6 col-md-2">
-                  <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-list-ol me-1 text-primary"></i>Page Size:</label>
-                  <select name="pageSize" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
-                    <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / page</option>
-                    <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / page</option>
-                    <option value="50" ${pageSize == 50 ? 'selected' : ''}>50 / page</option>
+                  <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-funnel me-1 text-primary"></i>Status:</label>
+                  <select name="status" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
+                    <option value="ALL" ${selectedStatus == 'ALL' ? 'selected' : ''}>-- All Statuses --</option>
+                    <option value="ACTIVE" ${selectedStatus == 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+                    <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>INACTIVE</option>
+                    <option value="BANNED" ${selectedStatus == 'BANNED' ? 'selected' : ''}>BANNED</option>
                   </select>
                 </div>
 
-                <div class="col-6 col-md-2 d-flex gap-2">
-                  <button type="submit" class="btn btn-primary btn-sm flex-fill fw-bold">
-                    <i class="bi bi-funnel-fill me-1"></i> Filter
+                <div class="col-6 col-md-2">
+                  <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-sort-down me-1 text-primary"></i>Sort By:</label>
+                  <select name="sort" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
+                    <option value="newest" ${selectedSort == 'newest' ? 'selected' : ''}>Newest Created</option>
+                    <option value="oldest" ${selectedSort == 'oldest' ? 'selected' : ''}>Oldest Created</option>
+                    <option value="name_asc" ${selectedSort == 'name_asc' ? 'selected' : ''}>Name (A - Z)</option>
+                    <option value="name_desc" ${selectedSort == 'name_desc' ? 'selected' : ''}>Name (Z - A)</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-1 d-flex gap-1">
+                  <button type="submit" class="btn btn-primary btn-sm flex-fill fw-bold" title="Apply Filters">
+                    <i class="bi bi-search"></i>
                   </button>
                   <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
                     <i class="bi bi-arrow-counterclockwise"></i>
@@ -277,10 +312,10 @@
           <div class="card border-0 shadow-sm">
             <div class="card-header bg-white d-flex justify-content-between align-items-center py-2.5">
               <span class="fw-bold text-dark fs-7">
-                <i class="bi bi-table text-primary me-2"></i>Accounts & Roles Directory
+                <i class="bi bi-table text-primary me-2"></i>Accounts &amp; Roles Directory
               </span>
               <span class="badge bg-light text-muted border fs-7">
-                <fmt:formatNumber value="${totalItems}" pattern="#,###"/> user(s) found
+                <fmt:formatNumber value="${totalItems}" pattern="#,###"/> user(s) found (10 / page)
               </span>
             </div>
 
@@ -295,12 +330,13 @@
                     <th>Role</th>
                     <th>Status</th>
                     <th>Created</th>
-                    <th class="text-end" style="min-width: 140px;">Action</th>
+                    <th class="text-end" style="min-width: 205px;">Action</th>
                   </tr>
                 </thead>
                 <tbody class="fs-7">
                   <c:forEach var="u" items="${users}">
                     <c:set var="isSelf" value="${u.userType == 'STAFF' && not empty currentAdminId && currentAdminId == u.userId}" />
+                    <c:set var="isPeerAdmin" value="${!isSelf && u.userType == 'STAFF' && u.roleName == 'ADMIN'}" />
                     <tr>
                       <td class="text-muted fw-bold">#${u.userId}</td>
                       <td>
@@ -374,31 +410,67 @@
                       <td class="text-muted">
                         <c:choose>
                           <c:when test="${not empty u.createdAt}">
-                            <fmt:formatDate value="${u.createdAt}" pattern="yyyy-MM-dd HH:mm"/>
+                            <fmt:formatDate value="${u.createdAt}" pattern="HH:mm:ss dd/MM/yyyy"/>
                           </c:when>
                           <c:otherwise>-</c:otherwise>
                         </c:choose>
                       </td>
                       <td class="text-end">
-                        <c:choose>
-                          <c:when test="${isSelf}">
-                            <span class="badge bg-light text-muted border py-1.5 px-2" title="You cannot modify your own administrative account">
-                              <i class="bi bi-lock-fill me-1"></i>Self
-                            </span>
-                          </c:when>
-                          <c:otherwise>
-                            <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2.5 fw-medium btn-manage-access"
-                                    data-usertype="${u.userType}"
-                                    data-userid="${u.userId}"
-                                    data-fullname="<c:out value='${u.fullName}'/>"
-                                    data-email="<c:out value='${u.email}'/>"
-                                    data-roleid="${u.roleId}"
-                                    data-rolename="<c:out value='${u.roleName}'/>"
-                                    data-status="${u.status}">
-                              <i class="bi bi-sliders me-1"></i>Manage Access
-                            </button>
-                          </c:otherwise>
-                        </c:choose>
+                        <div class="d-inline-flex align-items-center gap-1">
+                          <c:url var="detailUrl" value="/admin/users">
+                            <c:param name="action" value="detail"/>
+                            <c:param name="detailUserType" value="${u.userType}"/>
+                            <c:param name="detailUserId" value="${u.userId}"/>
+                            <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                            <c:if test="${selectedUserType != 'ALL'}"><c:param name="userType" value="${selectedUserType}"/></c:if>
+                            <c:if test="${selectedRole != 'ALL'}"><c:param name="role" value="${selectedRole}"/></c:if>
+                            <c:if test="${selectedStatus != 'ALL'}"><c:param name="status" value="${selectedStatus}"/></c:if>
+                            <c:if test="${selectedSort != 'newest'}"><c:param name="sort" value="${selectedSort}"/></c:if>
+                            <c:if test="${currentPage > 1}"><c:param name="page" value="${currentPage}"/></c:if>
+                          </c:url>
+                          <a href="${detailUrl}" class="btn btn-outline-secondary btn-sm py-1 px-2" title="View Account Details">
+                            <i class="bi bi-eye"></i>
+                          </a>
+
+                          <c:choose>
+                            <c:when test="${isSelf}">
+                              <a href="${pageContext.request.contextPath}/admin/change-password"
+                                 class="btn btn-outline-info btn-sm py-1 px-2" title="Change Your Password">
+                                <i class="bi bi-key"></i>
+                              </a>
+                              <span class="badge bg-light text-muted border py-1.5 px-2" title="You cannot lock or demote your own administrative account">
+                                <i class="bi bi-lock-fill me-1"></i>Self
+                              </span>
+                            </c:when>
+                            <c:when test="${isPeerAdmin}">
+                              <span class="badge bg-light text-muted border py-1.5 px-2" title="Administrator accounts cannot be modified by peers">
+                                <i class="bi bi-shield-lock-fill me-1"></i>Protected
+                              </span>
+                            </c:when>
+                            <c:otherwise>
+                              <c:if test="${u.userType == 'STAFF'}">
+                                <button type="button" class="btn btn-outline-warning btn-sm py-1 px-2 btn-edit-staff"
+                                        data-staffid="${u.userId}"
+                                        data-fullname="<c:out value='${u.fullName}'/>"
+                                        data-email="<c:out value='${u.email}'/>"
+                                        data-phone="<c:out value='${u.phone}'/>"
+                                        title="Edit Staff Info / Reset Password">
+                                  <i class="bi bi-pencil-square"></i>
+                                </button>
+                              </c:if>
+                              <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2.5 fw-medium btn-manage-access"
+                                      data-usertype="${u.userType}"
+                                      data-userid="${u.userId}"
+                                      data-fullname="<c:out value='${u.fullName}'/>"
+                                      data-email="<c:out value='${u.email}'/>"
+                                      data-roleid="${u.roleId}"
+                                      data-rolename="<c:out value='${u.roleName}'/>"
+                                      data-status="${u.status}">
+                                <i class="bi bi-sliders me-1"></i>Manage Access
+                              </button>
+                            </c:otherwise>
+                          </c:choose>
+                        </div>
                       </td>
                     </tr>
                   </c:forEach>
@@ -414,7 +486,7 @@
               </table>
             </div>
 
-            <!-- PAGINATION FOOTER -->
+            <!-- PAGINATION FOOTER (URL-encoded properly via c:url) -->
             <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center py-2.5 gap-2">
               <span class="text-muted small">
                 Showing page <strong>${currentPage}</strong> of <strong>${totalPages}</strong>
@@ -423,8 +495,15 @@
 
               <div class="btn-group btn-group-sm">
                 <c:if test="${currentPage > 1}">
-                  <a class="btn btn-outline-secondary"
-                     href="?keyword=${keyword}&userType=${selectedUserType}&status=${selectedStatus}&pageSize=${pageSize}&page=${currentPage - 1}">
+                  <c:url var="prevUrl" value="/admin/users">
+                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                    <c:if test="${selectedUserType != 'ALL'}"><c:param name="userType" value="${selectedUserType}"/></c:if>
+                    <c:if test="${selectedRole != 'ALL'}"><c:param name="role" value="${selectedRole}"/></c:if>
+                    <c:if test="${selectedStatus != 'ALL'}"><c:param name="status" value="${selectedStatus}"/></c:if>
+                    <c:if test="${selectedSort != 'newest'}"><c:param name="sort" value="${selectedSort}"/></c:if>
+                    <c:param name="page" value="${currentPage - 1}"/>
+                  </c:url>
+                  <a class="btn btn-outline-secondary" href="${prevUrl}">
                     <i class="bi bi-chevron-left"></i> Previous
                   </a>
                 </c:if>
@@ -432,15 +511,29 @@
                 <c:set var="startPage" value="${currentPage - 2 > 1 ? currentPage - 2 : 1}" />
                 <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}" />
                 <c:forEach begin="${startPage}" end="${endPage}" var="p">
-                  <a class="btn ${p == currentPage ? 'btn-primary' : 'btn-outline-secondary'}"
-                     href="?keyword=${keyword}&userType=${selectedUserType}&status=${selectedStatus}&pageSize=${pageSize}&page=${p}">
+                  <c:url var="pageUrl" value="/admin/users">
+                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                    <c:if test="${selectedUserType != 'ALL'}"><c:param name="userType" value="${selectedUserType}"/></c:if>
+                    <c:if test="${selectedRole != 'ALL'}"><c:param name="role" value="${selectedRole}"/></c:if>
+                    <c:if test="${selectedStatus != 'ALL'}"><c:param name="status" value="${selectedStatus}"/></c:if>
+                    <c:if test="${selectedSort != 'newest'}"><c:param name="sort" value="${selectedSort}"/></c:if>
+                    <c:param name="page" value="${p}"/>
+                  </c:url>
+                  <a class="btn ${p == currentPage ? 'btn-primary' : 'btn-outline-secondary'}" href="${pageUrl}">
                     ${p}
                   </a>
                 </c:forEach>
 
                 <c:if test="${currentPage < totalPages}">
-                  <a class="btn btn-outline-secondary"
-                     href="?keyword=${keyword}&userType=${selectedUserType}&status=${selectedStatus}&pageSize=${pageSize}&page=${currentPage + 1}">
+                  <c:url var="nextUrl" value="/admin/users">
+                    <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}"/></c:if>
+                    <c:if test="${selectedUserType != 'ALL'}"><c:param name="userType" value="${selectedUserType}"/></c:if>
+                    <c:if test="${selectedRole != 'ALL'}"><c:param name="role" value="${selectedRole}"/></c:if>
+                    <c:if test="${selectedStatus != 'ALL'}"><c:param name="status" value="${selectedStatus}"/></c:if>
+                    <c:if test="${selectedSort != 'newest'}"><c:param name="sort" value="${selectedSort}"/></c:if>
+                    <c:param name="page" value="${currentPage + 1}"/>
+                  </c:url>
+                  <a class="btn btn-outline-secondary" href="${nextUrl}">
                     Next <i class="bi bi-chevron-right"></i>
                   </a>
                 </c:if>
@@ -453,30 +546,38 @@
     </div>
   </div>
 
-  <!-- UNIFIED MANAGE ACCESS MODAL -->
+  <!-- 1. UNIFIED MANAGE ACCESS MODAL -->
   <div class="modal fade" id="manageAccessModal" tabindex="-1" aria-labelledby="manageAccessModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow">
-        <form method="post" action="${pageContext.request.contextPath}/admin/users">
+        <form method="post" action="${pageContext.request.contextPath}/admin/users" id="manageAccessForm" novalidate>
           <input type="hidden" name="action" value="updateAccess">
           <input type="hidden" name="targetUserType" id="modalTargetUserType">
           <input type="hidden" name="userId" id="modalUserId">
+          <input type="hidden" id="modalOriginalStatus">
 
           <!-- Hidden preserved filters for smooth redirect -->
           <input type="hidden" name="keyword" value="<c:out value='${keyword}'/>">
           <input type="hidden" name="userType" value="${selectedUserType}">
+          <input type="hidden" name="roleParam" value="${selectedRole}">
           <input type="hidden" name="statusParam" value="${selectedStatus}">
+          <input type="hidden" name="sort" value="${selectedSort}">
           <input type="hidden" name="page" value="${currentPage}">
-          <input type="hidden" name="pageSize" value="${pageSize}">
 
           <div class="modal-header border-bottom">
             <h5 class="modal-title fw-bold fs-6" id="manageAccessModalLabel">
-              <i class="bi bi-shield-lock-fill text-primary me-2"></i>Manage Access & Permissions
+              <i class="bi bi-shield-lock-fill text-primary me-2"></i>Manage Access &amp; Permissions
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
           <div class="modal-body p-4">
+            <div class="alert alert-danger py-2 px-3 small d-none modal-inline-error mb-3" role="alert"></div>
+            <c:if test="${modalAction == 'updateAccess' && not empty modalError}">
+              <div class="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i><c:out value="${modalError}"/>
+              </div>
+            </c:if>
             <!-- Account Info Summary -->
             <div class="user-info-banner p-3 rounded mb-3 border bg-light">
               <div class="d-flex align-items-center gap-3">
@@ -501,8 +602,9 @@
                   <option value="${r.roleId}">${r.roleName}</option>
                 </c:forEach>
               </select>
+              <div class="invalid-feedback"></div>
               <div class="form-text extra-small text-muted">
-                Admin has full system access. Manager has store management & reporting access.
+                Admin has full system access. Manager has store management &amp; reporting access.
               </div>
             </div>
 
@@ -520,11 +622,298 @@
               </label>
               <select class="form-select form-select-sm" name="status" id="modalStatus">
                 <option value="ACTIVE">ACTIVE - Normal account operations</option>
-                <option value="INACTIVE">INACTIVE - Account deactivated</option>
-                <option value="BANNED">BANNED - Prohibited from accessing system</option>
+                <option value="INACTIVE">INACTIVE - Account temporarily deactivated</option>
+                <option value="BANNED">BANNED - Permanently prohibited from system</option>
               </select>
-              <div class="form-text extra-small text-danger">
-                Setting status to BANNED immediately restricts account login.
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <!-- Ban Warning Alert -->
+            <div class="alert alert-danger py-2 px-3 small d-none mb-3" id="modalBanWarning">
+              <i class="bi bi-exclamation-octagon-fill me-1"></i>
+              <strong>Immediate Lockout:</strong> Banning this account invalidates any active session immediately and blocks future logins.
+            </div>
+
+            <!-- Reason / Audit Note -->
+            <div class="mb-0">
+              <label class="form-label fw-semibold fs-7 mb-1">
+                <i class="bi bi-journal-text text-primary me-1"></i>Reason / Audit Note
+                <span class="text-danger d-none" id="modalReasonRequired">*</span>
+                <span class="text-muted fw-normal small" id="modalReasonOptional">(Optional)</span>:
+              </label>
+              <textarea class="form-control form-control-sm" name="reason" id="modalReason" rows="2" maxlength="250"
+                        placeholder="Enter reason for status or role change (recorded in Audit Logs)..."></textarea>
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+
+          <div class="modal-footer border-top bg-light">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm fw-bold" id="modalSaveBtn">
+              <i class="bi bi-check2-circle me-1"></i>Save Access Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. USER DETAIL MODAL -->
+  <div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold fs-6" id="userDetailModalLabel">
+            <i class="bi bi-person-vcard-fill text-primary me-2"></i>Account Profile &amp; Activity Summary
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4" id="userDetailBody">
+          <c:if test="${not empty userDetail}">
+            <div class="user-info-banner p-3 rounded mb-3 border bg-light">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-bold text-dark fs-6">
+                    <c:out value="${userDetail.fullName}"/>
+                    <span class="text-muted fw-normal small">#${userDetail.userId}</span>
+                  </div>
+                  <div class="text-muted small"><i class="bi bi-envelope me-1"></i><c:out value="${userDetail.email}"/></div>
+                  <div class="text-muted small">
+                    <i class="bi bi-telephone me-1"></i>
+                    <c:out value="${not empty userDetail.phone ? userDetail.phone : 'None'}"/>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div>
+                    <c:choose>
+                      <c:when test="${userDetail.status == 'ACTIVE'}">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">ACTIVE</span>
+                      </c:when>
+                      <c:when test="${userDetail.status == 'BANNED'}">
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">BANNED</span>
+                      </c:when>
+                      <c:otherwise>
+                        <span class="badge bg-secondary">${userDetail.status}</span>
+                      </c:otherwise>
+                    </c:choose>
+                  </div>
+                  <div class="mt-1">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${userDetail.roleName}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3 small">
+              <div class="col-6">
+                <div class="detail-metric-box">
+                  <div class="text-muted extra-small">Created At</div>
+                  <div class="fw-semibold">
+                    <c:choose>
+                      <c:when test="${not empty userDetail.createdAt}">
+                        <fmt:formatDate value="${userDetail.createdAt}" pattern="HH:mm:ss dd/MM/yyyy"/>
+                      </c:when>
+                      <c:otherwise>-</c:otherwise>
+                    </c:choose>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="detail-metric-box">
+                  <div class="text-muted extra-small">Last Updated</div>
+                  <div class="fw-semibold">
+                    <c:choose>
+                      <c:when test="${not empty userDetail.updatedAt}">
+                        <fmt:formatDate value="${userDetail.updatedAt}" pattern="HH:mm:ss dd/MM/yyyy"/>
+                      </c:when>
+                      <c:otherwise>Never</c:otherwise>
+                    </c:choose>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <c:choose>
+              <c:when test="${userDetail.userType == 'CUSTOMER'}">
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Customer Order Summary</div>
+                <div class="row g-2 small">
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Total Orders</div>
+                      <div class="fw-bold fs-6 text-primary">${userDetail.totalOrders != null ? userDetail.totalOrders : 0}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Delivered Spend</div>
+                      <div class="fw-bold fs-6 text-success">
+                        <fmt:formatNumber value="${userDetail.totalSpent != null ? userDetail.totalSpent : 0}" pattern="#,##0"/> VND
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Delivered / Cancelled</div>
+                      <div class="fw-semibold">
+                        ${userDetail.deliveredOrders != null ? userDetail.deliveredOrders : 0} /
+                        <span class="text-danger">${userDetail.cancelledOrders != null ? userDetail.cancelledOrders : 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Last Order Date</div>
+                      <div class="fw-semibold">
+                        <c:choose>
+                          <c:when test="${not empty userDetail.lastOrderDate}">
+                            <fmt:formatDate value="${userDetail.lastOrderDate}" pattern="HH:mm:ss dd/MM/yyyy"/>
+                          </c:when>
+                          <c:otherwise>No orders yet</c:otherwise>
+                        </c:choose>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Staff Audit Activity</div>
+                <div class="row g-2 small">
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Recorded Audit Actions</div>
+                      <div class="fw-bold fs-6 text-primary">${userDetail.totalAuditActions != null ? userDetail.totalAuditActions : 0}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="detail-metric-box">
+                      <div class="text-muted extra-small">Last Audit Activity</div>
+                      <div class="fw-semibold">
+                        <c:choose>
+                          <c:when test="${not empty userDetail.lastAuditAt}">
+                            <fmt:formatDate value="${userDetail.lastAuditAt}" pattern="HH:mm:ss dd/MM/yyyy"/>
+                          </c:when>
+                          <c:otherwise>No activity yet</c:otherwise>
+                        </c:choose>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </c:otherwise>
+            </c:choose>
+
+            <div class="fw-semibold small text-uppercase text-muted mt-3 mb-2">Latest Administrative Change</div>
+            <c:choose>
+              <c:when test="${not empty userDetail.lastChangeAction}">
+                <div class="detail-metric-box small">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="badge bg-info-subtle text-info border border-info-subtle"><c:out value="${userDetail.lastChangeAction}"/></span>
+                    <span class="text-muted extra-small">
+                      <c:if test="${not empty userDetail.lastChangeAt}">
+                        <fmt:formatDate value="${userDetail.lastChangeAt}" pattern="HH:mm:ss dd/MM/yyyy"/>
+                      </c:if>
+                    </span>
+                  </div>
+                  <div class="mb-1">
+                    <strong>By:</strong>
+                    <c:out value="${not empty userDetail.lastChangedByName ? userDetail.lastChangedByName : 'System'}"/>
+                    <c:if test="${not empty userDetail.lastChangedByEmail}">
+                      <span class="text-muted">(<c:out value="${userDetail.lastChangedByEmail}"/>)</span>
+                    </c:if>
+                  </div>
+                  <c:if test="${not empty userDetail.lastChangeOldData}">
+                    <div class="mb-1"><strong>Before:</strong> <code><c:out value="${userDetail.lastChangeOldData}"/></code></div>
+                  </c:if>
+                  <c:if test="${not empty userDetail.lastChangeNewData}">
+                    <div class="mb-0"><strong>After:</strong> <code><c:out value="${userDetail.lastChangeNewData}"/></code></div>
+                  </c:if>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="detail-metric-box small text-muted">No administrative access or status changes recorded yet.</div>
+              </c:otherwise>
+            </c:choose>
+          </c:if>
+        </div>
+
+        <div class="modal-footer border-top bg-light">
+          <c:if test="${not empty userDetail and userDetail.userType == 'STAFF'}">
+            <c:url var="staffAuditUrl" value="/admin/audit-logs">
+              <c:param name="keyword" value="${not empty userDetail.email ? userDetail.email : userDetail.fullName}"/>
+            </c:url>
+            <a href="${staffAuditUrl}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-clock-history me-1"></i>View Staff Audit Logs
+            </a>
+          </c:if>
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ADD STAFF MODAL -->
+  <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <form method="post" action="${pageContext.request.contextPath}/admin/users" id="addStaffForm" novalidate>
+          <input type="hidden" name="action" value="createStaff">
+
+          <div class="modal-header border-bottom">
+            <h5 class="modal-title fw-bold fs-6" id="addStaffModalLabel">
+              <i class="bi bi-person-plus-fill text-primary me-2"></i>Create New Staff Account
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body p-4">
+            <div class="alert alert-danger py-2 px-3 small d-none modal-inline-error mb-3" role="alert"></div>
+            <c:if test="${modalAction == 'createStaff' && not empty modalError}">
+              <div class="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i><c:out value="${modalError}"/>
+              </div>
+            </c:if>
+            <div class="mb-3">
+              <label class="form-label fw-semibold fs-7 mb-1">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-sm" name="fullName" required maxlength="100" placeholder="e.g., Nguyen Van A" value="<c:out value='${modalAction == "createStaff" ? modalFullName : ""}'/>">
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold fs-7 mb-1">Email Address <span class="text-danger">*</span></label>
+              <input type="email" class="form-control form-control-sm" name="email" required maxlength="150" placeholder="staff@headphonestore.com" value="<c:out value='${modalAction == "createStaff" ? modalEmail : ""}'/>">
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold fs-7 mb-1">Phone Number</label>
+                <input type="text" class="form-control form-control-sm" name="phone" maxlength="20" placeholder="09xxxxxxxx" value="<c:out value='${modalAction == "createStaff" ? modalPhone : ""}'/>">
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold fs-7 mb-1">Initial Password <span class="text-danger">*</span></label>
+                <input type="password" class="form-control form-control-sm" name="password" required minlength="6" placeholder="Min 6 characters">
+                <div class="invalid-feedback"></div>
+              </div>
+            </div>
+
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label fw-semibold fs-7 mb-1">System Role <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" name="roleId" required>
+                  <c:forEach var="r" items="${roles}">
+                    <option value="${r.roleId}" ${(modalAction == 'createStaff' && modalRoleId == r.roleId) || (modalAction != 'createStaff' && r.roleName == 'MANAGER') ? 'selected' : ''}>${r.roleName}</option>
+                  </c:forEach>
+                </select>
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold fs-7 mb-1">Initial Status <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" name="status" required>
+                  <option value="ACTIVE" ${modalAction == 'createStaff' && modalStatus == 'INACTIVE' ? '' : 'selected'}>ACTIVE</option>
+                  <option value="INACTIVE" ${modalAction == 'createStaff' && modalStatus == 'INACTIVE' ? 'selected' : ''}>INACTIVE</option>
+                </select>
+                <div class="invalid-feedback"></div>
               </div>
             </div>
           </div>
@@ -532,10 +921,133 @@
           <div class="modal-footer border-top bg-light">
             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-primary btn-sm fw-bold">
-              <i class="bi bi-check2-circle me-1"></i>Save Access Changes
+              <i class="bi bi-plus-circle me-1"></i>Create Staff Account
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. EDIT STAFF INFO & RESET PASSWORD MODAL -->
+  <div class="modal fade" id="editStaffModal" tabindex="-1" aria-labelledby="editStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold fs-6" id="editStaffModalLabel">
+            <i class="bi bi-pencil-square text-warning me-2"></i>Update Staff Account
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <div class="user-info-banner p-2.5 rounded mb-3 border bg-light">
+            <div class="fw-bold text-dark fs-7" id="editStaffBannerTitle"></div>
+            <div class="text-muted extra-small" id="editStaffBannerEmail"></div>
+          </div>
+
+          <ul class="nav nav-tabs nav-fill mb-3 small" id="editStaffTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active fw-semibold" id="tab-edit-info" data-bs-toggle="tab"
+                      data-bs-target="#pane-edit-info" type="button" role="tab">
+                <i class="bi bi-person-lines-fill me-1"></i>Edit Profile Info
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link fw-semibold" id="tab-reset-pw" data-bs-toggle="tab"
+                      data-bs-target="#pane-reset-pw" type="button" role="tab">
+                <i class="bi bi-key-fill me-1"></i>Reset Password
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Tab 1: Edit Profile Info -->
+            <div class="tab-pane fade show active" id="pane-edit-info" role="tabpanel">
+              <form method="post" action="${pageContext.request.contextPath}/admin/users" id="editStaffInfoForm" novalidate>
+                <input type="hidden" name="action" value="updateStaffInfo">
+                <input type="hidden" name="staffId" id="editInfoStaffId" value="<c:out value='${modalAction == "updateStaffInfo" ? modalStaffId : ""}'/>">
+                <input type="hidden" name="keyword" value="<c:out value='${keyword}'/>">
+                <input type="hidden" name="userType" value="${selectedUserType}">
+                <input type="hidden" name="roleParam" value="${selectedRole}">
+                <input type="hidden" name="statusParam" value="${selectedStatus}">
+                <input type="hidden" name="sort" value="${selectedSort}">
+                <input type="hidden" name="page" value="${currentPage}">
+
+                <div class="alert alert-danger py-2 px-3 small d-none modal-inline-error mb-3" role="alert"></div>
+                <c:if test="${modalAction == 'updateStaffInfo' && not empty modalError}">
+                  <div class="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i><c:out value="${modalError}"/>
+                  </div>
+                </c:if>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold fs-7 mb-1">Full Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control form-control-sm" name="fullName" id="editStaffFullName" required maxlength="100" value="<c:out value='${modalAction == "updateStaffInfo" ? modalFullName : ""}'/>">
+                  <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold fs-7 mb-1">Phone Number</label>
+                  <input type="text" class="form-control form-control-sm" name="phone" id="editStaffPhone" maxlength="20" placeholder="09xxxxxxxx" value="<c:out value='${modalAction == "updateStaffInfo" ? modalPhone : ""}'/>">
+                  <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary btn-sm fw-bold">
+                    <i class="bi bi-save me-1"></i>Save Profile Info
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Tab 2: Reset Password -->
+            <div class="tab-pane fade" id="pane-reset-pw" role="tabpanel">
+              <form method="post" action="${pageContext.request.contextPath}/admin/users" id="resetPasswordForm" novalidate>
+                <input type="hidden" name="action" value="resetPassword">
+                <input type="hidden" name="staffId" id="resetPwStaffId" value="<c:out value='${modalAction == "resetPassword" ? modalStaffId : ""}'/>">
+                <input type="hidden" name="keyword" value="<c:out value='${keyword}'/>">
+                <input type="hidden" name="userType" value="${selectedUserType}">
+                <input type="hidden" name="roleParam" value="${selectedRole}">
+                <input type="hidden" name="statusParam" value="${selectedStatus}">
+                <input type="hidden" name="sort" value="${selectedSort}">
+                <input type="hidden" name="page" value="${currentPage}">
+
+                <div class="alert alert-danger py-2 px-3 small d-none modal-inline-error mb-3" role="alert"></div>
+                <c:if test="${modalAction == 'resetPassword' && not empty modalError}">
+                  <div class="alert alert-danger py-2 px-3 small mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i><c:out value="${modalError}"/>
+                  </div>
+                </c:if>
+
+                <div class="alert alert-warning py-2 px-3 small mb-3">
+                  <i class="bi bi-shield-exclamation me-1"></i>
+                  Resetting password updates the staff login credential immediately and records an entry in Audit Logs.
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold fs-7 mb-1">New Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control form-control-sm" name="newPassword" id="resetNewPassword" required minlength="6" placeholder="Min 6 characters">
+                  <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold fs-7 mb-1">Confirm New Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control form-control-sm" name="confirmPassword" id="resetConfirmPassword" required minlength="6" placeholder="Re-enter password">
+                  <div class="invalid-feedback">Passwords do not match.</div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark">
+                    <i class="bi bi-key-fill me-1"></i>Reset Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -545,50 +1057,347 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Event delegation for Manage Access buttons
-      document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.btn-manage-access');
-        if (!btn) return;
+      function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
 
-        var userType = btn.getAttribute('data-usertype') || '';
-        var userId = btn.getAttribute('data-userid') || '';
-        var fullName = btn.getAttribute('data-fullname') || '';
-        var email = btn.getAttribute('data-email') || '';
-        var roleId = btn.getAttribute('data-roleid') || '';
-        var status = btn.getAttribute('data-status') || 'ACTIVE';
-
-        document.getElementById('modalTargetUserType').value = userType;
-        document.getElementById('modalUserId').value = userId;
-        document.getElementById('modalFullName').textContent = fullName;
-        document.getElementById('modalEmail').textContent = email;
-
-        var typeBadge = document.getElementById('modalTypeBadge');
-        var roleContainer = document.getElementById('modalRoleContainer');
-        var customerNote = document.getElementById('modalCustomerNote');
-        var roleSelect = document.getElementById('modalRoleId');
-
-        if (userType === 'STAFF') {
-          typeBadge.innerHTML = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle">Staff Account (ID: #' + userId + ')</span>';
-          roleContainer.classList.remove('d-none');
-          customerNote.classList.add('d-none');
-          if (roleId && roleSelect) {
-            roleSelect.value = roleId;
-          }
-        } else {
-          typeBadge.innerHTML = '<span class="badge bg-light text-secondary border">Customer Account (ID: #' + userId + ')</span>';
-          roleContainer.classList.add('d-none');
-          customerNote.classList.remove('d-none');
-        }
-
+      function updateBanWarningUi() {
         var statusSelect = document.getElementById('modalStatus');
-        if (statusSelect && status) {
-          statusSelect.value = status;
+        var originalStatus = document.getElementById('modalOriginalStatus').value;
+        var banWarning = document.getElementById('modalBanWarning');
+        var reasonInput = document.getElementById('modalReason');
+        var reqStar = document.getElementById('modalReasonRequired');
+        var optLabel = document.getElementById('modalReasonOptional');
+        var saveBtn = document.getElementById('modalSaveBtn');
+
+        var isSwitchingToBanned = statusSelect.value === 'BANNED' && originalStatus !== 'BANNED';
+        banWarning.classList.toggle('d-none', statusSelect.value !== 'BANNED');
+        reqStar.classList.toggle('d-none', !isSwitchingToBanned);
+        optLabel.classList.toggle('d-none', isSwitchingToBanned);
+        reasonInput.required = isSwitchingToBanned;
+
+        if (statusSelect.value === 'BANNED') {
+          saveBtn.classList.remove('btn-primary');
+          saveBtn.classList.add('btn-danger');
+        } else {
+          saveBtn.classList.remove('btn-danger');
+          saveBtn.classList.add('btn-primary');
+        }
+      }
+
+      var modalStatusEl = document.getElementById('modalStatus');
+      if (modalStatusEl) {
+        modalStatusEl.addEventListener('change', updateBanWarningUi);
+      }
+
+      var EMAIL_REGEX = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      var PHONE_REGEX = /^[0-9+\-\s().]{7,20}$/;
+
+      function findFeedbackEl(input) {
+        if (!input || !input.parentElement) return null;
+        return input.parentElement.querySelector('.invalid-feedback');
+      }
+
+      function clearFieldError(input) {
+        if (!input) return;
+        input.classList.remove('is-invalid');
+        var fb = findFeedbackEl(input);
+        if (fb) fb.textContent = '';
+      }
+
+      function clearFormErrors(form) {
+        if (!form) return;
+        form.querySelectorAll('.is-invalid').forEach(function(el) {
+          el.classList.remove('is-invalid');
+        });
+        form.querySelectorAll('.invalid-feedback').forEach(function(fb) {
+          fb.textContent = '';
+        });
+        var box = form.querySelector('.modal-inline-error');
+        if (box) {
+          box.classList.add('d-none');
+          box.textContent = '';
+        }
+      }
+
+      function showFormError(form, fieldName, message) {
+        if (!form) return;
+        if (fieldName) {
+          var target = form.querySelector('[name="' + fieldName + '"]');
+          if (target && target.offsetParent !== null) {
+            target.classList.add('is-invalid');
+            var fb = findFeedbackEl(target);
+            if (fb) {
+              fb.textContent = message;
+            }
+            target.focus();
+            return;
+          }
+        }
+        var box = form.querySelector('.modal-inline-error');
+        if (box) {
+          box.textContent = message;
+          box.classList.remove('d-none');
+        }
+      }
+
+      function getFieldValidationError(form, input) {
+        if (!input || !input.name) return null;
+        var val = input.value ? input.value.trim() : '';
+        switch (input.name) {
+          case 'fullName':
+            if (!val) return 'Full name is required.';
+            if (val.length > 100) return 'Full name must be at most 100 characters.';
+            return null;
+          case 'email':
+            if (!val) return 'Email address is required.';
+            if (val.length > 150 || !EMAIL_REGEX.test(val)) return 'Please enter a valid email address.';
+            return null;
+          case 'phone':
+            if (val && !PHONE_REGEX.test(val)) return 'Phone number format is invalid (7-20 digits/characters).';
+            return null;
+          case 'password':
+            if (!val || val.length < 6) return 'Initial password must be at least 6 characters.';
+            return null;
+          case 'newPassword':
+            if (!val || val.length < 6) return 'New password must be at least 6 characters.';
+            return null;
+          case 'confirmPassword':
+            var pwEl = form.querySelector('[name="newPassword"]');
+            var pwVal = pwEl && pwEl.value ? pwEl.value.trim() : '';
+            if (!val) return 'Please confirm the new password.';
+            if (val !== pwVal) return 'Confirm password does not match.';
+            return null;
+          case 'reason':
+            if (form.id === 'manageAccessForm') {
+              var orig = document.getElementById('modalOriginalStatus').value;
+              var nextStatus = document.getElementById('modalStatus').value;
+              if (nextStatus === 'BANNED' && orig !== 'BANNED' && !val) {
+                return 'Please provide a reason when banning an account.';
+              }
+            }
+            return null;
+          default:
+            return null;
+        }
+      }
+
+      function bindModalForm(formId, beforeSubmit) {
+        var form = document.getElementById(formId);
+        if (!form) return;
+
+        form.addEventListener('input', function(e) {
+          if (e.target && e.target.name) {
+            clearFieldError(e.target);
+          }
+          var box = form.querySelector('.modal-inline-error');
+          if (box) {
+            box.classList.add('d-none');
+            box.textContent = '';
+          }
+        });
+
+        form.addEventListener('change', function(e) {
+          if (e.target && e.target.name) {
+            clearFieldError(e.target);
+          }
+          var box = form.querySelector('.modal-inline-error');
+          if (box) {
+            box.classList.add('d-none');
+            box.textContent = '';
+          }
+        });
+
+        form.addEventListener('focusout', function(e) {
+          var target = e.target;
+          if (!target || !target.name || target.offsetParent === null) return;
+          if (target.name === 'fullName' || target.name === 'email' || target.name === 'phone'
+              || target.name === 'password' || target.name === 'newPassword' || target.name === 'confirmPassword') {
+            var err = getFieldValidationError(form, target);
+            if (err) {
+              target.classList.add('is-invalid');
+              var fb = findFeedbackEl(target);
+              if (fb) fb.textContent = err;
+            }
+          }
+        });
+
+        form.addEventListener('submit', function(e) {
+          clearFormErrors(form);
+
+          var inputs = form.querySelectorAll('input[name], select[name], textarea[name]');
+          for (var i = 0; i < inputs.length; i++) {
+            var input = inputs[i];
+            if (input.type === 'hidden' || input.offsetParent === null) continue;
+            var err = getFieldValidationError(form, input);
+            if (err) {
+              e.preventDefault();
+              showFormError(form, input.name, err);
+              return;
+            }
+          }
+
+          if (typeof beforeSubmit === 'function' && beforeSubmit(form) === false) {
+            e.preventDefault();
+            return;
+          }
+
+          var submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+          }
+        });
+      }
+
+      bindModalForm('manageAccessForm', function() {
+        var originalStatus = document.getElementById('modalOriginalStatus').value;
+        var newStatus = document.getElementById('modalStatus').value;
+        var fullName = document.getElementById('modalFullName').textContent;
+        if (newStatus === 'BANNED' && originalStatus !== 'BANNED') {
+          return confirm('Confirm banning account "' + fullName + '"? Active sessions will be invalidated immediately.');
+        }
+        return true;
+      });
+
+      bindModalForm('addStaffForm');
+      bindModalForm('editStaffInfoForm');
+      bindModalForm('resetPasswordForm', function() {
+        var title = document.getElementById('editStaffBannerTitle').textContent;
+        return confirm('Reset password for ' + title + '?');
+      });
+
+      var addStaffModalEl = document.getElementById('addStaffModal');
+      if (addStaffModalEl) {
+        addStaffModalEl.addEventListener('show.bs.modal', function() {
+          clearFormErrors(document.getElementById('addStaffForm'));
+        });
+      }
+      document.querySelectorAll('#editStaffTabs button[data-bs-toggle="tab"]').forEach(function(tabBtn) {
+        tabBtn.addEventListener('shown.bs.tab', function() {
+          clearFormErrors(document.getElementById('editStaffInfoForm'));
+          clearFormErrors(document.getElementById('resetPasswordForm'));
+        });
+      });
+
+      // Event delegation for Edit Staff, Manage Access & View Detail buttons
+      document.addEventListener('click', function(e) {
+        var editBtn = e.target.closest('.btn-edit-staff');
+        if (editBtn) {
+          var sId = editBtn.getAttribute('data-staffid') || '';
+          var sName = editBtn.getAttribute('data-fullname') || '';
+          var sEmail = editBtn.getAttribute('data-email') || '';
+          var sPhone = editBtn.getAttribute('data-phone') || '';
+
+          document.getElementById('editInfoStaffId').value = sId;
+          document.getElementById('resetPwStaffId').value = sId;
+          document.getElementById('editStaffBannerTitle').textContent = sName + ' (Staff #' + sId + ')';
+          document.getElementById('editStaffBannerEmail').textContent = sEmail;
+          document.getElementById('editStaffFullName').value = sName;
+          document.getElementById('editStaffPhone').value = sPhone;
+          document.getElementById('resetNewPassword').value = '';
+          document.getElementById('resetConfirmPassword').value = '';
+          clearFormErrors(document.getElementById('editStaffInfoForm'));
+          clearFormErrors(document.getElementById('resetPasswordForm'));
+
+          bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-edit-info')).show();
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('editStaffModal')).show();
+          return;
         }
 
-        var modalEl = document.getElementById('manageAccessModal');
-        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
+        var manageBtn = e.target.closest('.btn-manage-access');
+        if (manageBtn) {
+          var userType = manageBtn.getAttribute('data-usertype') || '';
+          var userId = manageBtn.getAttribute('data-userid') || '';
+          var fullName = manageBtn.getAttribute('data-fullname') || '';
+          var email = manageBtn.getAttribute('data-email') || '';
+          var roleId = manageBtn.getAttribute('data-roleid') || '';
+          var status = manageBtn.getAttribute('data-status') || 'ACTIVE';
+
+          document.getElementById('modalTargetUserType').value = userType;
+          document.getElementById('modalUserId').value = userId;
+          document.getElementById('modalOriginalStatus').value = status;
+          document.getElementById('modalFullName').textContent = fullName;
+          document.getElementById('modalEmail').textContent = email;
+          document.getElementById('modalReason').value = '';
+
+          var typeBadge = document.getElementById('modalTypeBadge');
+          var roleContainer = document.getElementById('modalRoleContainer');
+          var customerNote = document.getElementById('modalCustomerNote');
+          var roleSelect = document.getElementById('modalRoleId');
+
+          if (userType === 'STAFF') {
+            typeBadge.innerHTML = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle">Staff Account (ID: #' + escapeHtml(userId) + ')</span>';
+            roleContainer.classList.remove('d-none');
+            customerNote.classList.add('d-none');
+            if (roleId && roleSelect) {
+              roleSelect.value = roleId;
+            }
+          } else {
+            typeBadge.innerHTML = '<span class="badge bg-light text-secondary border">Customer Account (ID: #' + escapeHtml(userId) + ')</span>';
+            roleContainer.classList.add('d-none');
+            customerNote.classList.remove('d-none');
+          }
+
+          var statusSelect = document.getElementById('modalStatus');
+          if (statusSelect && status) {
+            statusSelect.value = status;
+          }
+          updateBanWarningUi();
+          clearFormErrors(document.getElementById('manageAccessForm'));
+
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('manageAccessModal')).show();
+          return;
+        }
       });
+
+      <c:if test="${not empty userDetail}">
+        var userDetailModalEl = document.getElementById('userDetailModal');
+        if (userDetailModalEl) {
+          bootstrap.Modal.getOrCreateInstance(userDetailModalEl).show();
+        }
+      </c:if>
+
+      // Auto-reopen modal on server-side validation error (Solution 2)
+      <c:if test="${modalAction == 'createStaff' && not empty modalError}">
+        var addStaffModalEl = document.getElementById('addStaffModal');
+        if (addStaffModalEl) bootstrap.Modal.getOrCreateInstance(addStaffModalEl).show();
+      </c:if>
+      <c:if test="${modalAction == 'updateStaffInfo' && not empty modalError}">
+        var editStaffModalEl = document.getElementById('editStaffModal');
+        if (editStaffModalEl) {
+          bootstrap.Modal.getOrCreateInstance(editStaffModalEl).show();
+          var tabBtn = document.getElementById('tab-edit-info');
+          if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+        }
+      </c:if>
+      <c:if test="${modalAction == 'resetPassword' && not empty modalError}">
+        var editStaffModalEl = document.getElementById('editStaffModal');
+        if (editStaffModalEl) {
+          bootstrap.Modal.getOrCreateInstance(editStaffModalEl).show();
+          var tabBtn = document.getElementById('tab-reset-pw');
+          if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+        }
+      </c:if>
+      <c:if test="${modalAction == 'updateAccess' && not empty modalError}">
+        var manageAccessModalEl = document.getElementById('manageAccessModal');
+        if (manageAccessModalEl) bootstrap.Modal.getOrCreateInstance(manageAccessModalEl).show();
+      </c:if>
+
+      // Clear previous server error alert on fresh Add Staff button click
+      var addStaffBtn = document.querySelector('[data-bs-target="#addStaffModal"]');
+      if (addStaffBtn) {
+        addStaffBtn.addEventListener('click', function() {
+          var errAlert = document.querySelectorAll('#addStaffModal .alert-danger:not(.modal-inline-error)');
+          errAlert.forEach(function(el) { el.remove(); });
+        });
+      }
 
       // Sidebar Mobile Toggle
       var toggleBtn = document.getElementById('sidebarToggleBtn');

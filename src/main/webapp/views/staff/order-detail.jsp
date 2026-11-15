@@ -79,6 +79,8 @@
   <!-- ================================================================= -->
   <!-- DEDICATED OFFICIAL PRINT INVOICE RECEIPT (ONLY VISIBLE ON PRINT)  -->
   <!-- ================================================================= -->
+  <c:set var="canPrintInvoice" value="${order.orderStatus == 'CONFIRMED' || order.orderStatus == 'SHIPPING' || order.orderStatus == 'DELIVERED'}" />
+  <c:if test="${canPrintInvoice}">
   <div class="print-official-invoice d-none d-print-block p-4 bg-white text-dark" style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4;">
     <!-- Store Header -->
     <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
@@ -213,6 +215,7 @@
       </div>
     </div>
   </div>
+  </c:if>
 
 
   <!-- ================================================================= -->
@@ -312,9 +315,11 @@
 
           <!-- Right: Print Official Invoice Button, Theme Toggle & Profile Dropdown -->
           <div class="navbar-actions d-flex align-items-center gap-2 ms-auto">
-            <button onclick="window.print();" class="btn btn-primary btn-sm px-2.5 py-0.5 shadow-sm fw-bold me-1" style="font-size: 0.73rem;">
-              <i class="bi bi-printer-fill me-1"></i> Print Official Invoice
-            </button>
+            <c:if test="${canPrintInvoice}">
+              <button onclick="window.print();" class="btn btn-primary btn-sm px-2.5 py-0.5 shadow-sm fw-bold me-1" style="font-size: 0.73rem;">
+                <i class="bi bi-printer-fill me-1"></i> Print Official Invoice
+              </button>
+            </c:if>
             <button class="icon-button theme-toggle"
                     type="button"
                     data-theme-toggle
@@ -658,87 +663,6 @@
             </div>
           </section>
 
-          <!-- AI 512-VECTOR ALTERNATIVE RECOMMENDATIONS FOR CANCELLED ORDER (CUSTOMER RETENTION CALL) -->
-          <c:if test="${order.orderStatus == 'CANCELLED'}">
-            <section class="panel panel-compact bg-white mb-3 shadow-sm" style="border-left: 4px solid #ef4444; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);">
-              <div class="d-flex align-items-center justify-content-between mb-1.5 border-bottom pb-1">
-                <div class="d-flex align-items-center gap-1.5">
-                  <span class="badge" style="background: linear-gradient(135deg, #ef4444, #f97316); color: white; font-size: 0.68rem;">
-                    <i class="bi bi-telephone-outbound-fill me-1"></i>AI Retention Call
-                  </span>
-                  <h2 class="h6 mb-0 section-title fw-bold text-dark" style="font-size: 0.8rem;">
-                    AI Customer Retention: Similar Alternative Recommendations
-                  </h2>
-                  <small class="text-muted d-none d-md-inline" style="font-size: 0.68rem;">(512-D Semantic Cosine Matching)</small>
-                </div>
-                <span class="badge text-bg-light border text-danger" style="font-size: 0.65rem;">
-                  <i class="bi bi-cpu-fill text-danger me-1"></i>Model: 512-D Semantic Transformer
-                </span>
-              </div>
-
-              <!-- Call Script & Guidance Banner for Staff -->
-              <div class="p-2 mb-2 rounded border d-flex align-items-center gap-2" style="font-size: 0.7rem; border-color: #fed7aa !important; background-color: #fffbeb !important;">
-                <i class="bi bi-headset text-warning fs-6 flex-shrink-0"></i>
-                <div class="text-secondary">
-                  <strong class="text-dark">💡 Staff Retention Call Guidance:</strong> This order was cancelled. Staff should contact the customer via phone to inquire about the cancellation reason and recommend the top similar alternative models below (matching sound profile, noise cancellation, or better price point).
-                </div>
-              </div>
-
-              <!-- List of AI Recommended Alternative Products -->
-              <c:choose>
-                <c:when test="${not empty aiRecommendations}">
-                  <div class="row g-2">
-                    <c:forEach var="rec" items="${aiRecommendations}">
-                      <div class="col-md-4">
-                        <div class="p-2 border rounded bg-white h-100 shadow-sm d-flex flex-column justify-content-between" style="font-size: 0.72rem; transition: transform 0.2s;">
-                          <div class="d-flex gap-2 align-items-start">
-                            <c:set var="recImgUrl" value="${not empty rec.imageUrl ? rec.imageUrl : 'https://placehold.co/100x100?text=Headphone'}" />
-                            <c:if test="${not empty rec.imageUrl && !rec.imageUrl.startsWith('http')}">
-                              <c:set var="recImgUrl" value="${pageContext.request.contextPath}/${rec.imageUrl}" />
-                            </c:if>
-                            <img src="${recImgUrl}" 
-                                 alt="${rec.productName}" 
-                                 class="rounded border p-1 bg-light flex-shrink-0" 
-                                 style="width: 50px; height: 50px; object-fit: contain;">
-                            <div class="flex-grow-1 overflow-hidden">
-                              <div class="d-flex align-items-center justify-content-between mb-0.5">
-                                <span class="badge text-bg-success" style="font-size: 0.62rem;">
-                                  <i class="bi bi-bullseye me-1"></i>${not empty rec.similarityPercent ? rec.similarityPercent : rec.matchPercentage}% Match
-                                </span>
-                                <span class="badge text-bg-warning text-dark border" style="font-size: 0.6rem;">
-                                  <i class="bi bi-arrow-repeat me-1"></i>ALTERNATIVE
-                                </span>
-                              </div>
-                              <div class="fw-bold text-dark text-truncate" title="${rec.productName}" style="font-size: 0.75rem;">
-                                <a href="${pageContext.request.contextPath}/productDetail?id=${not empty rec.productID ? rec.productID : rec.productId}" target="_blank" class="text-dark text-decoration-none">
-                                  <c:out value="${rec.productName}" />
-                                  <i class="bi bi-box-arrow-up-right text-muted ms-1" style="font-size: 0.6rem;"></i>
-                                </a>
-                              </div>
-                              <div class="text-primary fw-bold" style="font-size: 0.74rem;">
-                                <fmt:formatNumber value="${rec.price}" pattern="#,###"/> VND
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="mt-1 pt-1 border-top text-muted" style="font-size: 0.66rem; line-height: 1.25;">
-                            <i class="bi bi-telephone-forward-fill text-danger me-1"></i>
-                            <span><c:out value="${rec.reason}" /></span>
-                          </div>
-                        </div>
-                      </div>
-                    </c:forEach>
-                  </div>
-                </c:when>
-                <c:otherwise>
-                  <div class="text-center py-2 text-muted" style="font-size: 0.72rem;">
-                    <i class="bi bi-info-circle me-1"></i>No suitable alternative products found in stock.
-                  </div>
-                </c:otherwise>
-              </c:choose>
-            </section>
-          </c:if>
-
         </div>
       </main>
     </div>
@@ -764,22 +688,22 @@
             <p class="text-secondary small mb-2" style="font-size: 0.78rem;">Please specify the reason for cancelling this order.</p>
             
             <div class="mb-2">
-              <label class="form-label fw-semibold fs-7 mb-1">Select Standard Reason:</label>
+              <label class="form-label fw-semibold fs-7 mb-1">Select Cancellation Reason: <span class="text-danger">*</span></label>
               <select class="form-select form-select-sm" id="modalPresetReason" onchange="onPresetReasonChange()">
                 <option value="">-- Choose a standard reason --</option>
                 <option value="Customer requested order cancellation">Customer requested order cancellation</option>
                 <option value="Out of stock / Product currently unavailable">Out of stock / Product currently unavailable</option>
                 <option value="Invalid shipping address or contact phone">Invalid shipping address or contact phone</option>
                 <option value="Unable to contact customer after multiple attempts">Unable to contact customer after multiple attempts</option>
-                <option value="OTHER">Other reason (Type below)...</option>
+                <option value="OTHER">Other reason (Type specific reason below)...</option>
               </select>
             </div>
 
-            <div class="mb-1">
+            <div class="mb-1 d-none" id="customReasonContainer">
               <label class="form-label fw-semibold fs-7 mb-1">
-                Detailed Reason / Note: <span id="reasonAsterisk" class="text-danger d-none">*</span>
+                Detailed Reason / Note: <span class="text-danger">*</span>
               </label>
-              <textarea class="form-control form-control-sm" name="cancelReason" id="modalCancelReason" rows="2" maxlength="500" placeholder="Enter detailed reason..."></textarea>
+              <textarea class="form-control form-control-sm" name="cancelReason" id="modalCancelReason" rows="2" maxlength="500" placeholder="Enter detailed reason for cancellation..."></textarea>
             </div>
           </div>
 
@@ -859,6 +783,33 @@
 
   <script>
     // Smart Shipping Courier & Tracking Number Helpers
+    var defaultShippers = {
+      'Giao Hàng Nhanh (GHN)': { name: 'Nguyễn Hoàng Hưng (GHN Fleet)', phone: '0912345678' },
+      'Giao Hàng Tiết Kiệm (GHTK)': { name: 'Lê Quốc Giao (GHTK Hub)', phone: '0978654321' },
+      'Viettel Post (VTP)': { name: 'Trần Văn Vận (VTP Express)', phone: '0984123888' },
+      'Shopee Express (SPX)': { name: 'Phạm Minh Quân (SPX Logistics)', phone: '0938765432' },
+      'VNPost (Bưu điện Việt Nam)': { name: 'Đặng Văn Bưu (VNPost Dispatch)', phone: '0905123789' }
+    };
+
+    function getDefaultShipperForProvider(provider) {
+      if (!provider) return defaultShippers['Giao Hàng Nhanh (GHN)'];
+      if (defaultShippers[provider]) return defaultShippers[provider];
+      for (var key in defaultShippers) {
+        if (provider.indexOf(key) !== -1 || key.indexOf(provider) !== -1) {
+          return defaultShippers[key];
+        }
+      }
+      return defaultShippers['Giao Hàng Nhanh (GHN)'];
+    }
+
+    function isDefaultOrEmptyShipper(name, phone) {
+      if (!name || name.trim() === '' || name.trim().toLowerCase() === 'unassigned' || name.trim().toLowerCase() === 'n/a') return true;
+      for (var key in defaultShippers) {
+        if (defaultShippers[key].name === name.trim()) return true;
+      }
+      return false;
+    }
+
     function autoDetectShippingProvider(address) {
       if (!address) return 'Giao Hàng Nhanh (GHN)';
       var addr = address.toLowerCase();
@@ -887,6 +838,17 @@
       if (trackingInput) {
         trackingInput.value = generateTrackingNumber(provider);
       }
+      var nameInput = document.getElementById('shipModalShipperName');
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (nameInput && phoneInput) {
+        var curName = nameInput.value.trim();
+        var curPhone = phoneInput.value.trim();
+        if (isDefaultOrEmptyShipper(curName, curPhone)) {
+          var shipper = getDefaultShipperForProvider(provider);
+          nameInput.value = shipper.name;
+          phoneInput.value = shipper.phone;
+        }
+      }
     }
 
     // Open Ship Modal with Smart Auto-detection
@@ -905,8 +867,16 @@
         trackingInput.value = generateTrackingNumber(detectedProvider);
       }
 
-      document.getElementById('shipModalShipperName').value = shipperName || '';
-      document.getElementById('shipModalShipperPhone').value = shipperPhone || '';
+      var nameInput = document.getElementById('shipModalShipperName');
+      var phoneInput = document.getElementById('shipModalShipperPhone');
+      if (isDefaultOrEmptyShipper(shipperName, shipperPhone)) {
+        var defaultShipper = getDefaultShipperForProvider(detectedProvider);
+        nameInput.value = defaultShipper.name;
+        phoneInput.value = defaultShipper.phone;
+      } else {
+        nameInput.value = shipperName || '';
+        phoneInput.value = shipperPhone || '';
+      }
 
       var shipBtn = document.querySelector('#shipOrderModal button[type="submit"]');
       if (shipBtn) {
@@ -951,7 +921,10 @@
       document.getElementById('modalOrderDisplayId').innerText = '#ORD-' + orderId;
       document.getElementById('modalPresetReason').value = '';
       document.getElementById('modalCancelReason').value = '';
-      document.getElementById('reasonAsterisk').classList.add('d-none');
+      var container = document.getElementById('customReasonContainer');
+      if (container) {
+        container.classList.add('d-none');
+      }
 
       var cancelBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
       if (cancelBtn) {
@@ -967,27 +940,39 @@
     function onPresetReasonChange() {
       var preset = document.getElementById('modalPresetReason').value;
       var reasonInput = document.getElementById('modalCancelReason');
-      var asterisk = document.getElementById('reasonAsterisk');
+      var container = document.getElementById('customReasonContainer');
 
       if (preset === 'OTHER') {
+        container.classList.remove('d-none');
         reasonInput.value = '';
         reasonInput.focus();
-        asterisk.classList.remove('d-none');
-      } else if (preset) {
-        reasonInput.value = preset;
-        asterisk.classList.add('d-none');
       } else {
+        container.classList.add('d-none');
         reasonInput.value = '';
-        asterisk.classList.add('d-none');
       }
     }
 
     function validateCancelModal() {
-      var reason = document.getElementById('modalCancelReason').value.trim();
-      if (!reason) {
-        alert('Please enter or select a reason for cancelling the order!');
+      var preset = document.getElementById('modalPresetReason').value;
+      var reasonInput = document.getElementById('modalCancelReason');
+
+      if (!preset) {
+        alert('Please select a cancellation reason!');
+        document.getElementById('modalPresetReason').focus();
         return false;
       }
+
+      if (preset === 'OTHER') {
+        var customReason = reasonInput.value.trim();
+        if (!customReason) {
+          alert('Please enter a specific reason for cancelling the order!');
+          reasonInput.focus();
+          return false;
+        }
+      } else {
+        reasonInput.value = preset;
+      }
+
       var submitBtn = document.querySelector('#cancelOrderModal button[type="submit"]');
       if (submitBtn) {
         if (submitBtn.dataset.submitting === 'true') {
@@ -1000,24 +985,6 @@
         }, 10);
       }
       return true;
-    }
-
-    // Theme Toggle
-    var themeToggleBtn = document.getElementById('themeToggleBtn');
-    var themeIcon = document.getElementById('themeIcon');
-    var htmlTag = document.documentElement;
-
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener('click', function() {
-        var currentTheme = htmlTag.getAttribute('data-theme');
-        if (currentTheme === 'dark') {
-          htmlTag.setAttribute('data-theme', 'light');
-          themeIcon.className = 'bi bi-moon-stars';
-        } else {
-          htmlTag.setAttribute('data-theme', 'dark');
-          themeIcon.className = 'bi bi-sun-fill';
-        }
-      });
     }
   </script>
 </body>

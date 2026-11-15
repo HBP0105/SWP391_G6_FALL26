@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 public class BehaviorService {
 
     private static final Logger LOGGER = Logger.getLogger(BehaviorService.class.getName());
+    private static final Set<String> VALID_TYPES = Set.of("ALL", "VIEW", "SEARCH", "FAVORITE", "CART", "PURCHASE");
     private final BehaviorDAO behaviorDAO;
 
     public BehaviorService() {
@@ -98,12 +100,13 @@ public class BehaviorService {
             endForQuery = "";
         }
 
+        String normalizedType = normalizeBehaviorType(behaviorType);
         String formattedStart = formatStartDate(startForQuery);
         String formattedEnd = formatEndDate(endForQuery);
 
         try {
             // 1. Behavior Summary KPIs
-            Map<String, Object> summary = behaviorDAO.getBehaviorSummary(formattedStart, formattedEnd, behaviorType);
+            Map<String, Object> summary = behaviorDAO.getBehaviorSummary(formattedStart, formattedEnd, normalizedType);
             calculateBehaviorSummaryMetrics(summary);
 
             // 2. Distribution by Behavior Type (Doughnut Chart)
@@ -116,7 +119,7 @@ public class BehaviorService {
             List<Map<String, Object>> topKeywords = behaviorDAO.getTopSearchedKeywords(formattedStart, formattedEnd, 5);
 
             // 5. Recent Behavior Stream Logs
-            List<Map<String, Object>> streamLogs = behaviorDAO.getRecentBehaviorLogs(formattedStart, formattedEnd, behaviorType, 25);
+            List<Map<String, Object>> streamLogs = behaviorDAO.getRecentBehaviorLogs(formattedStart, formattedEnd, normalizedType, 25);
 
             bundle.put("summary", summary);
             bundle.put("typeDistribution", typeDistribution);
@@ -135,9 +138,17 @@ public class BehaviorService {
 
         bundle.put("selectedStartDate", startDate != null ? startDate : "");
         bundle.put("selectedEndDate", endDate != null ? endDate : "");
-        bundle.put("selectedType", behaviorType != null ? behaviorType : "ALL");
+        bundle.put("selectedType", normalizedType);
 
         return bundle;
+    }
+
+    private String normalizeBehaviorType(String behaviorType) {
+        if (behaviorType == null || behaviorType.trim().isEmpty()) {
+            return "ALL";
+        }
+        String upper = behaviorType.trim().toUpperCase();
+        return VALID_TYPES.contains(upper) ? upper : "ALL";
     }
 
     /**

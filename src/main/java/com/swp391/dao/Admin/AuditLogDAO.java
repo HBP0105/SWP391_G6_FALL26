@@ -16,8 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Data Access Object (DAO) for System Audit Logs (Feature 5).
- * Provides filtered listing, pagination, metrics summary, and action logging.
+ * Data Access Object (DAO) for System Audit Logs (Feature 5). Provides filtered
+ * listing, pagination, metrics summary, and action logging.
  */
 public class AuditLogDAO {
 
@@ -32,13 +32,12 @@ public class AuditLogDAO {
      * Inserts an audit log record into the database.
      */
     public boolean insertAuditLog(Integer staffId, String action, String entityName,
-                                 String entityId, String oldData, String newData) {
+            String entityId, String oldData, String newData) {
         String sql = """
                 INSERT INTO AuditLogs (StaffID, Action, EntityName, EntityID, OldData, NewData, CreatedAt)
                 VALUES (?, ?, ?, ?, ?, ?, GETDATE())
                 """;
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             if (staffId != null && staffId > 0) {
                 ps.setInt(1, staffId);
@@ -59,38 +58,49 @@ public class AuditLogDAO {
     }
 
     /**
-     * Retrieves filtered and paginated list of audit logs.
+     * Retrieves filtered and paginated list of audit logs using clean standard SQL text block.
      */
     public List<AuditLog> getAuditLogsFiltered(String startDate, String endDate, String action,
-                                             String keyword, int page, int pageSize) {
+            String keyword, int page, int pageSize) {
         List<AuditLog> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("""
+        String sql = """
                 SELECT a.AuditLogID, a.StaffID, a.Action, a.EntityName, a.EntityID,
                        a.OldData, a.NewData, a.CreatedAt,
                        s.FullName AS StaffName, s.Email AS StaffEmail, r.RoleName
                 FROM AuditLogs a
                 LEFT JOIN Staff s ON a.StaffID = s.StaffID
                 LEFT JOIN Roles r ON s.RoleID = r.RoleID
-                WHERE 1=1
-                """);
+                WHERE (? IS NULL OR a.CreatedAt >= ?)
+                  AND (? IS NULL OR a.CreatedAt < ?)
+                  AND (? = 'ALL' OR a.Action = ?)
+                  AND (? IS NULL OR s.FullName LIKE ? OR s.Email LIKE ? OR a.EntityID LIKE ? OR a.Action LIKE ? OR a.EntityName LIKE ?)
+                ORDER BY a.CreatedAt DESC, a.AuditLogID DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
 
-        List<Object> params = new ArrayList<>();
-        buildFilterConditions(sql, params, startDate, endDate, action, keyword);
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String act = (action != null && !action.isBlank()) ? action.trim() : "ALL";
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
+        int currentPage = Math.max(page, 1);
+        int offset = (currentPage - 1) * pageSize;
 
-        sql.append(" ORDER BY a.CreatedAt DESC, a.AuditLogID DESC");
-        if (pageSize > 0) {
-            int currentPage = Math.max(page, 1);
-            sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-            params.add((currentPage - 1) * pageSize);
-            params.add(pageSize);
-        }
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            ps.setString(1, start);
+            ps.setString(2, start);
+            ps.setString(3, end);
+            ps.setString(4, end);
+            ps.setString(5, act);
+            ps.setString(6, act);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+            ps.setString(11, kw);
+            ps.setString(12, kw);
+            ps.setInt(13, offset);
+            ps.setInt(14, pageSize);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -125,26 +135,39 @@ public class AuditLogDAO {
     }
 
     /**
-     * Counts the total number of filtered audit log records for pagination.
+     * Counts the total number of filtered audit log records for pagination using clean standard SQL text block.
      */
     public int getTotalAuditLogsCount(String startDate, String endDate, String action, String keyword) {
-        StringBuilder sql = new StringBuilder("""
+        String sql = """
                 SELECT COUNT(a.AuditLogID)
                 FROM AuditLogs a
                 LEFT JOIN Staff s ON a.StaffID = s.StaffID
                 LEFT JOIN Roles r ON s.RoleID = r.RoleID
-                WHERE 1=1
-                """);
+                WHERE (? IS NULL OR a.CreatedAt >= ?)
+                  AND (? IS NULL OR a.CreatedAt < ?)
+                  AND (? = 'ALL' OR a.Action = ?)
+                  AND (? IS NULL OR s.FullName LIKE ? OR s.Email LIKE ? OR a.EntityID LIKE ? OR a.Action LIKE ? OR a.EntityName LIKE ?)
+                """;
 
-        List<Object> params = new ArrayList<>();
-        buildFilterConditions(sql, params, startDate, endDate, action, keyword);
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String act = (action != null && !action.isBlank()) ? action.trim() : "ALL";
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            ps.setString(1, start);
+            ps.setString(2, start);
+            ps.setString(3, end);
+            ps.setString(4, end);
+            ps.setString(5, act);
+            ps.setString(6, act);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+            ps.setString(11, kw);
+            ps.setString(12, kw);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -158,15 +181,14 @@ public class AuditLogDAO {
     }
 
     /**
-     * Gets a list of distinct actions present in AuditLogs for dropdown filtering.
+     * Gets a list of distinct actions present in AuditLogs for dropdown
+     * filtering.
      */
     public List<String> getDistinctActions() {
         List<String> actions = new ArrayList<>();
         String sql = "SELECT DISTINCT Action FROM AuditLogs WHERE Action IS NOT NULL ORDER BY Action ASC";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 actions.add(rs.getString("Action"));
@@ -178,7 +200,8 @@ public class AuditLogDAO {
     }
 
     /**
-     * Computes summary metrics for Dashboard Cards (Total Logs, Today, Orders, Settings).
+     * Computes summary metrics for Dashboard Cards (Total Logs, Today, Orders,
+     * Settings).
      */
     public Map<String, Integer> getAuditLogMetrics() {
         Map<String, Integer> metrics = new HashMap<>();
@@ -196,9 +219,7 @@ public class AuditLogDAO {
                 FROM AuditLogs
                 """;
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             if (rs.next()) {
                 metrics.put("totalLogs", rs.getInt("TotalLogs"));
@@ -210,33 +231,5 @@ public class AuditLogDAO {
             LOGGER.log(Level.SEVERE, "Error fetching AuditLog metrics", e);
         }
         return metrics;
-    }
-
-    private void buildFilterConditions(StringBuilder sql, List<Object> params,
-                                       String startDate, String endDate, String action, String keyword) {
-        if (startDate != null && !startDate.trim().isEmpty()) {
-            sql.append(" AND a.CreatedAt >= ?");
-            params.add(startDate.trim());
-        }
-
-        if (endDate != null && !endDate.trim().isEmpty()) {
-            sql.append(" AND a.CreatedAt < ?");
-            params.add(endDate.trim());
-        }
-
-        if (action != null && !action.trim().isEmpty() && !"ALL".equalsIgnoreCase(action.trim())) {
-            sql.append(" AND a.Action = ?");
-            params.add(action.trim());
-        }
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (s.FullName LIKE ? OR s.Email LIKE ? OR a.EntityID LIKE ? OR a.Action LIKE ? OR a.EntityName LIKE ?)");
-            String pattern = "%" + keyword.trim() + "%";
-            params.add(pattern);
-            params.add(pattern);
-            params.add(pattern);
-            params.add(pattern);
-            params.add(pattern);
-        }
     }
 }

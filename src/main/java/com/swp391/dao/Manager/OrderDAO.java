@@ -193,50 +193,6 @@ public class OrderDAO {
     // =========================================================================
     // 2. SCREEN 1: ORDER LIST (PAGINATION, FILTERS & METRIC CARDS)
     // =========================================================================
-    private String getOrderListQuery() {
-        return """
-                SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.OrderDate, o.OrderStatus, o.UpdatedAt, o.CancelReason,
-                       o.ShippingName, o.ShippingPhone, o.ShippingAddress,
-                       c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
-                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
-                       (SELECT COALESCE(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalQuantity,
-                       (SELECT COALESCE(STRING_AGG(prod.ProductName, ', '), 'Tai nghe') FROM OrderItems oi 
-                JOIN Products prod ON oi.ProductID = prod.ProductID WHERE oi.OrderID = o.OrderID) AS ProductSummary
-                FROM Orders o
-                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
-                LEFT JOIN Payments p ON o.OrderID = p.OrderID
-                """;
-    }
-
-    private void applyFilters(StringBuilder sql, List<Object> params,
-            String startDate, String endDate, String status, String keyword) {
-        // 1. Loc theo trang thai don hang (PENDING, SHIPPING, DELIVERED,...)
-        if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status.trim());
-        }
-
-        // 2. Loc tu ngay
-        if (startDate != null && !startDate.trim().isEmpty()) {
-            sql.append(" AND o.OrderDate >= ?");
-            params.add(startDate.trim());
-        }
-
-        // 3. Loc den ngay
-        if (endDate != null && !endDate.trim().isEmpty()) {
-            sql.append(" AND o.OrderDate < ?");
-            params.add(endDate.trim());
-        }
-
-        // 4. Tim kiem tu khoa theo Ma don, Ten khach hang hoac So dien thoai
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)");
-            String pattern = "%" + keyword.trim() + "%";
-            params.add(pattern);
-            params.add(pattern);
-            params.add(pattern);
-        }
-    }
 
     public Map<String, Integer> getOrderStatusCountsMap(String startDate, String endDate) {
         Map<String, Integer> map = new HashMap<>();
@@ -244,15 +200,23 @@ public class OrderDAO {
             map.put(st, 0);
         }
 
-        StringBuilder sql = new StringBuilder("SELECT o.OrderStatus, COUNT(o.OrderID) AS Qty FROM Orders o WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, null, null);
-        sql.append(" GROUP BY o.OrderStatus");
+        String sql = """
+                SELECT o.OrderStatus, COUNT(o.OrderID) AS Qty
+                FROM Orders o
+                WHERE (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                GROUP BY o.OrderStatus
+                """;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, start);
+            ps.setString(2, start);
+            ps.setString(3, end);
+            ps.setString(4, end);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String st = rs.getString("OrderStatus");
@@ -268,15 +232,33 @@ public class OrderDAO {
     }
 
     public int getTotalOrdersFilteredCount(String startDate, String endDate, String status, String keyword) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(o.OrderID) FROM Orders o "
-                + "LEFT JOIN Customers c ON o.CustomerID = c.CustomerID WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, status, keyword);
+        String sql = """
+                SELECT COUNT(o.OrderID)
+                FROM Orders o
+                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
+                WHERE (? = 'ALL' OR o.OrderStatus = ?)
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                  AND (? IS NULL OR CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)
+                """;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        String st = (status != null && !status.isBlank()) ? status.trim().toUpperCase() : "ALL";
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, st);
+            ps.setString(2, st);
+            ps.setString(3, start);
+            ps.setString(4, start);
+            ps.setString(5, end);
+            ps.setString(6, end);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -291,22 +273,46 @@ public class OrderDAO {
     public List<Order> getOrdersFiltered(String startDate, String endDate, String status,
             String keyword, int page, int pageSize) {
         List<Order> orders = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(getOrderListQuery()).append(" WHERE 1=1");
-        List<Object> params = new ArrayList<>();
-        applyFilters(sql, params, startDate, endDate, status, keyword);
+        String sql = """
+                SELECT o.OrderID, o.CustomerID, o.TotalAmount, o.ShippingName, o.ShippingPhone, o.ShippingAddress, 
+                       o.OrderStatus, o.CancelReason, o.OrderDate, o.UpdatedAt,
+                       c.FullName AS CustFullName, c.Phone AS CustPhone, c.Email AS CustEmail,
+                       p.PaymentID, p.PaymentMethod, p.PaymentStatus,
+                       (SELECT COALESCE(SUM(oi.Quantity), 0) FROM OrderItems oi WHERE oi.OrderID = o.OrderID) AS TotalQuantity,
+                       (SELECT COALESCE(STRING_AGG(prod.ProductName, ', '), 'Tai nghe') FROM OrderItems oi 
+                JOIN Products prod ON oi.ProductID = prod.ProductID WHERE oi.OrderID = o.OrderID) AS ProductSummary
+                FROM Orders o
+                LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
+                LEFT JOIN Payments p ON o.OrderID = p.OrderID
+                WHERE (? = 'ALL' OR o.OrderStatus = ?)
+                  AND (? IS NULL OR o.OrderDate >= ?)
+                  AND (? IS NULL OR o.OrderDate < ?)
+                  AND (? IS NULL OR CAST(o.OrderID AS VARCHAR) LIKE ? OR c.FullName LIKE ? OR c.Phone LIKE ?)
+                ORDER BY o.OrderDate DESC, o.OrderID DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
 
-        sql.append(" ORDER BY o.OrderDate DESC, o.OrderID DESC");
-        if (pageSize > 0) {
-            int currentPage = Math.max(page, 1);
-            sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-            params.add((currentPage - 1) * pageSize);
-            params.add(pageSize);
-        }
+        String st = (status != null && !status.isBlank()) ? status.trim().toUpperCase() : "ALL";
+        String start = (startDate != null && !startDate.isBlank()) ? startDate.trim() : null;
+        String end = (endDate != null && !endDate.isBlank()) ? endDate.trim() : null;
+        String kw = (keyword != null && !keyword.isBlank()) ? "%" + keyword.trim() + "%" : null;
+        int currentPage = Math.max(page, 1);
+        int offset = (currentPage - 1) * pageSize;
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, st);
+            ps.setString(2, st);
+            ps.setString(3, start);
+            ps.setString(4, start);
+            ps.setString(5, end);
+            ps.setString(6, end);
+            ps.setString(7, kw);
+            ps.setString(8, kw);
+            ps.setString(9, kw);
+            ps.setString(10, kw);
+            ps.setInt(11, offset);
+            ps.setInt(12, pageSize);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Order order = mapOrder(rs, false);

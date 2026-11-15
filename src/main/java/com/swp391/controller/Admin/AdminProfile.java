@@ -84,3 +84,4 @@ public class AdminProfile extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/profile");
     }
 }
+

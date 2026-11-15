@@ -394,11 +394,30 @@ public class ProductDao {
         }
     }
 
-    public boolean deleteProduct(int id) {
-        String sql = "DELETE FROM Products WHERE ProductID = ?";
+    public boolean updateProductStatus(int id, String status) {
+        String sql = "UPDATE Products SET Status = ?, UpdatedAt = GETDATE() WHERE ProductID = ?";
 
         try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
+    public boolean deleteProduct(int id) {
+        return updateProductStatus(id, "INACTIVE");
+    }
+
+    public boolean activateProduct(int id) {
+        return updateProductStatus(id, "ACTIVE");
+    }
+
+    public boolean hardDeleteProduct(int id) {
+        String sql = "DELETE FROM Products WHERE ProductID = ?";
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {

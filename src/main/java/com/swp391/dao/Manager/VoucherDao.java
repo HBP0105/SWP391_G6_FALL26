@@ -220,7 +220,7 @@ public class VoucherDao {
                 CreatedBy,
                 CreatedAt
             FROM Vouchers
-            WHERE VoucherCode = ?
+            WHERE LOWER(RTRIM(LTRIM(VoucherCode))) = LOWER(RTRIM(LTRIM(?)))
         """;
 
         try (Connection conn = new DBContext().getConnection();
@@ -237,6 +237,40 @@ public class VoucherDao {
         }
 
         return null;
+    }
+
+    public boolean isVoucherCodeExists(String code, Integer excludeVoucherId) {
+        if (code == null || code.isBlank()) {
+            return false;
+        }
+
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(*) FROM Vouchers
+            WHERE LOWER(RTRIM(LTRIM(VoucherCode))) = LOWER(RTRIM(LTRIM(?)))
+        """);
+
+        if (excludeVoucherId != null && excludeVoucherId > 0) {
+            sql.append(" AND VoucherID <> ?");
+        }
+
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            ps.setString(1, code.trim());
+            if (excludeVoucherId != null && excludeVoucherId > 0) {
+                ps.setInt(2, excludeVoucherId);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     public boolean insertVoucher(Voucher v) {

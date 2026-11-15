@@ -5,7 +5,7 @@
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
-  pageContext.setAttribute("dtFmt", DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+  pageContext.setAttribute("dtFmt", DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"));
   pageContext.setAttribute("dmyFmt", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 %>
 
@@ -133,7 +133,7 @@
                 <span class="profile-name d-none d-sm-inline fw-semibold">Administrator</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/home"><i class="bi bi-shop me-2"></i>Storefront</a></li>
+                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/change-password"><i class="bi bi-key me-2 text-primary"></i>Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
               </ul>
@@ -409,34 +409,34 @@
             <c:if test="${totalPages > 1}">
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-3 border-top mt-3">
                 <div class="text-muted small">
-                  Showing ${(page - 1) * pageSize + 1} - ${page * pageSize < totalCount ? page * pageSize : totalCount} of ${totalCount} records (Page ${page}/${totalPages})
+                  Showing ${(currentPage - 1) * pageSize + 1} - ${currentPage * pageSize > totalCount ? totalCount : currentPage * pageSize} of ${totalCount} records (Page ${currentPage}/${totalPages})
                 </div>
 
                 <ul class="pagination pagination-sm mb-0">
                   <!-- Prev -->
-                  <li class="page-item ${page <= 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="?page=${page - 1}&action=${selectedAction}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
+                  <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="?page=${currentPage - 1}&action=${selectedAction}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
                       &laquo; Prev
                     </a>
                   </li>
 
                   <!-- Page numbers -->
                   <c:forEach var="p" begin="1" end="${totalPages}">
-                    <c:if test="${p == 1 || p == totalPages || (p >= page - 2 && p <= page + 2)}">
-                      <li class="page-item ${p == page ? 'active' : ''}">
+                    <c:if test="${p == 1 || p == totalPages || (p >= currentPage - 2 && p <= currentPage + 2)}">
+                      <li class="page-item ${p == currentPage ? 'active' : ''}">
                         <a class="page-link" href="?page=${p}&action=${selectedAction}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
                           ${p}
                         </a>
                       </li>
                     </c:if>
-                    <c:if test="${(p == page - 3 && p > 1) || (p == page + 3 && p < totalPages)}">
+                    <c:if test="${(p == currentPage - 3 && p > 1) || (p == currentPage + 3 && p < totalPages)}">
                       <li class="page-item disabled"><span class="page-link">...</span></li>
                     </c:if>
                   </c:forEach>
 
                   <!-- Next -->
-                  <li class="page-item ${page >= totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="?page=${page + 1}&action=${selectedAction}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
+                  <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="?page=${currentPage + 1}&action=${selectedAction}&startDate=${selectedStartDate}&endDate=${selectedEndDate}&keyword=${selectedKeyword}">
                       Next &raquo;
                     </a>
                   </li>

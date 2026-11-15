@@ -102,6 +102,63 @@ public class ProductManagement extends HttpServlet {
                         "error",
                         "Cannot delete product."
                 );
+            } else {
+                request.getSession().setAttribute(
+                        "success",
+                        "Product has been moved to Inactive (soft deleted)."
+                );
+            }
+
+            response.sendRedirect(
+                    request.getContextPath() + "/Manager/products"
+            );
+            return;
+        }
+
+        if ("activate".equals(action)) {
+            Integer id = parsePositiveInteger(request.getParameter("id"));
+            if (id == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            boolean success = productService.activateProduct(id);
+            if (!success) {
+                request.getSession().setAttribute(
+                        "error",
+                        "Cannot restore product."
+                );
+            } else {
+                request.getSession().setAttribute(
+                        "success",
+                        "Product restored to Active status successfully."
+                );
+            }
+
+            response.sendRedirect(
+                    request.getContextPath() + "/Manager/products"
+            );
+            return;
+        }
+
+        if ("hardDelete".equals(action)) {
+            Integer id = parsePositiveInteger(request.getParameter("id"));
+            if (id == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            boolean success = productService.hardDeleteProduct(id);
+            if (!success) {
+                request.getSession().setAttribute(
+                        "error",
+                        "Cannot permanently delete product because it has associated orders, reviews, or transactions. It remains safely archived as Inactive."
+                );
+            } else {
+                request.getSession().setAttribute(
+                        "success",
+                        "Product permanently removed from database."
+                );
             }
 
             response.sendRedirect(
@@ -132,33 +189,44 @@ public class ProductManagement extends HttpServlet {
         }
 
         if ("delete".equals(action)) {
+            Integer id = parsePositiveInteger(request.getParameter("id"));
+            if (id != null) {
+                boolean success = productService.deleteProduct(id);
+                if (success) {
+                    request.getSession().setAttribute("success", "Product has been moved to Inactive (soft deleted).");
+                } else {
+                    request.getSession().setAttribute("error", "Cannot delete product.");
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/Manager/products");
+            return;
+        }
 
-            System.out.println(
-                    "DELETE ACTION RECEIVED, id = "
-                    + request.getParameter("id")
-            );
+        if ("activate".equals(action)) {
+            Integer id = parsePositiveInteger(request.getParameter("id"));
+            if (id != null) {
+                boolean success = productService.activateProduct(id);
+                if (success) {
+                    request.getSession().setAttribute("success", "Product restored to Active status successfully.");
+                } else {
+                    request.getSession().setAttribute("error", "Cannot restore product.");
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/Manager/products");
+            return;
+        }
 
-            Integer id
-                    = parsePositiveInteger(
-                            request.getParameter("id")
-                    );
-
-            System.out.println(
-                    "Parsed delete id = " + id
-            );
-
-            boolean success
-                    = productService.deleteProduct(id);
-
-            System.out.println(
-                    "Delete result = " + success
-            );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/Manager/products"
-            );
-
+        if ("hardDelete".equals(action)) {
+            Integer id = parsePositiveInteger(request.getParameter("id"));
+            if (id != null) {
+                boolean success = productService.hardDeleteProduct(id);
+                if (success) {
+                    request.getSession().setAttribute("success", "Product permanently removed from database.");
+                } else {
+                    request.getSession().setAttribute("error", "Cannot permanently delete product because it has associated orders, reviews, or transactions. It remains safely archived as Inactive.");
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/Manager/products");
             return;
         }
     }
